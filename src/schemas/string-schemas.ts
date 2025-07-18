@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-import { trimOrEmpty } from "../utils/string-utils";
+import { trimOrEmpty, trimOrUndefined } from "../utils/string-utils";
 import { MsgType } from "./msg-type";
 
 // --- String Schemas ---
 
 /**
  * Optional string schema with trimming and custom error message.
- * Preserves empty strings instead of converting them to undefined.
+ * Trims whitespace and converts undefined to empty string.
  * @param msg - The field name or custom message for error output.
  * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
  */
@@ -20,7 +20,7 @@ export const zStringOptional = (
     .optional()
     .transform(trimOrEmpty)
     .refine(
-      (val: string | undefined) => val === undefined || typeof val === "string",
+      (val: string) => typeof val === "string",
       {
         message:
           msgType === MsgType.Message

@@ -48,12 +48,16 @@ export const createBooleanStringSchema = (
   isRequired: boolean,
   msgType: MsgType = MsgType.FieldName,
 ) => {
-  const schema = z.preprocess(
-    toBooleanString,
-    z.string().refine((val) => val === "true" || val === "false", {
-      message: booleanStringErrorMessage(msg, msgType),
-    }),
-  );
+  const schema = z.unknown()
+    .transform((val) => {
+      if (typeof val === "boolean") return val ? "true" : "false";
+      if (typeof val === "string") {
+        const lower = val.trim().toLowerCase();
+        if (lower === "true" || lower === "false") return lower;
+      }
+      // For invalid input, throw the error message directly
+      throw new Error(booleanStringErrorMessage(msg, msgType));
+    });
   return isRequired ? schema : schema.optional();
 };
 export const zBooleanStringOptional = (
@@ -69,15 +73,15 @@ export const zBooleanStringRequired = (
 
 /**
  * Converts input to a boolean string ("true" or "false") if possible.
- * Returns undefined for invalid input, which will trigger a Zod error.
+ * Returns the input for invalid input to allow proper error handling.
  */
-const toBooleanString = (val: unknown): string | undefined => {
+const toBooleanString = (val: unknown): string | unknown => {
   if (typeof val === "boolean") return val ? "true" : "false";
   if (typeof val === "string") {
     const lower = val.trim().toLowerCase();
     if (lower === "true" || lower === "false") return lower;
   }
-  return undefined;
+  return val;
 };
 
 /**

@@ -29,13 +29,13 @@ export type EnumRequired<TValue extends [string, ...string[]]> = z.infer<
   ReturnType<typeof zEnumRequired<TValue>>
 >;
 
-export const zEnumOptional = <TEnum extends [string, ...string[]]>(
+export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z
-    .enum(values, {
+    .enum(values as unknown as [string, ...string[]], {
       message:
         msgType === MsgType.Message
           ? String(msg)
@@ -56,12 +56,12 @@ export const zEnumOptional = <TEnum extends [string, ...string[]]>(
  * @example
  * const statusSchema = zEnumRequired(["active", "inactive"], "Status");
  */
-export const zEnumRequired = <TEnum extends [string, ...string[]]>(
+export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) =>
-  z.enum(values, {
+  z.enum(values as unknown as [string, ...string[]], {
     message:
       msgType === MsgType.Message
         ? String(msg)

@@ -27,14 +27,13 @@ export const zStringArrayOptional = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z
-    .array(z.string())
-    .optional()
-    .refine((arr) => arr === undefined || Array.isArray(arr), {
+    .array(z.string({
       message:
         msgType === MsgType.Message
           ? String(msg)
           : `${msg} must be an array of strings`,
-    });
+    }))
+    .optional();
 
 /**
  * Creates a Zod schema for a required array of strings with at least one item.

@@ -260,7 +260,7 @@ export const zMongoId = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   zStringRequired(fieldName, msgType)
-    .regex(/^[0-9a-fA-F]{24}$/, {
+    .refine(val => /^[0-9a-fA-F]{24}$/.test(val), {
       message:
         msgType === MsgType.Message
           ? String(fieldName)

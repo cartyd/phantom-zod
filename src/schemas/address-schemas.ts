@@ -40,42 +40,48 @@ export const zAddressOptional = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z
-    .object({
-      street: zStringRequired(
-        msgType === MsgType.Message ? "Street address is required" : "Street",
-        msgType,
-      ),
-      street2: zStringOptional(
-        msgType === MsgType.Message ? "Street address line 2 is optional" : "Street 2",
-        msgType,
-      ),
-      city: zStringRequired(
-        msgType === MsgType.Message ? "City is required" : "City",
-        msgType,
-      ),
-      state: zStringRequired(
-        msgType === MsgType.Message ? "State is required" : "State",
-        msgType,
-      ),
-      postalCode: zPostalCodeRequired(
-        msgType === MsgType.Message ? "Postal code is required" : "Postal Code",
-        msgType,
-      ),
-      country: zStringRequired(
-        msgType === MsgType.Message ? "Country is required" : "Country",
-        msgType,
-      ),
-    })
-    .optional()
-    .refine(
-      (val) => val === undefined || (typeof val === "object" && val !== null),
-      {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be a valid address object`,
-      },
-    );
+    .union([
+      z.undefined(),
+      z.object({
+        street: zStringRequired(
+          msgType === MsgType.Message ? "Street address is required" : "Street",
+          msgType,
+        ),
+        street2: zStringOptional(
+          msgType === MsgType.Message ? "Street address line 2 is optional" : "Street 2",
+          msgType,
+        ),
+        city: zStringRequired(
+          msgType === MsgType.Message ? "City is required" : "City",
+          msgType,
+        ),
+        state: zStringRequired(
+          msgType === MsgType.Message ? "State is required" : "State",
+          msgType,
+        ),
+        postalCode: zPostalCodeRequired(
+          msgType === MsgType.Message ? "Postal code is required" : "Postal Code",
+          msgType,
+        ),
+        country: zStringRequired(
+          msgType === MsgType.Message ? "Country is required" : "Country",
+          msgType,
+        ),
+      })
+      .transform((val) => {
+        // Remove empty string fields
+        const result = { ...val } as Partial<typeof val>;
+        if (result.street2 === "") {
+          delete result.street2;
+        }
+        return result;
+      })
+    ], {
+      message:
+        msgType === MsgType.Message
+          ? String(fieldName)
+          : `${fieldName} must be a valid address object`,
+    });
 
 /**
  * Required address schema with all fields.
@@ -128,6 +134,14 @@ export const zAddressRequired = (
       msgType === MsgType.Message
         ? String(fieldName)
         : `${fieldName} is required`,
+  })
+  .transform((val) => {
+    // Remove empty string fields
+    const result = { ...val } as Partial<typeof val>;
+    if (result.street2 === "") {
+      delete result.street2;
+    }
+    return result;
   });
 
 /**
@@ -202,4 +216,12 @@ export const zAddressUS = (
       msgType === MsgType.Message
         ? String(fieldName)
         : `${fieldName} is required`,
+  })
+  .transform((val) => {
+    // Remove empty string fields
+    const result = { ...val } as Partial<typeof val>;
+    if (result.street2 === "") {
+      delete result.street2;
+    }
+    return result;
   });

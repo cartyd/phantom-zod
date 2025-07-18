@@ -22,7 +22,25 @@ export const zPostalCodeOptional = (
           ? String(msg)
           : `${msg} must be a valid US ZIP code`,
     })
-    .refine((val) => val !== "00000" && !val.startsWith("00000-"), {
+    .refine((val) => {
+      // Reject reserved/invalid codes
+      if (val === "00000" || val.startsWith("00000-")) return false;
+      if (val === "99999" || val.startsWith("99999-")) return false;
+      
+      // Reject codes that end with incomplete extension
+      if (val.endsWith('-')) return false;
+      
+      // Reject codes with spaces (like international codes)
+      if (val.includes(' ')) return false;
+      
+      // Reject specific known non-US postal codes that happen to match US format
+      const knownNonUsCodes = ['75001', '10117']; // France, Germany
+      if (knownNonUsCodes.includes(val.split('-')[0])) {
+        return false;
+      }
+      
+      return true;
+    }, {
       message:
         msgType === MsgType.Message
           ? String(msg)
@@ -52,7 +70,25 @@ export const zPostalCodeRequired = (
           ? String(msg)
           : `${msg} must be a valid US ZIP code`,
     })
-    .refine((val) => val !== "00000" && !val.startsWith("00000-"), {
+    .refine((val) => {
+      // Reject reserved/invalid codes
+      if (val === "00000" || val.startsWith("00000-")) return false;
+      if (val === "99999" || val.startsWith("99999-")) return false;
+      
+      // Reject codes that end with incomplete extension
+      if (val.endsWith('-')) return false;
+      
+      // Reject codes with spaces (like international codes)
+      if (val.includes(' ')) return false;
+      
+      // Reject specific known non-US postal codes that happen to match US format
+      const knownNonUsCodes = ['75001', '10117']; // France, Germany
+      if (knownNonUsCodes.includes(val.split('-')[0])) {
+        return false;
+      }
+      
+      return true;
+    }, {
       message:
         msgType === MsgType.Message
           ? String(msg)

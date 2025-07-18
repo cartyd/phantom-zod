@@ -303,9 +303,9 @@ describe('UUID Schemas', () => {
     });
 
     it('should handle case insensitive UUIDs', () => {
-      const upperCaseUuid = 'A123E4567-E89B-42D3-A456-426614174000';
-      const lowerCaseUuid = 'a123e4567-e89b-42d3-a456-426614174000';
-      const mixedCaseUuid = 'A123e4567-E89b-42d3-A456-426614174000';
+      const upperCaseUuid = '123E4567-E89B-42D3-A456-426614174000';
+      const lowerCaseUuid = '123e4567-e89b-42d3-a456-426614174000';
+      const mixedCaseUuid = '123e4567-E89b-42d3-A456-426614174000';
 
       const schema = zUuidV4Optional();
       
