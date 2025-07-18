@@ -14,6 +14,7 @@ export type BooleanStringOptional = z.infer<
 import { z } from "zod";
 
 import { MsgType } from "./msg-type";
+import { generateErrorMessage, generateConditionMessage } from "./utils";
 
 /**
  * Formats a boolean string error message consistently.
@@ -22,9 +23,7 @@ import { MsgType } from "./msg-type";
  * @returns The formatted error message string.
  */
 const booleanStringErrorMessage = (msg: string, msgType: MsgType) =>
-  msgType === MsgType.Message
-    ? String(msg)
-    : `${msg} must be a boolean value ("true" or "false")`;
+  generateErrorMessage(msg, msgType, `${msg} must be a boolean value ("true" or "false")`);
 
 /**
  * Creates a boolean string schema that returns "true"/"false" as strings.
@@ -91,9 +90,7 @@ export const zBooleanRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
-  const errorMessage = msgType === MsgType.Message
-    ? String(msg)
-    : `${msg} must be a boolean value`;
+  const errorMessage = generateConditionMessage(msg, msgType, "a boolean value");
   return z.boolean({ message: errorMessage });
 };
 
@@ -104,8 +101,6 @@ export const zBooleanOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
-  const errorMessage = msgType === MsgType.Message
-    ? String(msg)
-    : `${msg} must be a boolean value`;
+  const errorMessage = generateConditionMessage(msg, msgType, "a boolean value");
   return z.boolean({ message: errorMessage }).optional();
 };

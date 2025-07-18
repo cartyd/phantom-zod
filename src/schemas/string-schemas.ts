@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { trimOrEmpty, trimOrUndefined } from "../utils/string-utils";
 import { MsgType } from "./msg-type";
+import { generateErrorMessage, generateRequiredMessage } from "./utils";
 
 // --- String Schemas ---
 
@@ -22,10 +23,7 @@ export const zStringOptional = (
     .refine(
       (val: string) => typeof val === "string",
       {
-        message:
-          msgType === MsgType.Message
-            ? String(msg)
-            : `${msg} must be a string if provided`,
+        message: generateErrorMessage(msg, msgType, `${msg} must be a string if provided`),
       },
     );
 
@@ -40,10 +38,9 @@ export const zStringRequired = (
 ) =>
   z
     .string({
-      message:
-        msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: generateRequiredMessage(msg, msgType),
     })
     .transform((val) => val.trim())
     .refine((trimmed: string) => trimmed.length > 0, {
-      message: msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: generateRequiredMessage(msg, msgType),
     });

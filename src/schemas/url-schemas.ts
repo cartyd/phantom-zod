@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
+import { generateErrorMessage, generateRequiredMessage, generateValidationMessage } from "./utils";
 
 // --- URL Schemas ---
 
@@ -64,10 +65,7 @@ export const zUrlOptional = (
   z
     .string()
     .refine((val) => isValidUrl(val), {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid URL`,
+      message: generateValidationMessage(msg, msgType, "URL"),
     })
     .optional();
 
@@ -85,11 +83,8 @@ export const zUrlRequired = (
   z
     .string()
     .nonempty({
-      message: msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: generateRequiredMessage(msg, msgType),
     })
     .refine((val) => isValidUrl(val), {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid URL`,
+      message: generateValidationMessage(msg, msgType, "URL"),
     });

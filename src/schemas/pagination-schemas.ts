@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { MsgType } from "./msg-type";
 import { zStringOptional } from "./string-schemas";
+import { getErrorMessage } from "../utils/error-utils";
 
 // --- Pagination Schema Types ---
 

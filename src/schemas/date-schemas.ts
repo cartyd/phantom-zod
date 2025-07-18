@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-
+import { trimOrUndefined } from "../utils/string-utils";
+import { getErrorMessage } from "../utils/error-utils";
 export enum DateFormat {
   DateOnly = "DATE_ONLY", // YYYY-MM-DD
   DateTime = "DATE_TIME", // YYYY-MM-DDTHH:mm:ssZ
@@ -310,9 +311,11 @@ const getExampleFormat = (format: DateFormat): string => {
  */
 // Helper for consistent error message formatting
 const dateErrorMessage = (msg: string, msgType: MsgType, format: DateFormat) =>
-  msgType === MsgType.Message
-    ? String(msg)
-    : `${msg} is invalid. Example of valid format: ${getExampleFormat(format)}`;
+  getErrorMessage(
+    msg,
+    msgType,
+    `${msg} is invalid. Example of valid format: ${getExampleFormat(format)}`,
+  );
 
 /**
  * Shared date parsing utility that handles both date and datetime formats.

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { MsgType } from "./msg-type";
+import { getErrorMessage, createErrorMessage } from "../utils/error-utils";
 
 // --- Money Schema Types ---
 
@@ -53,10 +54,11 @@ export const zCurrencyCode = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z.enum(ISO_4217_CURRENCIES, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must be a valid ISO 4217 currency code`,
+    message: getErrorMessage(
+      fieldName,
+      msgType,
+      `${fieldName} must be a valid ISO 4217 currency code`,
+    ),
   });
 
 /**

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
+import { createErrorMessage, getErrorMessage } from "../utils/error-utils";
 
 // --- UUID Schemas ---
 const UUID_REGEX =
@@ -22,10 +23,7 @@ export const zUuidOptional = (
     .string()
     .optional()
     .refine((val) => val === undefined || val === "" || UUID_REGEX.test(val), {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid UUID`,
+      message: getErrorMessage(msg, msgType, `${msg} must be a valid UUID`),
     });
 
 /**
@@ -42,13 +40,10 @@ export const zUuidRequired = (
   z
     .string()
     .nonempty({
-      message: msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: createErrorMessage(msg, msgType, "required"),
     })
     .refine((val) => UUID_REGEX.test(val), {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid UUID`,
+      message: getErrorMessage(msg, msgType, `${msg} must be a valid UUID`),
     });
 
 /**
@@ -68,10 +63,7 @@ export const zUuidV4Optional = (
     .refine(
       (val) => val === undefined || val === "" || UUID_V4_REGEX.test(val),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(msg)
-            : `${msg} must be a valid UUIDv4`,
+        message: getErrorMessage(msg, msgType, `${msg} must be a valid UUIDv4`),
       },
     );
 
@@ -89,11 +81,8 @@ export const zUuidV4Required = (
   z
     .string()
     .nonempty({
-      message: msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: createErrorMessage(msg, msgType, "required"),
     })
     .refine((val) => UUID_V4_REGEX.test(val), {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid UUIDv4`,
+      message: getErrorMessage(msg, msgType, `${msg} must be a valid UUIDv4`),
     });

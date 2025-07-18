@@ -12,6 +12,7 @@ export type EmailRequired = z.infer<ReturnType<typeof zEmailRequired>>;
 import { MsgType } from "./msg-type";
 import { z } from "zod";
 import { trimOrUndefined } from "../utils/string-utils";
+import { generateErrorMessage, generateRequiredMessage, generateValidationMessage } from "./utils";
 
 // --- Email Schemas ---
 
@@ -31,10 +32,7 @@ export const zEmailOptional = (
     .optional()
     .transform(trimOrUndefined)
     .refine(isEmail, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid email address`,
+      message: generateValidationMessage(msg, msgType, "email address"),
     });
 
 /**
@@ -52,13 +50,10 @@ export const zEmailRequired = (
     .string()
     .trim()
     .nonempty({
-      message: msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: generateRequiredMessage(msg, msgType),
     })
     .email({
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid email address`,
+      message: generateValidationMessage(msg, msgType, "email address"),
     });
 
 /**

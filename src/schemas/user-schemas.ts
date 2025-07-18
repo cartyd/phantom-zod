@@ -4,6 +4,7 @@ import { MsgType } from "./msg-type";
 import { zStringRequired, zStringOptional } from "./string-schemas";
 import { zEmailRequired, zEmailOptional } from "./email-schemas";
 import { zEnumRequired, zEnumOptional } from "./enum-schemas";
+import { getErrorMessage } from "../utils/error-utils";
 
 // --- User Schema Types ---
 
