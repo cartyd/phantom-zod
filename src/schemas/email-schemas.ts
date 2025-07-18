@@ -23,7 +23,7 @@ import { trimOrUndefined } from "../utils/string-utils";
  * @returns Zod schema for an optional email address.
  */
 export const zEmailOptional = (
-  msg = "Email Address",
+  msg: string = "Email Address",
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z
@@ -45,7 +45,7 @@ export const zEmailOptional = (
  * @returns Zod schema for a required email address.
  */
 export const zEmailRequired = (
-  msg = "Email Address",
+  msg: string = "Email Address",
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z

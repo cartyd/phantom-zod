@@ -78,12 +78,15 @@ export const zPassword = (
   requireSpecialChars = true,
 ) =>
   zStringRequired(fieldName, msgType)
-    .min(minLength, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must be at least ${minLength} characters long`,
-    })
+    .refine(
+      (password) => password.length >= minLength,
+      {
+        message:
+          msgType === MsgType.Message
+            ? String(fieldName)
+            : `${fieldName} must be at least ${minLength} characters long`,
+      },
+    )
     .refine(
       (password) => !requireUppercase || /[A-Z]/.test(password),
       {
@@ -136,24 +139,33 @@ export const zUsername = (
   maxLength = 30,
 ) =>
   zStringRequired(fieldName, msgType)
-    .min(minLength, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must be at least ${minLength} characters long`,
-    })
-    .max(maxLength, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must be at most ${maxLength} characters long`,
-    })
-    .regex(/^[a-zA-Z0-9_-]+$/, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} can only contain letters, numbers, underscores, and hyphens`,
-    })
+    .refine(
+      (username) => username.length >= minLength,
+      {
+        message:
+          msgType === MsgType.Message
+            ? String(fieldName)
+            : `${fieldName} must be at least ${minLength} characters long`,
+      },
+    )
+    .refine(
+      (username) => username.length <= maxLength,
+      {
+        message:
+          msgType === MsgType.Message
+            ? String(fieldName)
+            : `${fieldName} must be at most ${maxLength} characters long`,
+      },
+    )
+    .refine(
+      (username) => /^[a-zA-Z0-9_-]+$/.test(username),
+      {
+        message:
+          msgType === MsgType.Message
+            ? String(fieldName)
+            : `${fieldName} can only contain letters, numbers, underscores, and hyphens`,
+      },
+    )
     .refine(
       (username) => !username.startsWith("_") && !username.endsWith("_"),
       {
@@ -364,17 +376,17 @@ export const zUserOptional = (
         msgType,
       ),
       role: zEnumRequired(
-        USER_ROLES,
+        [...USER_ROLES],
         msgType === MsgType.Message ? "Role is required" : "Role",
         msgType,
       ),
       status: zEnumRequired(
-        USER_STATUS,
+        [...USER_STATUS],
         msgType === MsgType.Message ? "Status is required" : "Status",
         msgType,
       ),
       accountType: zEnumOptional(
-        ACCOUNT_TYPES,
+        [...ACCOUNT_TYPES],
         msgType === MsgType.Message ? "Account type is optional" : "Account Type",
         msgType,
       ),
@@ -449,17 +461,17 @@ export const zUserRequired = (
       msgType,
     ),
     role: zEnumRequired(
-      USER_ROLES,
+      [...USER_ROLES],
       msgType === MsgType.Message ? "Role is required" : "Role",
       msgType,
     ),
     status: zEnumRequired(
-      USER_STATUS,
+      [...USER_STATUS],
       msgType === MsgType.Message ? "Status is required" : "Status",
       msgType,
     ),
     accountType: zEnumOptional(
-      ACCOUNT_TYPES,
+      [...ACCOUNT_TYPES],
       msgType === MsgType.Message ? "Account type is optional" : "Account Type",
       msgType,
     ),
@@ -624,12 +636,12 @@ export const zAdminUserManagement = (
       msgType,
     ),
     role: zEnumOptional(
-      USER_ROLES,
+      [...USER_ROLES],
       msgType === MsgType.Message ? "Role is optional" : "Role",
       msgType,
     ),
     status: zEnumOptional(
-      USER_STATUS,
+      [...USER_STATUS],
       msgType === MsgType.Message ? "Status is optional" : "Status",
       msgType,
     ),

@@ -158,12 +158,15 @@ export const zFilename = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   zStringRequired(fieldName, msgType)
-    .regex(/^[^<>:"/\\|?*\x00-\x1f]+$/, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} contains invalid characters`,
-    })
+    .refine(
+      (name) => /^[^<>:"/\\|?*\x00-\x1f]+$/.test(name),
+      {
+        message:
+          msgType === MsgType.Message
+            ? String(fieldName)
+            : `${fieldName} contains invalid characters`,
+      },
+    )
     .refine(
       (name) => !name.startsWith(".") && !name.endsWith("."),
       {
