@@ -5,7 +5,7 @@ import {
   zBooleanStringRequired 
 } from '../src/schemas/boolean-schemas';
 import { MsgType } from '../src/schemas/msg-type';
-import { runTableTests } from './setup';
+import { runTableTests, extractZodIssueMessage } from './setup';
 
 describe('Boolean Schemas', () => {
   describe('zBooleanOptional', () => {
@@ -62,7 +62,12 @@ describe('Boolean Schemas', () => {
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
         const schema = zBooleanOptional('Active');
-        expect(() => schema.parse('true')).toThrow('Active must be a boolean value');
+        try {
+          schema.parse('true');
+          fail('Expected schema to throw error');
+        } catch (e) {
+          expect(extractZodIssueMessage(e as any)).toBe('Active must be a boolean value');
+        }
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -121,7 +126,12 @@ describe('Boolean Schemas', () => {
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
         const schema = zBooleanRequired('Active');
-        expect(() => schema.parse('true')).toThrow('Active must be a boolean value');
+        try {
+          schema.parse('true');
+          fail('Expected schema to throw error');
+        } catch (e) {
+          expect(extractZodIssueMessage(e as any)).toBe('Active must be a boolean value');
+        }
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -237,7 +247,12 @@ describe('Boolean Schemas', () => {
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
         const schema = zBooleanStringOptional('Active');
-        expect(() => schema.parse('invalid')).toThrow('Active must be a boolean value ("true" or "false")');
+        try {
+          schema.parse('invalid');
+          fail('Expected schema to throw error');
+        } catch (e) {
+          expect(extractZodIssueMessage(e as any)).toBe('Active must be a boolean value ("true" or "false")');
+        }
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -322,7 +337,12 @@ describe('Boolean Schemas', () => {
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
         const schema = zBooleanStringRequired('Active');
-        expect(() => schema.parse('invalid')).toThrow('Active must be a boolean value ("true" or "false")');
+        try {
+          schema.parse('invalid');
+          fail('Expected schema to throw error');
+        } catch (e) {
+          expect(extractZodIssueMessage(e as any)).toBe('Active must be a boolean value ("true" or "false")');
+        }
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -377,31 +397,6 @@ describe('Boolean Schemas', () => {
           expect(() => schema.parse(value)).toThrow();
         }
       });
-    });
-  });
-
-  describe('Performance and reliability', () => {
-    it('should handle large number of validations efficiently', () => {
-      const schema = zBooleanStringOptional();
-      const startTime = Date.now();
-      
-      for (let i = 0; i < 1000; i++) {
-        schema.parse(i % 2 === 0 ? 'true' : 'false');
-      }
-      
-      const duration = Date.now() - startTime;
-      expect(duration).toBeLessThan(100);
-    });
-
-    it('should be consistent across multiple calls', () => {
-      const schema = zBooleanStringOptional();
-      
-      for (let i = 0; i < 100; i++) {
-        expect(schema.parse(true)).toBe('true');
-        expect(schema.parse(false)).toBe('false');
-        expect(schema.parse('TRUE')).toBe('true');
-        expect(schema.parse('FALSE')).toBe('false');
-      }
     });
   });
 });

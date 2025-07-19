@@ -12,14 +12,9 @@ export type BooleanStringRequired = z.infer<
   ReturnType<typeof zBooleanStringRequired>
 >;
 
-/**
- * Formats a boolean string error message consistently.
- * @param msg - The field name or custom message for error output
- * @param msgType - Determines if 'msg' is a field name or a custom message.
- * @returns The formatted error message string.
- */
-const booleanStringErrorMessage = (msg: string, msgType: MsgType) =>
-  formatErrorMessage(msg, msgType, { condition: 'a boolean value ("true" or "false")' });
+
+
+// Use formatErrorMessage for all error formatting
 
 /**
  * Schema for optional boolean values.
@@ -28,9 +23,14 @@ export const zBooleanOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
-  const errorMessage = formatErrorMessage(msg, msgType, { condition: "a boolean value" });
-  return z.boolean({ message: errorMessage }).optional();
-};
+  return z.unknown()
+    .refine(
+      val => val === undefined || typeof val === "boolean",
+      { message: formatErrorMessage(msg, msgType, "must be a boolean value") }
+    )
+    .transform(val => val === undefined ? undefined : Boolean(val));
+}
+
 
 /**
  * Schema for required boolean values.
@@ -39,28 +39,37 @@ export const zBooleanRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
-  const errorMessage = formatErrorMessage(msg, msgType, { condition: "a boolean value" });
-  return z.boolean({ message: errorMessage });
+  return z.unknown()
+    .refine(
+      val => typeof val === "boolean",
+      { message: formatErrorMessage(msg, msgType, "must be a boolean value") }
+    )
+    .transform(val => Boolean(val));
 };
+
+const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
+
 export const zBooleanStringRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-) =>
-  baseBooleanStringSchema
+) => {
+  return baseBooleanStringSchema
     .refine(
       val =>
         (typeof val === "boolean") ||
         (typeof val === "string" && ["true", "false"].includes(val.trim().toLowerCase())),
-      { message: booleanStringErrorMessage(msg, msgType) }
+      { message: formatErrorMessage(msg, msgType, "must be a boolean value (\"true\" or \"false\")") }
     )
     .transform(val =>
       typeof val === "boolean"
         ? val ? "true" : "false"
         : val.trim().toLowerCase()
     );
+}
+
 export const zBooleanStringOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-) => zBooleanStringRequired(msg, msgType).optional();
-
-const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
+) => {
+  return zBooleanStringRequired(msg, msgType).optional();
+}

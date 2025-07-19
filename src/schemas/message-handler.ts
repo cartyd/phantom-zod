@@ -1,19 +1,30 @@
+import { MsgType } from "./msg-type";
+
 /**
- * Unified error message formatter for schema validation.
- * @param msg - The field name or custom message.
- * @param msgType - The type of message formatting to use.
- * @param options - Object with optional 'condition' or 'fallback' string.
- * @returns Formatted error message string.
+ * Formats an error message based on the message type and an optional condition.
+ *
+ * @param msg - The base error message to format.
+ * @param msgType - The type of message, which determines the formatting.
+ * @param condition - An optional condition to include in the error message when the type is `FieldName`.
+ * @returns The formatted error message as a string.
+ *
+ * @example
+ * formatErrorMessage("email", MsgType.FieldName, "a valid email address");
+ * // Returns: "email must be a valid email address"
+ *
+ * formatErrorMessage("username", MsgType.Message);
+ * // Returns: "username"
+ *
+ * formatErrorMessage("password", MsgType.FieldName);
+ * // Returns: "password is invalid"
  */
 export const formatErrorMessage = (
   msg: string,
   msgType: MsgType,
-  options: { condition?: string; fallback?: string }
+  fallback?: string
 ): string => {
   if (msgType === MsgType.Message) return String(msg);
-  if (options.condition) return `${msg} must be ${options.condition}`;
-  if (options.fallback) return options.fallback;
+  if (fallback) return `${msg} ${fallback}`;
   return `${msg} is invalid`;
 };
-import { MsgType } from "./msg-type";
 

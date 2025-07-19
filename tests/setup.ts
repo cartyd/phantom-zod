@@ -2,7 +2,7 @@
 import { ZodError } from 'zod';
 
 // Helper function to extract error messages from ZodError
-export const extractErrorMessage = (error: ZodError): string => {
+export const extractZodIssueMessage = (error: ZodError): string => {
   return error.issues[0]?.message || 'Unknown error';
 };
 
