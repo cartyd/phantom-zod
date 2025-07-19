@@ -42,5 +42,5 @@ export const zStringRequired = (
     })
     .transform((val) => val.trim())
     .refine((trimmed: string) => trimmed.length > 0, {
-      message: formatErrorMessage(msg, msgType),
+      message: formatErrorMessage(msg, msgType, "is required"),
     });
