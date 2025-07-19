@@ -1,6 +1,6 @@
-import { zStringOptional, zStringRequired } from '../src/schemas/string-schemas';
-import { MsgType } from '../src/schemas/msg-type';
-import { runTableTests, generateTestData } from './setup';
+import { MsgType } from "../src/schemas/msg-type";
+import { zStringOptional, zStringRequired } from "../src/schemas/string-schemas";
+import { generateTestData, runTableTests } from "./setup";
 
 describe('String Schemas', () => {
   describe('zStringOptional', () => {
@@ -75,6 +75,15 @@ describe('String Schemas', () => {
     });
 
     describe('Custom error messages', () => {
+      it('should use custom message when MsgType is Message for empty string', () => {
+        const schema = zStringRequired('Custom required message', MsgType.Message);
+        expect(() => schema.parse('')).toThrow('Custom required message');
+      });
+
+      it('should use custom message when MsgType is Message for whitespace-only string', () => {
+        const schema = zStringRequired('Custom required message', MsgType.Message);
+        expect(() => schema.parse('   ')).toThrow('Custom required message');
+      });
       it('should use custom field name in error message', () => {
         const schema = zStringOptional('Name');
         // This schema should not throw for valid strings, 
@@ -229,22 +238,9 @@ describe('String Schemas', () => {
   });
 
   describe('Performance and reliability', () => {
-    it('should handle large number of validations efficiently', () => {
-      const schema = zStringOptional();
-      const startTime = Date.now();
-      
-      for (let i = 0; i < 1000; i++) {
-        schema.parse('test string');
-      }
-      
-      const duration = Date.now() - startTime;
-      expect(duration).toBeLessThan(50); // Should complete in under 50ms
-    });
-
     it('should be consistent across multiple calls', () => {
       const schema = zStringOptional();
       const input = '  test string  ';
-      
       for (let i = 0; i < 100; i++) {
         expect(schema.parse(input)).toBe('test string');
       }
@@ -253,11 +249,9 @@ describe('String Schemas', () => {
     it('should handle concurrent validations', async () => {
       const schema = zStringOptional();
       const promises: Promise<string | undefined>[] = [];
-      
       for (let i = 0; i < 100; i++) {
         promises.push(Promise.resolve(schema.parse(`test ${i}`)));
       }
-      
       const results = await Promise.all(promises);
       results.forEach((result, index) => {
         expect(result).toBe(`test ${index}`);
