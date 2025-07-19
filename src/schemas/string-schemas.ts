@@ -23,7 +23,7 @@ export const zStringOptional = (
     .refine(
       (val: string) => typeof val === "string",
       {
-        message: formatErrorMessage(msg, msgType, { condition: "a string if provided" }),
+        message: formatErrorMessage(msg, msgType),
       },
     );
 
@@ -38,9 +38,9 @@ export const zStringRequired = (
 ) =>
   z
     .string({
-      message: formatErrorMessage(msg, msgType, { condition: "required" }),
+      message: formatErrorMessage(msg, msgType),
     })
     .transform((val) => val.trim())
     .refine((trimmed: string) => trimmed.length > 0, {
-      message: formatErrorMessage(msg, msgType, { condition: "required" }),
+      message: formatErrorMessage(msg, msgType),
     });
