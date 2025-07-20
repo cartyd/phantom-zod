@@ -3,7 +3,6 @@ import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { zUuidRequired } from "./uuid-schemas";
 import { zStringRequired } from "./string-schemas";
-import { getErrorMessage, createErrorMessage } from "../utils/error-utils";
 import { formatErrorMessage } from "./message-handler";
 
 // --- ID List Schema Types ---

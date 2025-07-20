@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { MsgType } from "./msg-type";
 import { zStringRequired, zStringOptional } from "./string-schemas";
-import { getErrorMessage } from "../utils/error-utils";
 import { formatErrorMessage } from "./message-handler";
 
 // --- File Upload Schema Types ---
