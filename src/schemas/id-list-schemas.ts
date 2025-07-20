@@ -4,6 +4,7 @@ import { MsgType } from "./msg-type";
 import { zUuidRequired } from "./uuid-schemas";
 import { zStringRequired } from "./string-schemas";
 import { getErrorMessage, createErrorMessage } from "../utils/error-utils";
+import { formatErrorMessage } from "./message-handler";
 
 // --- ID List Schema Types ---
 
@@ -44,16 +45,18 @@ export const zIdListOptional = (
       msgType,
     ))
     .min(minItems, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must contain at least ${minItems} IDs`,
+      message: formatErrorMessage(
+        fieldName,
+        msgType,
+        `must contain at least ${minItems} IDs`
+      ),
     })
     .max(maxItems, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must contain at most ${maxItems} IDs`,
+      message: formatErrorMessage(
+        fieldName,
+        msgType,
+        `must contain at most ${maxItems} IDs`
+      ),
     })
     .optional();
 
@@ -81,16 +84,18 @@ export const zIdListRequired = (
     msgType,
   ))
   .min(minItems, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must contain at least ${minItems} IDs`,
+    message: formatErrorMessage(
+      fieldName,
+      msgType,
+      `must contain at least ${minItems} IDs`
+    ),
   })
   .max(maxItems, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must contain at most ${maxItems} IDs`,
+    message: formatErrorMessage(
+      fieldName,
+      msgType,
+      `must contain at most ${maxItems} IDs`
+    ),
   });
 
 /**
