@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
+import { formatErrorMessage } from "./message-handler";
 
 // --- Postal Code Schemas ---
 
@@ -16,11 +17,12 @@ export const zPostalCodeOptional = (
 ) =>
   z
     .string()
-    .regex(/^\d{5}(-\d{4})?$/, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid US ZIP code`,
+    .regex(/^[\d]{5}(-\d{4})?$/, {
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "must be a valid US ZIP code"
+      ),
     })
     .refine((val) => {
       // Reject reserved/invalid codes
@@ -41,10 +43,11 @@ export const zPostalCodeOptional = (
       
       return true;
     }, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid US ZIP code`,
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "must be a valid US ZIP code"
+      ),
     })
     .optional();
 
@@ -62,13 +65,18 @@ export const zPostalCodeRequired = (
   z
     .string()
     .nonempty({
-      message: msgType === MsgType.Message ? String(msg) : `${msg} is required`,
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "is required"
+      ),
     })
-    .regex(/^\d{5}(-\d{4})?$/, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid US ZIP code`,
+    .regex(/^[\d]{5}(-\d{4})?$/, {
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "must be a valid US ZIP code"
+      ),
     })
     .refine((val) => {
       // Reject reserved/invalid codes
@@ -89,8 +97,9 @@ export const zPostalCodeRequired = (
       
       return true;
     }, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be a valid US ZIP code`,
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "must be a valid US ZIP code"
+      ),
     });
