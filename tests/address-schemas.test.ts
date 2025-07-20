@@ -1,3 +1,31 @@
+import { US_STATE_CODES } from '../src/schemas/address-schemas';
+describe('US_STATE_CODES', () => {
+  it('should contain 50 unique state codes', () => {
+    expect(US_STATE_CODES.length).toBe(50);
+    const uniqueCodes = new Set(US_STATE_CODES);
+    expect(uniqueCodes.size).toBe(50);
+  });
+
+  it('should only contain uppercase 2-letter codes', () => {
+    for (const code of US_STATE_CODES) {
+      expect(code).toMatch(/^[A-Z]{2}$/);
+    }
+  });
+
+  it('should include NY, CA, TX, FL, and IL', () => {
+    const requiredStates = ['NY', 'CA', 'TX', 'FL', 'IL'];
+    for (const state of requiredStates) {
+      expect(US_STATE_CODES).toContain(state);
+    }
+  });
+
+  it('should not include lowercase or invalid codes', () => {
+    expect(US_STATE_CODES).not.toContain('ny');
+    expect(US_STATE_CODES).not.toContain('XX');
+    expect(US_STATE_CODES).not.toContain('');
+    expect(US_STATE_CODES).not.toContain('USA');
+  });
+});
 import { zAddressOptional, zAddressRequired, zAddressSimple, zAddressUS } from '../src/schemas/address-schemas';
 import { MsgType } from '../src/schemas/msg-type';
 
@@ -182,6 +210,17 @@ describe('Address Schemas', () => {
   });
 
   describe('zAddressUS', () => {
+  it('should default country to US when omitted', () => {
+    const addressWithoutCountry = {
+      street: '123 Main St',
+      city: 'New York',
+      state: 'NY',
+      postalCode: '10001',
+    };
+    const result = zAddressUS().parse(addressWithoutCountry);
+    expect(result.country).toBe('US');
+    expect(result).toEqual({ ...addressWithoutCountry, country: 'US' });
+  });
     const schema = zAddressUS();
 
     it('should accept valid US address', () => {

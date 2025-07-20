@@ -1,4 +1,12 @@
 import { z } from "zod";
+// --- US State Codes ---
+export const US_STATE_CODES = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+];
 
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
@@ -202,19 +210,22 @@ export const zAddressUS = (
       msgType === MsgType.Message ? "City is required" : "City",
       msgType,
     ),
-    state: z.string().regex(/^[A-Z]{2}$/, {
-      message:
-        msgType === MsgType.Message
-          ? "State must be a valid 2-letter US state code"
-          : "State must be a valid 2-letter US state code",
-    }),
+    state: z.enum(
+      US_STATE_CODES as [string, ...string[]],
+      {
+        message:
+          msgType === MsgType.Message
+            ? "State must be a valid 2-letter US state code"
+            : "State must be a valid 2-letter US state code",
+      }
+    ),
     postalCode: z.string().regex(/^\d{5}(-\d{4})?$/, {
       message:
         msgType === MsgType.Message
           ? "Postal code must be a valid US ZIP code"
           : "Postal code must be a valid US ZIP code (e.g., 12345 or 12345-6789)",
     }),
-    country: z.literal("US"),
+    country: z.literal("US").default("US"),
   }, {
     message: formatErrorMessage(
       fieldName,
