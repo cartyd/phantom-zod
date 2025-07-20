@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../utils/string-utils";
-import { createErrorMessage, getErrorMessage } from "../utils/error-utils";
+import { formatErrorMessage } from "./message-handler";
 
 /**
  * Enum for supported phone number formats.
@@ -51,12 +51,12 @@ export const zPhoneOptional = (
           ? /^\+1\d{10}$/.test(val)
           : /^\d{10}$/.test(val)),
       {
-        message: getErrorMessage(
+        message: formatErrorMessage(
           msg,
           msgType,
           format === PhoneFormat.E164
-            ? `${msg} is invalid. Example of valid format: +11234567890`
-            : `${msg} is invalid. Example of valid format: 1234567890`,
+            ? "is invalid. Example of valid format: +11234567890"
+            : "is invalid. Example of valid format: 1234567890"
         ),
       },
     );
@@ -75,7 +75,7 @@ export const zPhoneRequired = (
   z
     .string()
     .nonempty({
-      message: createErrorMessage(msg, msgType, "required"),
+      message: formatErrorMessage(msg, msgType, "is required"),
     })
     .transform((val) => {
       const trimmed = trimOrUndefined(val);
@@ -91,12 +91,12 @@ export const zPhoneRequired = (
           ? /^\+1\d{10}$/.test(val)
           : /^\d{10}$/.test(val)),
       {
-        message: getErrorMessage(
+        message: formatErrorMessage(
           msg,
           msgType,
           format === PhoneFormat.E164
-            ? `${msg} is invalid. Example of valid format: +11234567890`
-            : `${msg} is invalid. Example of valid format: 1234567890`,
+            ? "is invalid. Example of valid format: +11234567890"
+            : "is invalid. Example of valid format: 1234567890"
         ),
       },
     );
