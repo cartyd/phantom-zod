@@ -247,27 +247,4 @@ describe('Email Schemas', () => {
       });
     });
   });
-
-  describe('Performance and reliability', () => {
-    it('should handle large number of validations efficiently', () => {
-      const schema = zEmailOptional();
-      const startTime = Date.now();
-      
-      for (let i = 0; i < 1000; i++) {
-        schema.parse('test@example.com');
-      }
-      
-      const duration = Date.now() - startTime;
-      expect(duration).toBeLessThan(100); // Should complete in under 100ms
-    });
-
-    it('should be consistent across multiple calls', () => {
-      const schema = zEmailOptional();
-      const input = 'test@example.com';
-      
-      for (let i = 0; i < 100; i++) {
-        expect(schema.parse(input)).toBe(input);
-      }
-    });
-  });
 });

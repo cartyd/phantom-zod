@@ -1,3 +1,8 @@
+import { MsgType } from "./msg-type";
+import { z } from "zod";
+import { trimOrUndefined } from "../utils/string-utils";
+import { formatErrorMessage } from "./message-handler";
+
 // --- Types ---
 
 /**
@@ -9,12 +14,17 @@ export type EmailOptional = z.infer<ReturnType<typeof zEmailOptional>>;
  * Type for a required email (string).
  */
 export type EmailRequired = z.infer<ReturnType<typeof zEmailRequired>>;
-import { MsgType } from "./msg-type";
-import { z } from "zod";
-import { trimOrUndefined } from "../utils/string-utils";
-import { formatErrorMessage } from "./message-handler";
 
 // --- Email Schemas ---
+
+/**
+ * Validates email format.
+ * Returns true if the value is undefined or matches a basic email regex.
+ * @param val - The email string to validate.
+ * @returns True if valid or undefined, false otherwise.
+ */
+export const isEmail = (val: string | undefined): boolean =>
+  val === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
 /**
  * Optional email schema with format validation.
@@ -32,7 +42,7 @@ export const zEmailOptional = (
     .optional()
     .transform(trimOrUndefined)
     .refine(isEmail, {
-      message: formatErrorMessage(msg, msgType, { condition: "a valid email address" }),
+      message: formatErrorMessage(msg, msgType, "must be a valid email address"),
     });
 
 /**
@@ -50,17 +60,8 @@ export const zEmailRequired = (
     .string()
     .trim()
     .nonempty({
-      message: formatErrorMessage(msg, msgType, { condition: "required" }),
+      message: formatErrorMessage(msg, msgType, "is required"),
     })
     .email({
-      message: formatErrorMessage(msg, msgType, { condition: "a valid email address" }),
+      message: formatErrorMessage(msg, msgType, "must be a valid email address"),
     });
-
-/**
- * Validates email format.
- * Returns true if the value is undefined or matches a basic email regex.
- * @param val - The email string to validate.
- * @returns True if valid or undefined, false otherwise.
- */
-export const isEmail = (val: string | undefined): boolean =>
-  val === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);

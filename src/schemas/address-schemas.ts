@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { MsgType } from "./msg-type";
+import { formatErrorMessage } from "./message-handler";
 import { zStringRequired, zStringOptional } from "./string-schemas";
 import { zPostalCodeRequired, zPostalCodeOptional } from "./postal-code-schemas";
 
@@ -77,10 +78,11 @@ export const zAddressOptional = (
         return result;
       })
     ], {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must be a valid address object`,
+      message: formatErrorMessage(
+        fieldName,
+        msgType,
+        "must be a valid address object"
+      ),
     });
 
 /**
@@ -130,10 +132,11 @@ export const zAddressRequired = (
       msgType,
     ),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage(
+      fieldName,
+      msgType,
+      "is required"
+    ),
   })
   .transform((val) => {
     // Remove empty string fields
@@ -169,10 +172,11 @@ export const zAddressSimple = (
       msgType,
     ),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage(
+      fieldName,
+      msgType,
+      "is required"
+    ),
   });
 
 /**
@@ -212,10 +216,11 @@ export const zAddressUS = (
     }),
     country: z.literal("US"),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage(
+      fieldName,
+      msgType,
+      "is required"
+    ),
   })
   .transform((val) => {
     // Remove empty string fields
