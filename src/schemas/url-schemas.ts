@@ -65,7 +65,7 @@ export const zUrlOptional = (
   z
     .string()
     .refine((val) => isValidUrl(val), {
-      message: formatErrorMessage(msg, msgType, { condition: "a valid URL" }),
+      message: formatErrorMessage(msg, msgType, "must be a valid URL"),
     })
     .optional();
 
@@ -83,8 +83,8 @@ export const zUrlRequired = (
   z
     .string()
     .nonempty({
-      message: formatErrorMessage(msg, msgType, { condition: "required" }),
+      message: formatErrorMessage(msg, msgType, "is required"),
     })
     .refine((val) => isValidUrl(val), {
-      message: formatErrorMessage(msg, msgType, { condition: "a valid URL" }),
+      message: formatErrorMessage(msg, msgType, "must be a valid URL"),
     });
