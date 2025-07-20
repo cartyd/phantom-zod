@@ -12,6 +12,7 @@
 import { z } from "zod";
 
 import { MsgType } from "./msg-type";
+import { formatErrorMessage } from "./message-handler";
 
 /**
  * Type for an optional enum value.
@@ -36,10 +37,11 @@ export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
 ) =>
   z
     .enum(values as unknown as [string, ...string[]], {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be one of: ${values.join(", ")}`,
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        `must be one of: ${values.join(", ")}`
+      ),
     })
     .optional();
 
@@ -62,8 +64,9 @@ export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z.enum(values as unknown as [string, ...string[]], {
-    message:
-      msgType === MsgType.Message
-        ? String(msg)
-        : `${msg} must be one of: ${values.join(", ")}`,
+    message: formatErrorMessage(
+      msg,
+      msgType,
+      `must be one of: ${values.join(", ")}`
+    ),
   });
