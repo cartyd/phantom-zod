@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { trimOrEmpty, trimOrUndefined } from "../utils/string-utils";
+import { trimOrEmpty } from "../utils/string-utils";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
 

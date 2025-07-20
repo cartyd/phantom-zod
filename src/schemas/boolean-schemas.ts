@@ -2,19 +2,15 @@ import { z } from "zod";
 import { formatErrorMessage } from "./message-handler";
 import { MsgType } from "./msg-type";
 
-/**
- * Type for an optional boolean string ("true" or "false" or undefined).
- */
+// --- Types ---
+export type BooleanOptional = z.infer<ReturnType<typeof zBooleanOptional>>;
+export type BooleanRequired = z.infer<ReturnType<typeof zBooleanRequired>>;
 export type BooleanStringOptional = z.infer<
-  ReturnType<typeof zBooleanStringOptional>
+ReturnType<typeof zBooleanStringOptional>
 >;
 export type BooleanStringRequired = z.infer<
   ReturnType<typeof zBooleanStringRequired>
 >;
-
-
-
-// Use formatErrorMessage for all error formatting
 
 /**
  * Schema for optional boolean values.
