@@ -4,7 +4,7 @@ import { MsgType } from "./msg-type";
 import { zStringRequired, zStringOptional } from "./string-schemas";
 import { zEmailRequired, zEmailOptional } from "./email-schemas";
 import { zEnumRequired, zEnumOptional } from "./enum-schemas";
-import { getErrorMessage } from "../utils/error-utils";
+import { formatErrorMessage } from "./message-handler";
 
 // --- User Schema Types ---
 
@@ -82,46 +82,51 @@ export const zPassword = (
     .refine(
       (password) => password.length >= minLength,
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be at least ${minLength} characters long`,
+        message: formatErrorMessage(
+          fieldName,
+          msgType,
+          `must be at least ${minLength} characters long`
+        ),
       },
     )
     .refine(
       (password) => !requireUppercase || /[A-Z]/.test(password),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must contain at least one uppercase letter`,
+        message: formatErrorMessage(
+          fieldName,
+          msgType,
+          "must contain at least one uppercase letter"
+        ),
       },
     )
     .refine(
       (password) => !requireLowercase || /[a-z]/.test(password),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must contain at least one lowercase letter`,
+        message: formatErrorMessage(
+          fieldName,
+          msgType,
+          "must contain at least one lowercase letter"
+        ),
       },
     )
     .refine(
       (password) => !requireNumbers || /\d/.test(password),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must contain at least one number`,
+        message: formatErrorMessage(
+          fieldName,
+          msgType,
+          "must contain at least one number"
+        ),
       },
     )
     .refine(
       (password) => !requireSpecialChars || /[!@#$%^&*(),.?":{}|<>]/.test(password),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must contain at least one special character`,
+        message: formatErrorMessage(
+          fieldName,
+          msgType,
+          "must contain at least one special character"
+        ),
       },
     );
 
