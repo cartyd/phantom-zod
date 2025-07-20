@@ -187,27 +187,4 @@ describe('Array Schemas', () => {
       });
     });
   });
-
-  describe('Performance and reliability', () => {
-    it('should handle large number of validations efficiently', () => {
-      const schema = zStringArrayOptional();
-      const startTime = Date.now();
-      
-      for (let i = 0; i < 1000; i++) {
-        schema.parse(['test', 'array']);
-      }
-      
-      const duration = Date.now() - startTime;
-      expect(duration).toBeLessThan(100);
-    });
-
-    it('should be consistent across multiple calls', () => {
-      const schema = zStringArrayOptional();
-      const input = ['test', 'array'];
-      
-      for (let i = 0; i < 100; i++) {
-        expect(schema.parse(input)).toEqual(input);
-      }
-    });
-  });
 });

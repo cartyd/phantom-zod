@@ -29,10 +29,11 @@ export const zStringArrayOptional = (
 ) =>
   z
     .array(z.string({
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} must be an array of strings`,
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "must be an array of strings"
+      ),
     }))
     .optional();
 
@@ -55,8 +56,9 @@ export const zStringArrayRequired = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z.array(z.string()).nonempty({
-    message:
-      msgType === MsgType.Message
-        ? String(msg)
-        : `${msg} must be an array of strings with at least one item`,
+    message: formatErrorMessage(
+      msg,
+      msgType,
+      "must be an array of strings with at least one item"
+    ),
   });

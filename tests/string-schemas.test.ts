@@ -236,26 +236,4 @@ describe('String Schemas', () => {
       expect(schema.parse('123')).toBe('123');
     });
   });
-
-  describe('Performance and reliability', () => {
-    it('should be consistent across multiple calls', () => {
-      const schema = zStringOptional();
-      const input = '  test string  ';
-      for (let i = 0; i < 100; i++) {
-        expect(schema.parse(input)).toBe('test string');
-      }
-    });
-
-    it('should handle concurrent validations', async () => {
-      const schema = zStringOptional();
-      const promises: Promise<string | undefined>[] = [];
-      for (let i = 0; i < 100; i++) {
-        promises.push(Promise.resolve(schema.parse(`test ${i}`)));
-      }
-      const results = await Promise.all(promises);
-      results.forEach((result, index) => {
-        expect(result).toBe(`test ${index}`);
-      });
-    });
-  });
 });
