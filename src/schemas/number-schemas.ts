@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import { getErrorMessage } from "../utils/error-utils";
+import { formatErrorMessage } from "./message-handler";
 /**
  * Enum to specify if the output should be a string or a number.
  */
@@ -87,10 +87,10 @@ export function makeNumberSchema({
       return true;
     },
     {
-      message: getErrorMessage(
+      message: formatErrorMessage(
         msg,
         msgType,
-        `${msg} must be a valid ${type === NumberFieldType.Integer ? "integer" : "number"}${
+        `must be a valid ${type === NumberFieldType.Integer ? "integer" : "number"}${
             typeof min === "number" && typeof max === "number"
               ? ` between ${min} and ${max}`
               : typeof min === "number"
@@ -98,7 +98,7 @@ export function makeNumberSchema({
               : typeof max === "number"
               ? ` less than or equal to ${max}`
               : ""
-          }`,
+          }`
       ),
     },
   );
