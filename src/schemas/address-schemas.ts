@@ -1,17 +1,9 @@
 import { z } from "zod";
-// --- US State Codes ---
-export const US_STATE_CODES = [
-  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
-];
 
-import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
-import { zStringRequired, zStringOptional } from "./string-schemas";
-import { zPostalCodeRequired, zPostalCodeOptional } from "./postal-code-schemas";
+import { MsgType } from "./msg-type";
+import { zPostalCodeRequired } from "./postal-code-schemas";
+import { zStringOptional, zStringRequired } from "./string-schemas";
 
 // --- Address Schema Types ---
 
@@ -161,6 +153,14 @@ export const zAddressRequired = (
  * @param fieldName - The field name for error messages.
  * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
  * @returns Zod schema for a simple address object.
+ * 
+ * @example
+ * const simpleAddressSchema = zAddressSimple("Contact Address");
+ * const result = simpleAddressSchema.parse({
+ *   street: "456 Elm St",
+ *   city: "Los Angeles",
+ *   country: "US"
+ * });
  */
 export const zAddressSimple = (
   fieldName = "Address",
@@ -188,10 +188,30 @@ export const zAddressSimple = (
   });
 
 /**
- * US-specific address schema with state validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a US address object.
+ * Creates a Zod schema for validating US addresses.
+ *
+ * @param fieldName - The display name for the address field, used in error messages. Defaults to "Address".
+ * @param msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+ * @returns A Zod object schema for a US address, including validation for street, street2, city, state (2-letter code), postal code (ZIP), and country ("US").
+ *
+ * @remarks
+ * - The `street` and `city` fields are required strings.
+ * - The `street2` field is optional and will be omitted from the result if empty.
+ * - The `state` field must be a valid 2-letter US state code.
+ * - The `postalCode` field must match US ZIP code formats (e.g., 12345 or 12345-6789).
+ * - The `country` field is always "US" and defaults to "US".
+ * - Error messages are customizable based on the `msgType` parameter.
+ * - The schema transforms the result to remove empty `street2` fields.
+ *
+ * @example
+ * const usAddressSchema = zAddressUS("Shipping Address");
+ * const result = usAddressSchema.parse({
+ *   street: "1600 Pennsylvania Ave NW",
+ *   city: "Washington",
+ *   state: "DC",
+ *   postalCode: "20500",
+ *   country: "US"
+ * });
  */
 export const zAddressUS = (
   fieldName = "Address",
@@ -241,3 +261,12 @@ export const zAddressUS = (
     }
     return result;
   });
+
+// --- US State Codes ---
+export const US_STATE_CODES = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+];
