@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
+import { MONEY_DECIMAL_PATTERN } from "../common/regex-patterns";
 
 // --- Money Schema Types ---
 
@@ -122,7 +123,7 @@ export const zMoneyAmountFromString = (
         "must be a string"
       ),
     })
-    .regex(/^\d+(\.\d+)?$/, {
+    .regex(MONEY_DECIMAL_PATTERN, {
       message: formatErrorMessage(
         fieldName,
         msgType,

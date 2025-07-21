@@ -2,6 +2,12 @@ import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../utils/string-utils";
 import { formatErrorMessage } from "./message-handler";
+import {
+  US_PHONE_E164_PATTERN,
+  US_PHONE_NATIONAL_PATTERN,
+  US_PHONE_11_DIGIT_PATTERN,
+  NON_DIGITS
+} from "../common/regex-patterns";
 
 /**
  * Enum for supported phone number formats.
@@ -48,8 +54,8 @@ export const zPhoneOptional = (
         val === undefined ||
         val === "" ||
         (format === PhoneFormat.E164
-          ? /^\+1\d{10}$/.test(val)
-          : /^\d{10}$/.test(val)),
+          ? US_PHONE_E164_PATTERN.test(val)
+          : US_PHONE_NATIONAL_PATTERN.test(val)),
       {
         message: formatErrorMessage(
           msg,
@@ -88,8 +94,8 @@ export const zPhoneRequired = (
       (val) =>
         typeof val === "string" &&
         (format === PhoneFormat.E164
-          ? /^\+1\d{10}$/.test(val)
-          : /^\d{10}$/.test(val)),
+          ? US_PHONE_E164_PATTERN.test(val)
+          : US_PHONE_NATIONAL_PATTERN.test(val)),
       {
         message: formatErrorMessage(
           msg,
@@ -111,12 +117,12 @@ export const normalizeUSPhone = (
   input: string,
   format: PhoneFormat = PhoneFormat.E164,
 ): string | null => {
-  const digits = input.replace(/\D/g, "");
+  const digits = input.replace(NON_DIGITS, "");
   const isE164 = format === PhoneFormat.E164;
 
-  if (/^\d{10}$/.test(digits)) return isE164 ? `+1${digits}` : digits;
-  if (/^1\d{10}$/.test(digits)) return isE164 ? `+${digits}` : digits.slice(1);
-  if (/^\+1\d{10}$/.test(input))
+  if (US_PHONE_NATIONAL_PATTERN.test(digits)) return isE164 ? `+1${digits}` : digits;
+  if (US_PHONE_11_DIGIT_PATTERN.test(digits)) return isE164 ? `+${digits}` : digits.slice(1);
+  if (US_PHONE_E164_PATTERN.test(input))
     return isE164 ? input : input.replace(/^\+1/, "");
   return null;
 };
@@ -147,5 +153,5 @@ export const phoneRefine = (
 ): boolean =>
   val === undefined ||
   (format === PhoneFormat.E164
-    ? /^\+1\d{10}$/.test(val)
-    : /^\d{10}$/.test(val));
+    ? US_PHONE_E164_PATTERN.test(val)
+    : US_PHONE_NATIONAL_PATTERN.test(val));

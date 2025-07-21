@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
+import { US_ZIP_CODE_PATTERN } from "../common/regex-patterns";
 
 // --- Postal Code Schemas ---
 
@@ -17,7 +18,7 @@ export const zPostalCodeOptional = (
 ) =>
   z
     .string()
-    .regex(/^[\d]{5}(-\d{4})?$/, {
+    .regex(US_ZIP_CODE_PATTERN, {
       message: formatErrorMessage(
         msg,
         msgType,
@@ -71,7 +72,7 @@ export const zPostalCodeRequired = (
         "is required"
       ),
     })
-    .regex(/^[\d]{5}(-\d{4})?$/, {
+    .regex(US_ZIP_CODE_PATTERN, {
       message: formatErrorMessage(
         msg,
         msgType,

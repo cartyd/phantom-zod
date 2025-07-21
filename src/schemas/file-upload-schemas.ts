@@ -3,6 +3,7 @@ import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { zStringRequired, zStringOptional } from "./string-schemas";
 import { formatErrorMessage } from "./message-handler";
+import { FILENAME_INVALID_CHARS_PATTERN } from "../common/regex-patterns";
 
 // --- File Upload Schema Types ---
 
@@ -164,7 +165,7 @@ export const zFilename = (
 ) =>
   zStringRequired(fieldName, msgType)
     .refine(
-      (name) => /^[^<>:"/\\|?*\x00-\x1f]+$/.test(name),
+      (name) => FILENAME_INVALID_CHARS_PATTERN.test(name),
       {
         message: formatErrorMessage(
           fieldName,

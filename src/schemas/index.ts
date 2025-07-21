@@ -16,4 +16,5 @@ export * from "./pagination-schemas";
 export * from "./file-upload-schemas";
 export * from "./user-schemas";
 export * from "./id-list-schemas";
-
+// Common regex patterns
+export * from "../common/regex-patterns";

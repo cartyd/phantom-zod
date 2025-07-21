@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
+import { INTEGER_PATTERN, FLOAT_PATTERN } from "../common/regex-patterns";
 /**
  * Enum to specify if the output should be a string or a number.
  */
@@ -60,7 +61,7 @@ export function makeNumberSchema({
   min?: number;
   max?: number;
 }) {
-  const regex = type === NumberFieldType.Float ? /^-?\d+(\.\d+)?$/ : /^-?\d+$/;
+  const regex = type === NumberFieldType.Float ? FLOAT_PATTERN : INTEGER_PATTERN;
 
   let base: z.ZodTypeAny;
   if (requirement === NumberFieldRequirement.Optional) {

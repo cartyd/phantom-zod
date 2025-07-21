@@ -2,6 +2,7 @@ import { MsgType } from "./msg-type";
 import { z } from "zod";
 import { trimOrUndefined } from "../utils/string-utils";
 import { formatErrorMessage } from "./message-handler";
+import { EMAIL_PATTERN } from "../common/regex-patterns";
 
 // --- Types ---
 
@@ -24,7 +25,7 @@ export type EmailRequired = z.infer<ReturnType<typeof zEmailRequired>>;
  * @returns True if valid or undefined, false otherwise.
  */
 export const isEmail = (val: string | undefined): boolean =>
-  val === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  val === undefined || EMAIL_PATTERN.test(val);
 
 /**
  * Optional email schema with format validation.

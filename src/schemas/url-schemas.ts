@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
+import { IPV4_PATTERN } from "../common/regex-patterns";
 
 // --- URL Schemas ---
 
@@ -44,7 +45,7 @@ const isValidUrl = (url: string): boolean => {
     }
     
     // IP addresses (IPv4) don't need dots in domain validation
-    if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(domainPart)) {
+    if (IPV4_PATTERN.test(domainPart)) {
       return true; // IPv4 address
     }
     

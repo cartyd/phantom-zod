@@ -1,12 +1,9 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "./message-handler";
+import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
 
 // --- UUID Schemas ---
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const UUID_V4_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
  * Optional UUID schema.
@@ -22,7 +19,7 @@ export const zUuidOptional = (
   z
     .string()
     .optional()
-    .refine((val) => val === undefined || val === "" || UUID_REGEX.test(val), {
+    .refine((val) => val === undefined || val === "" || UUID_PATTERN.test(val), {
       message: formatErrorMessage(
         msg,
         msgType,
@@ -50,7 +47,7 @@ export const zUuidRequired = (
         "is required"
       ),
     })
-    .refine((val) => UUID_REGEX.test(val), {
+    .refine((val) => UUID_PATTERN.test(val), {
       message: formatErrorMessage(
         msg,
         msgType,
@@ -73,7 +70,7 @@ export const zUuidV4Optional = (
     .string()
     .optional()
     .refine(
-      (val) => val === undefined || val === "" || UUID_V4_REGEX.test(val),
+      (val) => val === undefined || val === "" || UUID_V4_PATTERN.test(val),
       {
         message: formatErrorMessage(
           msg,
@@ -103,7 +100,7 @@ export const zUuidV4Required = (
         "is required"
       ),
     })
-    .refine((val) => UUID_V4_REGEX.test(val), {
+    .refine((val) => UUID_V4_PATTERN.test(val), {
       message: formatErrorMessage(
         msg,
         msgType,
