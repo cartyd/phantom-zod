@@ -7,14 +7,8 @@ import { FILENAME_INVALID_CHARS_PATTERN } from "../common/regex-patterns";
 
 // --- File Upload Schema Types ---
 
-/**
- * Type for an optional file upload.
- */
-export type FileUploadOptional = z.infer<ReturnType<typeof zFileUploadOptional>>;
 
-/**
- * Type for a required file upload.
- */
+export type FileUploadOptional = z.infer<ReturnType<typeof zFileUploadOptional>>;
 export type FileUploadRequired = z.infer<ReturnType<typeof zFileUploadRequired>>;
 
 // --- Common MIME Types ---
