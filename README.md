@@ -130,26 +130,6 @@ schema.parse(''); // ❌ Throws: "Name is required"
 schema.parse('   '); // ❌ Throws: "Name is required"
 ```
 
-normalizeUSPhone('1234567890'); // '+11234567890'
-normalizeUSPhone('(123) 456-7890'); // '+11234567890'
-normalizeUSPhone('1234567890', PhoneFormat.National); // '1234567890'
-normalizeUSPhone('invalid'); // null
-phoneRefine('+11234567890'); // true
-phoneRefine('1234567890'); // false (when expecting E.164)
-phoneRefine('1234567890', PhoneFormat.National); // true
-phoneRefine(undefined); // true
-trimOrUndefined('  hello  '); // 'hello'
-trimOrUndefined(''); // undefined
-trimOrUndefined('   '); // undefined
-trimOrUndefined(undefined); // undefined
-trimOrEmpty('  hello  '); // 'hello'
-trimOrEmpty(''); // ''
-trimOrEmpty(undefined); // ''
-trimOrEmpty(null); // ''
-isEmail('user@example.com'); // true
-isEmail('invalid-email'); // false
-isEmail(undefined); // true
-
 ## Error Message Customization
 
 All schemas support two types of error messages:
