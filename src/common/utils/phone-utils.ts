@@ -3,8 +3,8 @@ import {
   US_PHONE_NATIONAL_PATTERN,
   US_PHONE_11_DIGIT_PATTERN,
   NON_DIGITS
-} from "../common/regex-patterns";
-import { PhoneFormat } from "../schemas/phone-schemas";
+} from "../regex-patterns";
+import { PhoneFormat } from "../../schemas/phone-schemas";
 import { trimOrUndefined } from "./string-utils";
 
 /**

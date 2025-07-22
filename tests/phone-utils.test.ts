@@ -1,4 +1,4 @@
-import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from "../src/utils/phone-utils";
+import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from "../src/common/utils/phone-utils";
 import { PhoneFormat } from "../src/schemas/phone-schemas";
 
 describe("phone-utils", () => {

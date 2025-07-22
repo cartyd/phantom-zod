@@ -3,7 +3,7 @@ import {
   zPhoneRequired, 
   PhoneFormat
 } from '../src/schemas/phone-schemas';
-import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from '../src/utils/phone-utils';
+import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from '../src/common/utils/phone-utils';
 import { MsgType } from '../src/schemas/msg-type';
 import { runTableTests } from './setup';
 

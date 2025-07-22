@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import { trimOrUndefined, trimOrEmpty } from "../utils/string-utils";
+import { trimOrUndefined, trimOrEmpty } from "../common/utils/string-utils";
 import { formatErrorMessage } from "./message-handler";
 import {
   US_PHONE_E164_PATTERN,
@@ -8,7 +8,7 @@ import {
   US_PHONE_11_DIGIT_PATTERN,
   NON_DIGITS
 } from "../common/regex-patterns";
-import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from "../utils/phone-utils";
+import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from "../common/utils/phone-utils";
 
 /**
  * Enum for supported phone number formats.
