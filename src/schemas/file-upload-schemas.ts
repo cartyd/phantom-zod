@@ -6,8 +6,6 @@ import { formatErrorMessage } from "./message-handler";
 import { FILENAME_INVALID_CHARS_PATTERN } from "../common/regex-patterns";
 
 // --- File Upload Schema Types ---
-
-
 export type FileUploadOptional = z.infer<ReturnType<typeof zFileUploadOptional>>;
 export type FileUploadRequired = z.infer<ReturnType<typeof zFileUploadRequired>>;
 
@@ -100,6 +98,23 @@ export const ALL_MIME_TYPES = [
  * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
  * @returns Zod schema for file size validation.
  */
+/**
+ * Creates a Zod schema for validating file sizes.
+ *
+ * The schema ensures that the value is a number, is positive, and does not exceed the specified maximum size.
+ * Custom error messages can be provided for each validation step.
+ *
+ * @param maxSize - The maximum allowed file size in bytes.
+ * @param fieldName - The name of the field being validated (used in error messages). Defaults to "File Size".
+ * @param msgType - The type of message formatting to use for errors. Defaults to `MsgType.FieldName`.
+ * @returns A Zod number schema with validation for file size.
+ *
+ * @example
+ * // Allow files up to 2MB
+ * const fileSizeSchema = zFileSize(2 * 1024 * 1024, "Upload Size");
+ * fileSizeSchema.parse(1024 * 1024); // Passes
+ * fileSizeSchema.parse(3 * 1024 * 1024); // Throws ZodError
+ */
 export const zFileSize = (
   maxSize: number,
   fieldName = "File Size",
@@ -127,12 +142,25 @@ export const zFileSize = (
     ),
   });
 
+
 /**
  * MIME type validation schema.
  * @param allowedTypes - Array of allowed MIME types.
  * @param fieldName - The field name for error messages.
  * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
  * @returns Zod schema for MIME type validation.
+ *
+ * @example
+ * // Allow only JPEG and PNG images
+ * const mimeSchema = zMimeType(["image/jpeg", "image/png"]);
+ * mimeSchema.parse("image/jpeg"); // Passes
+ * mimeSchema.parse("image/gif"); // Throws ZodError
+ *
+ * @example
+ * // Custom error message
+ * const mimeSchema = zMimeType(["application/pdf"], "Document Type", MsgType.Message);
+ * mimeSchema.parse("application/pdf"); // Passes
+ * mimeSchema.parse("image/png"); // Throws ZodError with custom message
  */
 export const zMimeType = (
   allowedTypes: readonly string[],
@@ -147,11 +175,19 @@ export const zMimeType = (
     ),
   });
 
+
 /**
  * Filename validation schema.
  * @param fieldName - The field name for error messages.
  * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
  * @returns Zod schema for filename validation.
+ *
+ * @example
+ * // Basic usage
+ * const filenameSchema = zFilename();
+ * filenameSchema.parse("myfile.txt"); // Passes
+ * filenameSchema.parse(".hiddenfile"); // Throws ZodError
+ * filenameSchema.parse("file?.txt"); // Throws ZodError (invalid character)
  */
 export const zFilename = (
   fieldName = "Filename",
@@ -329,12 +365,26 @@ export const zFileUploadRequired = (
   });
 };
 
+
 /**
- * Image file upload schema with image-specific validation.
- * @param maxSize - Maximum file size in bytes (default: 5MB).
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for image file upload.
+ * Creates a Zod schema for validating image file uploads.
+ *
+ * @param maxSize - The maximum allowed file size in bytes. Defaults to 5MB.
+ * @param fieldName - The name of the field being validated. Defaults to "Image".
+ * @param msgType - The type of message to use for validation errors. Defaults to `MsgType.FieldName`.
+ * @returns A Zod schema that validates required image uploads with specified constraints.
+ *
+ * @example
+ * // Allow image uploads up to 5MB
+ * const imageSchema = zImageUpload();
+ * imageSchema.parse({
+ *   filename: "photo.jpg",
+ *   mimetype: "image/jpeg",
+ *   size: 1024 * 1024,
+ *   encoding: "7bit",
+ *   originalName: "photo.jpg",
+ *   buffer: Buffer.from([]),
+ * });
  */
 export const zImageUpload = (
   maxSize = 5 * 1024 * 1024, // 5MB
@@ -351,12 +401,26 @@ export const zImageUpload = (
     msgType,
   );
 
+
 /**
- * Document file upload schema with document-specific validation.
- * @param maxSize - Maximum file size in bytes (default: 10MB).
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for document file upload.
+ * Creates a Zod schema for validating a required document upload.
+ *
+ * @param maxSize - The maximum allowed file size in bytes. Defaults to 10MB.
+ * @param fieldName - The name of the field to use in validation messages. Defaults to "Document".
+ * @param msgType - The type of message to use for validation errors. Defaults to `MsgType.FieldName`.
+ * @returns A Zod schema for validating a required document upload with specified constraints.
+ *
+ * @example
+ * // Allow document uploads up to 10MB
+ * const documentSchema = zDocumentUpload();
+ * documentSchema.parse({
+ *   filename: "report.pdf",
+ *   mimetype: "application/pdf",
+ *   size: 1024 * 1024,
+ *   encoding: "7bit",
+ *   originalName: "report.pdf",
+ *   buffer: Buffer.from([]),
+ * });
  */
 export const zDocumentUpload = (
   maxSize = 10 * 1024 * 1024, // 10MB
@@ -373,13 +437,48 @@ export const zDocumentUpload = (
     msgType,
   );
 
+
 /**
- * Multiple file upload schema.
- * @param config - Configuration object for file validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxFiles - Maximum number of files allowed (default: 5).
- * @returns Zod schema for multiple file uploads.
+ * Creates a Zod schema for validating an array of file uploads.
+ *
+ * @param config - Optional configuration for file validation, including:
+ *   - `maxSize`: Maximum allowed file size in bytes.
+ *   - `allowedTypes`: Array of allowed MIME types.
+ *   - `requireExtension`: Whether a file extension is required.
+ * @param fieldName - The name of the field being validated (default: "Files").
+ * @param msgType - The type of message formatting to use for error messages.
+ * @param maxFiles - The maximum number of files allowed in the array (default: 5).
+ * @returns A Zod array schema that:
+ *   - Requires at least one file.
+ *   - Limits the number of files to `maxFiles`.
+ *   - Applies the file validation schema to each file in the array.
+ *
+ * @example
+ * // Allow up to 3 image files, each max 2MB
+ * const multiImageSchema = zMultipleFileUpload(
+ *   { maxSize: 2 * 1024 * 1024, allowedTypes: IMAGE_MIME_TYPES, requireExtension: true },
+ *   "Images",
+ *   MsgType.FieldName,
+ *   3
+ * );
+ * multiImageSchema.parse([
+ *   {
+ *     filename: "photo1.jpg",
+ *     mimetype: "image/jpeg",
+ *     size: 1024 * 1024,
+ *     encoding: "7bit",
+ *     originalName: "photo1.jpg",
+ *     buffer: Buffer.from([]),
+ *   },
+ *   {
+ *     filename: "photo2.png",
+ *     mimetype: "image/png",
+ *     size: 512 * 1024,
+ *     encoding: "7bit",
+ *     originalName: "photo2.png",
+ *     buffer: Buffer.from([]),
+ *   }
+ * ]);
  */
 export const zMultipleFileUpload = (
   config: {
