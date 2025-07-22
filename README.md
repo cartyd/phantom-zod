@@ -1,3 +1,4 @@
+# © 2025 Dave Carty. Licensed under the ISC License.
 # Phantom Zod
 
 A TypeScript-first schema validation library built on top of Zod, providing pre-built validators for common data types with comprehensive error handling and customizable messages.
