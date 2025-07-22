@@ -33,26 +33,24 @@ export const zStringOptional = (
 ) => {
   let schema = z
     .string({
-      message: formatErrorMessage(
+      message: formatErrorMessage({
         msg,
         msgType,
-        "string.mustBeString",
-        undefined,
-        locale
-      ),
+        messageKey: "string.mustBeString",
+        locale,
+      }),
     })
     .optional()
     .transform(trimOrEmpty)
     .refine(
       (val: string) => typeof val === "string",
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          "string.invalid",
-          undefined,
-          locale
-        ),
+          messageKey: "string.invalid",
+          locale,
+        }),
       },
     );
 
@@ -61,13 +59,13 @@ export const zStringOptional = (
     schema = schema.refine(
       (val: string) => !val || val.length >= minLength,
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          "string.tooShort",
-          { min: String(minLength) },
-          locale
-        ),
+          messageKey: "string.tooShort",
+          params: { min: String(minLength) },
+          locale,
+        }),
       },
     );
   }
@@ -76,13 +74,13 @@ export const zStringOptional = (
     schema = schema.refine(
       (val: string) => !val || val.length <= maxLength,
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          "string.tooLong",
-          { max: String(maxLength) },
-          locale
-        ),
+          messageKey: "string.tooLong",
+          params: { max: String(maxLength) },
+          locale,
+        }),
       },
     );
   }
@@ -120,25 +118,23 @@ export const zStringRequired = (
 ) => {
   let schema = z
     .string({
-      message: formatErrorMessage(
+      message: formatErrorMessage({
         msg,
         msgType,
-        "string.mustBeString",
-        undefined,
-        locale
-      ),
+        messageKey: "string.mustBeString",
+        locale,
+      }),
     })
     .transform((val) => val.trim())
     .refine(
       (trimmed: string) => trimmed.length > 0,
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          "string.required",
-          undefined,
-          locale
-        ),
+          messageKey: "string.required",
+          locale,
+        }),
       },
     );
 
@@ -147,13 +143,13 @@ export const zStringRequired = (
     schema = schema.refine(
       (val: string) => val.length >= minLength,
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          "string.tooShort",
-          { min: String(minLength) },
-          locale
-        ),
+          messageKey: "string.tooShort",
+          params: { min: String(minLength) },
+          locale,
+        }),
       },
     );
   }
@@ -163,13 +159,13 @@ export const zStringRequired = (
     schema = schema.refine(
       (val: string) => val.length <= maxLength,
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          "string.tooLong",
-          { max: String(maxLength) },
-          locale
-        ),
+          messageKey: "string.tooLong",
+          params: { max: String(maxLength) },
+          locale,
+        }),
       },
     );
   }

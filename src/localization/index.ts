@@ -1,3 +1,13 @@
+// Import types first
+import type { 
+  LocaleCode, 
+  LocalizationMessages, 
+  MessageParams, 
+  MessageKeyPath,
+  MessageRetriever,
+  LocaleConfig 
+} from './types';
+
 // Export types
 export type { 
   LocaleCode, 
@@ -16,7 +26,7 @@ import { localizationManager } from './manager';
 import enMessages from './locales/en.json';
 
 // Register English as default and fallback locale
-localizationManager.registerMessages(enMessages);
+localizationManager.registerMessages(enMessages as LocalizationMessages);
 localizationManager.setFallbackLocale('en');
 
 /**
