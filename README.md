@@ -1,4 +1,4 @@
-# Simplicate Schema
+# Phantom Zod
 
 A TypeScript-first schema validation library built on top of Zod, providing pre-built validators for common data types with comprehensive error handling and customizable messages.
 
@@ -16,13 +16,13 @@ A TypeScript-first schema validation library built on top of Zod, providing pre-
 ## Installation
 
 ```bash
-npm install simplicate-schema
+npm install phantom-zod
 ```
 
 ## Quick Start
 
 ```typescript
-import { zEmailRequired, zPhoneOptional, zStringRequired } from 'simplicate-schema';
+import { zEmailRequired, zPhoneOptional, zStringRequired } from 'phantom-zod';
 
 // Email validation
 const emailSchema = zEmailRequired('Email');
@@ -45,7 +45,7 @@ const name = nameSchema.parse('  John Doe  '); // ✅ Transforms to 'John Doe'
 Validates optional email addresses with automatic trimming.
 
 ```typescript
-import { zEmailOptional, MsgType } from 'simplicate-schema';
+import { zEmailOptional, MsgType } from 'phantom-zod';
 
 const schema = zEmailOptional('Email Address');
 schema.parse('user@example.com'); // ✅ 'user@example.com'
@@ -62,7 +62,7 @@ customSchema.parse('invalid'); // ❌ Throws: "Invalid email format"
 Validates required email addresses.
 
 ```typescript
-import { zEmailRequired } from 'simplicate-schema';
+import { zEmailRequired } from 'phantom-zod';
 
 const schema = zEmailRequired('Email');
 schema.parse('user@example.com'); // ✅ 'user@example.com'
@@ -76,7 +76,7 @@ schema.parse('invalid'); // ❌ Throws: "Email must be a valid email address"
 Validates and normalizes optional US phone numbers.
 
 ```typescript
-import { zPhoneOptional, PhoneFormat } from 'simplicate-schema';
+import { zPhoneOptional, PhoneFormat } from 'phantom-zod';
 
 // E.164 format (default)
 const e164Schema = zPhoneOptional('Phone');
@@ -95,7 +95,7 @@ nationalSchema.parse('11234567890'); // ✅ '1234567890'
 Validates required phone numbers.
 
 ```typescript
-import { zPhoneRequired, PhoneFormat } from 'simplicate-schema';
+import { zPhoneRequired, PhoneFormat } from 'phantom-zod';
 
 const schema = zPhoneRequired('Mobile');
 schema.parse('1234567890'); // ✅ '+11234567890'
@@ -109,7 +109,7 @@ schema.parse('123'); // ❌ Throws: "Mobile is invalid. Example of valid format:
 Validates optional strings with automatic trimming.
 
 ```typescript
-import { zStringOptional } from 'simplicate-schema';
+import { zStringOptional } from 'phantom-zod';
 
 const schema = zStringOptional('Name');
 schema.parse('  John Doe  '); // ✅ 'John Doe'
@@ -122,7 +122,7 @@ schema.parse('   '); // ✅ '' (whitespace trimmed to empty)
 Validates required strings with trimming and non-empty validation.
 
 ```typescript
-import { zStringRequired } from 'simplicate-schema';
+import { zStringRequired } from 'phantom-zod';
 
 const schema = zStringRequired('Name');
 schema.parse('  John Doe  '); // ✅ 'John Doe'
@@ -138,7 +138,7 @@ schema.parse('   '); // ❌ Throws: "Name is required"
 Normalizes US phone numbers to E.164 or national format.
 
 ```typescript
-import { normalizeUSPhone, PhoneFormat } from 'simplicate-schema';
+import { normalizeUSPhone, PhoneFormat } from 'phantom-zod';
 
 normalizeUSPhone('1234567890'); // '+11234567890'
 normalizeUSPhone('(123) 456-7890'); // '+11234567890'
@@ -150,7 +150,7 @@ normalizeUSPhone('invalid'); // null
 Validates phone number format.
 
 ```typescript
-import { phoneRefine, PhoneFormat } from 'simplicate-schema';
+import { phoneRefine, PhoneFormat } from 'phantom-zod';
 
 phoneRefine('+11234567890'); // true
 phoneRefine('1234567890'); // false (when expecting E.164)
@@ -164,7 +164,7 @@ phoneRefine(undefined); // true
 Trims string and returns undefined if empty.
 
 ```typescript
-import { trimOrUndefined } from 'simplicate-schema';
+import { trimOrUndefined } from 'phantom-zod';
 
 trimOrUndefined('  hello  '); // 'hello'
 trimOrUndefined(''); // undefined
@@ -176,7 +176,7 @@ trimOrUndefined(undefined); // undefined
 Trims string and returns empty string if undefined.
 
 ```typescript
-import { trimOrEmpty } from 'simplicate-schema';
+import { trimOrEmpty } from 'phantom-zod';
 
 trimOrEmpty('  hello  '); // 'hello'
 trimOrEmpty(''); // ''
@@ -190,7 +190,7 @@ trimOrEmpty(null); // ''
 Validates email format.
 
 ```typescript
-import { isEmail } from 'simplicate-schema';
+import { isEmail } from 'phantom-zod';
 
 isEmail('user@example.com'); // true
 isEmail('invalid-email'); // false
@@ -214,7 +214,7 @@ schema.parse('invalid'); // "Email Address must be a valid email address"
 Use `MsgType.Message` to provide complete custom error messages.
 
 ```typescript
-import { zEmailRequired, MsgType } from 'simplicate-schema';
+import { zEmailRequired, MsgType } from 'phantom-zod';
 
 const schema = zEmailRequired('Please enter a valid email address', MsgType.Message);
 schema.parse('invalid'); // "Please enter a valid email address"
@@ -228,7 +228,7 @@ The library supports two phone number formats:
 International format with country code: `+11234567890`
 
 ```typescript
-import { zPhoneOptional, PhoneFormat } from 'simplicate-schema';
+import { zPhoneOptional, PhoneFormat } from 'phantom-zod';
 
 const schema = zPhoneOptional('Phone', PhoneFormat.E164);
 // or simply:
@@ -239,7 +239,7 @@ const schema = zPhoneOptional('Phone'); // E.164 is default
 US national format without country code: `1234567890`
 
 ```typescript
-import { zPhoneOptional, PhoneFormat } from 'simplicate-schema';
+import { zPhoneOptional, PhoneFormat } from 'phantom-zod';
 
 const schema = zPhoneOptional('Phone', PhoneFormat.National);
 ```
@@ -250,7 +250,7 @@ const schema = zPhoneOptional('Phone', PhoneFormat.National);
 
 ```typescript
 import { z } from 'zod';
-import { zEmailRequired, zPhoneOptional, zStringRequired } from 'simplicate-schema';
+import { zEmailRequired, zPhoneOptional, zStringRequired } from 'phantom-zod';
 
 const userSchema = z.object({
   name: zStringRequired('Full Name'),
@@ -282,7 +282,7 @@ const result = userSchema.parse(userData);
 
 ```typescript
 import { ZodError } from 'zod';
-import { zEmailRequired } from 'simplicate-schema';
+import { zEmailRequired } from 'phantom-zod';
 
 const schema = zEmailRequired('Email');
 
@@ -300,7 +300,7 @@ try {
 The library is built with TypeScript and provides full type safety:
 
 ```typescript
-import { zEmailRequired, zPhoneOptional } from 'simplicate-schema';
+import { zEmailRequired, zPhoneOptional } from 'phantom-zod';
 
 const emailSchema = zEmailRequired();
 const phoneSchema = zPhoneOptional();

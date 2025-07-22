@@ -1,5 +1,5 @@
 {
-  "name": "simplicate-schema",
+  "name": "phantom-zod",
   "version": "1.0.0",
   "description": "Schema validation library",
   "main": "dist/index.js",
