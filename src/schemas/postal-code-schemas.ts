@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import { US_ZIP_CODE_PATTERN } from "../common/regex-patterns";
 
 // --- Postal Code Schemas ---

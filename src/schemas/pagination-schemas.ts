@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { MsgType } from "./msg-type";
 import { zStringOptional } from "./string-schemas";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 
 // --- Pagination Schema Types ---
 

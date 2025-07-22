@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import { MsgType } from "./msg-type";
 
 export enum DateFormat {

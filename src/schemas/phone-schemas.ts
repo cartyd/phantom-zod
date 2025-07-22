@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../common/utils/string-utils";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import {
   US_PHONE_E164_PATTERN,
   US_PHONE_NATIONAL_PATTERN,

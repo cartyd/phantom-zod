@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 
 // --- String Schemas ---
 

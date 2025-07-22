@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import { MONEY_DECIMAL_PATTERN } from "../common/regex-patterns";
 
 // --- Money Schema Types ---

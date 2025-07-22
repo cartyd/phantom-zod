@@ -1,4 +1,4 @@
-import { MsgType } from "./msg-type";
+import { MsgType } from "../schemas/msg-type";
 
 /**
  * Formats an error message based on the message type and an optional condition.

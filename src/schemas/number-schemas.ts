@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import { INTEGER_PATTERN, FLOAT_PATTERN } from "../common/regex-patterns";
 /**
  * Enum to specify if the output should be a string or a number.

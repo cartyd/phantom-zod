@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { MsgType } from "./msg-type";
 import { zStringRequired, zStringOptional } from "./string-schemas";
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import { FILENAME_INVALID_CHARS_PATTERN } from "../common/regex-patterns";
 
 // --- File Upload Schema Types ---

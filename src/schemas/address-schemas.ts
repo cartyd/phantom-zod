@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { formatErrorMessage } from "./message-handler";
+import { formatErrorMessage } from "../common/message-handler";
 import { MsgType } from "./msg-type";
 import { zPostalCodeRequired } from "./postal-code-schemas";
 import { zStringOptional, zStringRequired } from "./string-schemas";
