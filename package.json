@@ -18,7 +18,7 @@
     "validation",
     "typescript"
   ],
-  "author": "",
+  "author": "Dave Carty",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^30.0.0",
