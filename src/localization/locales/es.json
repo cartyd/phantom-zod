@@ -1,0 +1,62 @@
+{
+  "locale": "es",
+  "common": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBe": "debe ser",
+    "cannotBe": "no puede ser",
+    "tooShort": "es demasiado corto",
+    "tooLong": "es demasiado largo",
+    "tooSmall": "es demasiado pequeño",
+    "tooBig": "es demasiado grande",
+    "outOfRange": "está fuera de rango",
+    "notFound": "no encontrado",
+    "duplicate": "es duplicado",
+    "empty": "está vacío",
+    "notEmpty": "no debe estar vacío"
+  },
+  "string": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "tooShort": "es demasiado corto (mínimo: {min} caracteres)",
+    "tooLong": "es demasiado largo (máximo: {max} caracteres)",
+    "empty": "está vacío",
+    "mustBeString": "debe ser una cadena de texto",
+    "trimmed": "será recortado"
+  },
+  "email": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidEmail": "debe ser una dirección de correo electrónico válida",
+    "invalidFormat": "tiene formato de correo electrónico inválido",
+    "domainInvalid": "tiene dominio inválido"
+  },
+  "phone": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidPhone": "debe ser un número de teléfono válido",
+    "invalidE164Format": "es inválido. Ejemplo de formato válido: {example}",
+    "invalidNationalFormat": "es inválido. Ejemplo de formato válido: {example}",
+    "invalidFormat": "tiene formato inválido",
+    "examples": {
+      "e164": "+11234567890",
+      "national": "1234567890"
+    }
+  },
+  "uuid": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidUuid": "debe ser un UUID válido",
+    "mustBeValidUuidV4": "debe ser un UUIDv4 válido",
+    "invalidFormat": "tiene formato UUID inválido"
+  },
+  "number": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "tooSmall": "es demasiado pequeño (mínimo: {min})",
+    "tooBig": "es demasiado grande (máximo: {max})",
+    "mustBeNumber": "debe ser un número",
+    "mustBeInteger": "debe ser un número entero",
+    "outOfRange": "está fuera de rango ({min} a {max})"
+  }
+}

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "../common/message-handler";
+import type { LocaleCode } from "../localization/types";
 
 // --- String Schemas ---
 
@@ -26,17 +27,68 @@ import { formatErrorMessage } from "../common/message-handler";
 export const zStringOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-) =>
-  z
-    .string()
+  minLength?: number,
+  maxLength?: number,
+  locale: LocaleCode = 'en'
+) => {
+  let schema = z
+    .string({
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "string.mustBeString",
+        undefined,
+        locale
+      ),
+    })
     .optional()
     .transform(trimOrEmpty)
     .refine(
       (val: string) => typeof val === "string",
       {
-        message: formatErrorMessage(msg, msgType),
+        message: formatErrorMessage(
+          msg,
+          msgType,
+          "string.invalid",
+          undefined,
+          locale
+        ),
       },
     );
+
+  // Add length constraints if provided
+  if (minLength !== undefined) {
+    schema = schema.refine(
+      (val: string) => !val || val.length >= minLength,
+      {
+        message: formatErrorMessage(
+          msg,
+          msgType,
+          "string.tooShort",
+          { min: String(minLength) },
+          locale
+        ),
+      },
+    );
+  }
+
+  if (maxLength !== undefined) {
+    schema = schema.refine(
+      (val: string) => !val || val.length <= maxLength,
+      {
+        message: formatErrorMessage(
+          msg,
+          msgType,
+          "string.tooLong",
+          { max: String(maxLength) },
+          locale
+        ),
+      },
+    );
+  }
+
+  return schema;
+};
 
 /**
  * Required string schema with trimming and custom error message.
@@ -62,12 +114,65 @@ export const zStringOptional = (
 export const zStringRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-) =>
-  z
+  minLength = 1,
+  maxLength?: number,
+  locale: LocaleCode = 'en'
+) => {
+  let schema = z
     .string({
-      message: formatErrorMessage(msg, msgType),
+      message: formatErrorMessage(
+        msg,
+        msgType,
+        "string.mustBeString",
+        undefined,
+        locale
+      ),
     })
     .transform((val) => val.trim())
-    .refine((trimmed: string) => trimmed.length > 0, {
-      message: formatErrorMessage(msg, msgType, "is required"),
-    });
+    .refine(
+      (trimmed: string) => trimmed.length > 0,
+      {
+        message: formatErrorMessage(
+          msg,
+          msgType,
+          "string.required",
+          undefined,
+          locale
+        ),
+      },
+    );
+
+  // Add minimum length validation if greater than 1
+  if (minLength > 1) {
+    schema = schema.refine(
+      (val: string) => val.length >= minLength,
+      {
+        message: formatErrorMessage(
+          msg,
+          msgType,
+          "string.tooShort",
+          { min: String(minLength) },
+          locale
+        ),
+      },
+    );
+  }
+
+  // Add maximum length validation if provided
+  if (maxLength !== undefined) {
+    schema = schema.refine(
+      (val: string) => val.length <= maxLength,
+      {
+        message: formatErrorMessage(
+          msg,
+          msgType,
+          "string.tooLong",
+          { max: String(maxLength) },
+          locale
+        ),
+      },
+    );
+  }
+
+  return schema;
+};

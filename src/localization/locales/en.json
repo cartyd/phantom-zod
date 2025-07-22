@@ -1,0 +1,189 @@
+{
+  "locale": "en",
+  "common": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBe": "must be",
+    "cannotBe": "cannot be",
+    "tooShort": "is too short",
+    "tooLong": "is too long",
+    "tooSmall": "is too small",
+    "tooBig": "is too big",
+    "outOfRange": "is out of range",
+    "notFound": "not found",
+    "duplicate": "is duplicate",
+    "empty": "is empty",
+    "notEmpty": "must not be empty"
+  },
+  "string": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "tooShort": "is too short (minimum: {min} characters)",
+    "tooLong": "is too long (maximum: {max} characters)",
+    "empty": "is empty",
+    "mustBeString": "must be a string",
+    "trimmed": "will be trimmed"
+  },
+  "email": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidEmail": "must be a valid email address",
+    "invalidFormat": "has invalid email format",
+    "domainInvalid": "has invalid domain"
+  },
+  "phone": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidPhone": "must be a valid phone number",
+    "invalidE164Format": "is invalid. Example of valid format: {example}",
+    "invalidNationalFormat": "is invalid. Example of valid format: {example}",
+    "invalidFormat": "has invalid format",
+    "examples": {
+      "e164": "+11234567890",
+      "national": "1234567890"
+    }
+  },
+  "uuid": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidUuid": "must be a valid UUID",
+    "mustBeValidUuidV4": "must be a valid UUIDv4",
+    "invalidFormat": "has invalid UUID format"
+  },
+  "url": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidUrl": "must be a valid URL",
+    "invalidProtocol": "has invalid protocol",
+    "invalidDomain": "has invalid domain",
+    "missingProtocol": "is missing protocol"
+  },
+  "number": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "tooSmall": "is too small (minimum: {min})",
+    "tooBig": "is too big (maximum: {max})",
+    "mustBeNumber": "must be a number",
+    "mustBeInteger": "must be an integer",
+    "mustBeFloat": "must be a float",
+    "mustBePositive": "must be positive",
+    "mustBeNegative": "must be negative",
+    "mustBeNonNegative": "must be non-negative",
+    "mustBeNonPositive": "must be non-positive",
+    "outOfRange": "is out of range ({min} to {max})",
+    "invalidDecimalPlaces": "has too many decimal places (maximum: {max})"
+  },
+  "boolean": {
+    "invalid": "is invalid",
+    "mustBeBoolean": "must be a boolean value",
+    "mustBeBooleanString": "must be a boolean string (\"true\" or \"false\")",
+    "invalidBooleanString": "must be \"true\" or \"false\""
+  },
+  "array": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "empty": "is empty",
+    "tooSmall": "must have at least {min} items",
+    "tooBig": "must have at most {max} items",
+    "mustBeArray": "must be an array",
+    "mustBeStringArray": "must be an array of strings",
+    "mustHaveMinItems": "must have at least {min} items",
+    "mustHaveMaxItems": "must have at most {max} items",
+    "mustNotBeEmpty": "must not be empty",
+    "duplicateItems": "contains duplicate items"
+  },
+  "enum": {
+    "invalid": "is invalid",
+    "mustBeOneOf": "must be one of: {values}",
+    "invalidOption": "is not a valid option",
+    "availableOptions": "available options are: {values}"
+  },
+  "date": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidDate": "must be a valid date",
+    "mustBeValidDateTime": "must be a valid date and time",
+    "invalidFormat": "has invalid format (expected: {format})",
+    "invalidDateString": "is not a valid date string",
+    "examples": {
+      "date": "YYYY-MM-DD",
+      "dateTime": "YYYY-MM-DDTHH:mm:ssZ"
+    }
+  },
+  "money": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidAmount": "must be a valid amount",
+    "mustBeValidCurrency": "must be a valid currency",
+    "mustBePositiveAmount": "must be a positive amount",
+    "invalidCurrencyCode": "has invalid currency code",
+    "invalidDecimalPlaces": "has too many decimal places (maximum: {max})",
+    "mustBeMoneyObject": "must be a valid money object"
+  },
+  "postalCode": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidZipCode": "must be a valid ZIP code",
+    "mustBeValidPostalCode": "must be a valid postal code",
+    "invalidFormat": "has invalid format",
+    "examples": {
+      "us": "12345 or 12345-6789",
+      "uk": "SW1A 1AA",
+      "ca": "K1A 0A6"
+    }
+  },
+  "fileUpload": {
+    "invalid": "is invalid",
+    "tooBig": "is too big (maximum: {maxSize})",
+    "mustBeValidFile": "must be a valid file",
+    "fileSizeExceeded": "exceeds maximum file size ({maxSize})",
+    "invalidFileType": "has invalid file type",
+    "invalidMimeType": "has invalid MIME type (allowed: {allowedTypes})",
+    "invalidFileName": "has invalid file name",
+    "fileRequired": "file is required",
+    "examples": {
+      "maxSize": "Maximum size: {size}",
+      "allowedTypes": "Allowed types: {types}"
+    }
+  },
+  "pagination": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "invalidPageNumber": "has invalid page number",
+    "invalidLimit": "has invalid limit (must be between {min} and {max})",
+    "invalidOffset": "has invalid offset",
+    "invalidCursor": "has invalid cursor",
+    "invalidSortOrder": "has invalid sort order (must be 'asc' or 'desc')",
+    "pageOutOfRange": "page is out of range",
+    "limitExceeded": "limit exceeded (maximum: {max})"
+  },
+  "address": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidAddress": "must be a valid address",
+    "streetRequired": "street is required",
+    "cityRequired": "city is required",
+    "stateRequired": "state is required",
+    "countryRequired": "country is required",
+    "postalCodeRequired": "postal code is required",
+    "invalidState": "has invalid state code",
+    "invalidCountry": "has invalid country code"
+  },
+  "user": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "usernameInvalid": "has invalid username format",
+    "passwordWeak": "password is too weak",
+    "passwordTooShort": "password is too short (minimum: {min} characters)",
+    "passwordMissingUppercase": "password must contain at least one uppercase letter",
+    "passwordMissingLowercase": "password must contain at least one lowercase letter",
+    "passwordMissingNumbers": "password must contain at least one number",
+    "passwordMissingSpecialChars": "password must contain at least one special character",
+    "passwordsDoNotMatch": "passwords do not match",
+    "emailAlreadyExists": "email already exists",
+    "usernameAlreadyExists": "username already exists",
+    "invalidRole": "has invalid role",
+    "invalidAccountType": "has invalid account type",
+    "termsNotAccepted": "terms and conditions must be accepted"
+  }
+}
