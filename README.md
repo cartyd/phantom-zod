@@ -130,72 +130,25 @@ schema.parse(''); // ❌ Throws: "Name is required"
 schema.parse('   '); // ❌ Throws: "Name is required"
 ```
 
-## Utility Functions
-
-### Phone Utilities
-
-#### `normalizeUSPhone(input, format?)`
-Normalizes US phone numbers to E.164 or national format.
-
-```typescript
-import { normalizeUSPhone, PhoneFormat } from 'phantom-zod';
-
 normalizeUSPhone('1234567890'); // '+11234567890'
 normalizeUSPhone('(123) 456-7890'); // '+11234567890'
 normalizeUSPhone('1234567890', PhoneFormat.National); // '1234567890'
 normalizeUSPhone('invalid'); // null
-```
-
-#### `phoneRefine(val, format?)`
-Validates phone number format.
-
-```typescript
-import { phoneRefine, PhoneFormat } from 'phantom-zod';
-
 phoneRefine('+11234567890'); // true
 phoneRefine('1234567890'); // false (when expecting E.164)
 phoneRefine('1234567890', PhoneFormat.National); // true
 phoneRefine(undefined); // true
-```
-
-### String Utilities
-
-#### `trimOrUndefined(value)`
-Trims string and returns undefined if empty.
-
-```typescript
-import { trimOrUndefined } from 'phantom-zod';
-
 trimOrUndefined('  hello  '); // 'hello'
 trimOrUndefined(''); // undefined
 trimOrUndefined('   '); // undefined
 trimOrUndefined(undefined); // undefined
-```
-
-#### `trimOrEmpty(value)`
-Trims string and returns empty string if undefined.
-
-```typescript
-import { trimOrEmpty } from 'phantom-zod';
-
 trimOrEmpty('  hello  '); // 'hello'
 trimOrEmpty(''); // ''
 trimOrEmpty(undefined); // ''
 trimOrEmpty(null); // ''
-```
-
-### Email Utilities
-
-#### `isEmail(val)`
-Validates email format.
-
-```typescript
-import { isEmail } from 'phantom-zod';
-
 isEmail('user@example.com'); // true
 isEmail('invalid-email'); // false
 isEmail(undefined); // true
-```
 
 ## Error Message Customization
 

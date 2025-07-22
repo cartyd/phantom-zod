@@ -113,7 +113,7 @@ export const zPhoneRequired = (
  * @param format - The desired phone format (E.164 or National). Defaults to E.164.
  * @returns The normalized phone number or null if invalid.
  */
-export const normalizeUSPhone = (
+const normalizeUSPhone = (
   input: string,
   format: PhoneFormat = PhoneFormat.E164,
 ): string | null => {
@@ -133,7 +133,7 @@ export const normalizeUSPhone = (
  * @param format - The desired phone format (E.164 or National). Defaults to E.164.
  * @returns The normalized phone number, null, or undefined.
  */
-export const phoneTransformAndValidate = (
+const phoneTransformAndValidate = (
   val: unknown,
   format: PhoneFormat = PhoneFormat.E164,
 ): string | undefined | null => {
@@ -147,7 +147,7 @@ export const phoneTransformAndValidate = (
  * @param format - The expected phone format (E.164 or National). Defaults to E.164.
  * @returns True if valid, undefined, or null; false otherwise.
  */
-export const phoneRefine = (
+const phoneRefine = (
   val: string | undefined,
   format: PhoneFormat = PhoneFormat.E164,
 ): boolean =>
