@@ -1,11 +1,9 @@
 import { 
   zPhoneOptional, 
   zPhoneRequired, 
-  PhoneFormat, 
-  normalizeUSPhone, 
-  phoneTransformAndValidate, 
-  phoneRefine 
+  PhoneFormat
 } from '../src/schemas/phone-schemas';
+import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from '../src/utils/phone-utils';
 import { MsgType } from '../src/schemas/msg-type';
 import { runTableTests } from './setup';
 
