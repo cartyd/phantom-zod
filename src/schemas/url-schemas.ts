@@ -2,6 +2,7 @@ import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "../common/message-handler";
 import { IPV4_PATTERN } from "../common/regex-patterns";
+import type { LocaleCode } from "../localization/types";
 
 // --- URL Schemas ---
 
@@ -62,11 +63,12 @@ const isValidUrl = (url: string): boolean => {
 export const zUrlOptional = (
   msg = "URL",
   msgType: MsgType = MsgType.FieldName,
+  locale: LocaleCode = 'en'
 ) =>
   z
     .string()
     .refine((val) => isValidUrl(val), {
-      message: formatErrorMessage(msg, msgType, "must be a valid URL"),
+        message: formatErrorMessage({ msg, msgType, messageKey: "url.mustBeValidUrl", locale }),
     })
     .optional();
 
@@ -80,12 +82,13 @@ export const zUrlOptional = (
 export const zUrlRequired = (
   msg = "URL",
   msgType: MsgType = MsgType.FieldName,
+  locale: LocaleCode = 'en'
 ) =>
   z
     .string()
     .nonempty({
-      message: formatErrorMessage(msg, msgType, "is required"),
+      message: formatErrorMessage({ msg, msgType, messageKey: "url.required", locale }),
     })
     .refine((val) => isValidUrl(val), {
-      message: formatErrorMessage(msg, msgType, "must be a valid URL"),
+        message: formatErrorMessage({ msg, msgType, messageKey: "url.mustBeValidUrl", locale }),
     });

@@ -78,7 +78,7 @@ describe('User Schemas', () => {
 
       it('should reject password below custom minimum length', () => {
         const customSchema = zPassword('Password', MsgType.FieldName, 12);
-        expect(() => customSchema.parse('Short1!')).toThrow('Password must be at least 12 characters long');
+        expect(() => customSchema.parse('Short1!')).toThrow('Password password is too short (minimum: 12 characters)');
       });
 
       it('should allow passwords without uppercase when not required', () => {
@@ -95,7 +95,7 @@ describe('User Schemas', () => {
     describe('Error messages', () => {
       it('should use custom field name in error messages', () => {
         const customSchema = zPassword('Secret');
-        expect(() => customSchema.parse('weak')).toThrow('Secret must be at least 8 characters long');
+        expect(() => customSchema.parse('weak')).toThrow('Secret password is too short (minimum: 8 characters)');
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -187,7 +187,7 @@ describe('User Schemas', () => {
 
       it('should reject username below custom minimum length', () => {
         const customSchema = zUsername('Username', MsgType.FieldName, 5);
-        expect(() => customSchema.parse('user')).toThrow('Username must be at least 5 characters long');
+        expect(() => customSchema.parse('user')).toThrow('Username is invalid');
       });
 
       it('should accept username with custom maximum length', () => {
@@ -197,7 +197,7 @@ describe('User Schemas', () => {
 
       it('should reject username above custom maximum length', () => {
         const customSchema = zUsername('Username', MsgType.FieldName, 3, 10);
-        expect(() => customSchema.parse('verylongusername')).toThrow('Username must be at most 10 characters long');
+        expect(() => customSchema.parse('verylongusername')).toThrow('Username is invalid');
       });
     });
   });

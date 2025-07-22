@@ -38,36 +38,44 @@ export const zPagination = (
 ) =>
   z.object({
     page: z.number({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "page number must be an integer"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "numberRequired",
+        params: { fieldName, constraint: "integer" },
+        locale: "en"
+      }),
     }).int().nonnegative().default(0),
     limit: z.number({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `limit must be an integer between 1 and ${maxLimit}`
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "limitRange",
+        params: { fieldName, min: 1, max: maxLimit },
+        locale: "en"
+      }),
     }).int().positive().max(maxLimit).default(defaultLimit),
     sort: zStringOptional(
       msgType === MsgType.Message ? "Sort parameter is optional" : "Sort",
       msgType,
     ),
     order: z.enum(["asc", "desc"], {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "order must be either 'asc' or 'desc'"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "orderChoice",
+        params: { fieldName, choices: "asc, desc" },
+        locale: "en"
+      }),
     }).optional(),
   }).refine(data => data.page >= 0, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "page number must be a non-negative integer"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "nonNegativeInteger",
+      params: { fieldName },
+      locale: "en"
+    }),
     path: ["page"],
   });
 
@@ -96,33 +104,39 @@ export const zPaginationQuery = (
       .default("0")
       .transform(val => parseInt(val, 10))
       .refine(val => !isNaN(val) && val >= 0, {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          "page number must be a non-negative integer"
-        ),
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType: msgType,
+          messageKey: "nonNegativeInteger",
+          params: { fieldName },
+          locale: "en"
+        }),
       }),
     limit: z.string()
       .optional()
       .default(defaultLimit.toString())
       .transform(val => parseInt(val, 10))
       .refine(val => !isNaN(val) && val > 0 && val <= maxLimit, {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          `limit must be between 1 and ${maxLimit}`
-        ),
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType: msgType,
+          messageKey: "limitRange",
+          params: { fieldName, min: 1, max: maxLimit },
+          locale: "en"
+        }),
       }),
     sort: zStringOptional(
       msgType === MsgType.Message ? "Sort parameter is optional" : "Sort",
       msgType,
     ),
     order: z.enum(["asc", "desc"], {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "order must be either 'asc' or 'desc'"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "orderChoice",
+        params: { fieldName, choices: "asc, desc" },
+        locale: "en"
+      }),
     }).optional(),
   });
 
@@ -146,29 +160,35 @@ export const zCursorPagination = (
 ) =>
   z.object({
     cursor: z.string({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "cursor must be a string"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "stringRequired",
+        params: { fieldName },
+        locale: "en"
+      }),
     }).optional(),
     limit: z.number({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `limit must be an integer between 1 and ${maxLimit}`
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "limitRange",
+        params: { fieldName, min: 1, max: maxLimit },
+        locale: "en"
+      }),
     }).int().positive().max(maxLimit).default(defaultLimit),
     sort: zStringOptional(
       msgType === MsgType.Message ? "Sort parameter is optional" : "Sort",
       msgType,
     ),
     order: z.enum(["asc", "desc"], {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "order must be either 'asc' or 'desc'"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "orderChoice",
+        params: { fieldName, choices: "asc, desc" },
+        locale: "en"
+      }),
     }).optional(),
   });
 
@@ -192,29 +212,35 @@ export const zOffsetPagination = (
 ) =>
   z.object({
     offset: z.number({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "offset must be a non-negative integer"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "nonNegativeInteger",
+        params: { fieldName },
+        locale: "en"
+      }),
     }).int().nonnegative().default(0),
     limit: z.number({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `limit must be an integer between 1 and ${maxLimit}`
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "limitRange",
+        params: { fieldName, min: 1, max: maxLimit },
+        locale: "en"
+      }),
     }).int().positive().max(maxLimit).default(defaultLimit),
     sort: zStringOptional(
       msgType === MsgType.Message ? "Sort parameter is optional" : "Sort",
       msgType,
     ),
     order: z.enum(["asc", "desc"], {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "order must be either 'asc' or 'desc'"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "orderChoice",
+        params: { fieldName, choices: "asc, desc" },
+        locale: "en"
+      }),
     }).optional(),
   });
 
@@ -240,11 +266,13 @@ export const zPaginationResponse = (
     hasNext: z.boolean(),
     hasPrev: z.boolean(),
   }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "must be a valid pagination response"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "invalid",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -267,9 +295,11 @@ export const zPaginatedData = <T extends z.ZodTypeAny>(
     data: dataSchema,
     pagination: zPaginationResponse(fieldName, msgType),
   }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "must be a valid paginated response"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "invalid",
+      params: { fieldName },
+      locale: "en"
+    }),
   });

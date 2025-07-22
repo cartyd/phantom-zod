@@ -8,6 +8,7 @@ import {
   US_PHONE_11_DIGIT_PATTERN,
   NON_DIGITS
 } from "../common/regex-patterns";
+import type { LocaleCode } from "../localization/types";
 import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from "../common/utils/phone-utils";
 
 /**
@@ -38,6 +39,7 @@ export const zPhoneOptional = (
   msg = "Phone",
   format: PhoneFormat = PhoneFormat.E164,
   msgType: MsgType = MsgType.FieldName,
+  locale: LocaleCode = 'en'
 ) =>
   z
     .string()
@@ -58,13 +60,13 @@ export const zPhoneOptional = (
           ? US_PHONE_E164_PATTERN.test(val)
           : US_PHONE_NATIONAL_PATTERN.test(val)),
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          format === PhoneFormat.E164
-            ? "is invalid. Example of valid format: +11234567890"
-            : "is invalid. Example of valid format: 1234567890"
-        ),
+          messageKey: format === PhoneFormat.E164 ? "phone.invalidE164Format" : "phone.invalidNationalFormat",
+          params: { example: format === PhoneFormat.E164 ? "+11234567890" : "1234567890" },
+          locale
+        }),
       },
     );
 
@@ -78,11 +80,12 @@ export const zPhoneRequired = (
   msg = "Phone",
   format: PhoneFormat = PhoneFormat.E164,
   msgType: MsgType = MsgType.FieldName,
+  locale: LocaleCode = 'en'
 ) =>
   z
     .string()
     .nonempty({
-      message: formatErrorMessage(msg, msgType, "is required"),
+      message: formatErrorMessage({ msg, msgType, messageKey: "phone.required", locale }),
     })
     .transform((val) => {
       const trimmed = trimOrUndefined(val);
@@ -98,13 +101,13 @@ export const zPhoneRequired = (
           ? US_PHONE_E164_PATTERN.test(val)
           : US_PHONE_NATIONAL_PATTERN.test(val)),
       {
-        message: formatErrorMessage(
+        message: formatErrorMessage({
           msg,
           msgType,
-          format === PhoneFormat.E164
-            ? "is invalid. Example of valid format: +11234567890"
-            : "is invalid. Example of valid format: 1234567890"
-        ),
+          messageKey: format === PhoneFormat.E164 ? "phone.invalidE164Format" : "phone.invalidNationalFormat",
+          params: { example: format === PhoneFormat.E164 ? "+11234567890" : "1234567890" },
+          locale
+        }),
       },
     );
 // ...existing code...

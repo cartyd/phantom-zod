@@ -88,19 +88,17 @@ export function makeNumberSchema({
       return true;
     },
     {
-      message: formatErrorMessage(
+      message: formatErrorMessage({
         msg,
         msgType,
-        `must be a valid ${type === NumberFieldType.Integer ? "integer" : "number"}${
-            typeof min === "number" && typeof max === "number"
-              ? ` between ${min} and ${max}`
-              : typeof min === "number"
-              ? ` greater than or equal to ${min}`
-              : typeof max === "number"
-              ? ` less than or equal to ${max}`
-              : ""
-          }`
-      ),
+        messageKey: "number.invalid",
+        params: {
+          type: type === NumberFieldType.Integer ? "integer" : "number",
+          ...(typeof min === "number" && { min: String(min) }),
+          ...(typeof max === "number" && { max: String(max) })
+        },
+        locale: 'en'
+      }),
     },
   );
 

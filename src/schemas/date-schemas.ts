@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { formatErrorMessage } from "../common/message-handler";
 import { MsgType } from "./msg-type";
+import type { LocaleCode } from "../localization/types";
 
 export enum DateFormat {
   DateOnly = "DATE_ONLY", // YYYY-MM-DD
@@ -80,12 +81,14 @@ const getExampleFormat = (format: DateFormat): string => {
  * @returns Zod schema for date/datetime validation
  */
 // Helper for consistent error message formatting
-const dateErrorMessage = (msg: string, msgType: MsgType, format: DateFormat) =>
-  formatErrorMessage(
+const dateErrorMessage = (msg: string, msgType: MsgType, format: DateFormat, locale: LocaleCode = 'en') =>
+  formatErrorMessage({
     msg,
     msgType,
-    `is invalid. Example of valid format: ${getExampleFormat(format)}`,
-  );
+    messageKey: "date.invalidFormat",
+    params: { format: getExampleFormat(format) },
+    locale
+  });
 
 /**
  * Shared date parsing utility that handles both date and datetime formats.
@@ -139,8 +142,9 @@ const createDateSchema = (
   msgType: MsgType = MsgType.FieldName,
   customFormat?: RegExp | ((str: string) => boolean),
   customParse?: (str: string) => Date | null,
+  locale: LocaleCode = 'en'
 ) => {
-  const errorMessage = dateErrorMessage(msg, msgType, format);
+  const errorMessage = dateErrorMessage(msg, msgType, format, locale);
 
   if (requirement === FieldRequirement.Required) {
     const requiredSchema = z

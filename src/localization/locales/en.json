@@ -76,7 +76,7 @@
   "boolean": {
     "invalid": "is invalid",
     "mustBeBoolean": "must be a boolean value",
-    "mustBeBooleanString": "must be a boolean string (\"true\" or \"false\")",
+    "mustBeBooleanString": "must be a boolean value (\"true\" or \"false\")",
     "invalidBooleanString": "must be \"true\" or \"false\""
   },
   "array": {
@@ -89,9 +89,16 @@
     "mustBeStringArray": "must be an array of strings",
     "mustHaveMinItems": "must have at least {min} items",
     "mustHaveMaxItems": "must have at most {max} items",
-    "mustNotBeEmpty": "must not be empty",
+    "mustNotBeEmpty": "must be an array of strings with at least one item",
     "duplicateItems": "contains duplicate items"
   },
+  "arrayMinItems": "must contain at least {minItems} IDs",
+  "arrayMaxItems": "must contain at most {maxItems} IDs",
+  "limitRange": "must be between {min} and {max}",
+  "orderChoice": "must be one of: {choices}",
+  "nonNegativeInteger": "must be a non-negative integer",
+  "stringRequired": "must be a string",
+  "numberRequired": "must be a number",
   "enum": {
     "invalid": "is invalid",
     "mustBeOneOf": "must be one of: {values}",
@@ -123,7 +130,7 @@
   "postalCode": {
     "required": "is required",
     "invalid": "is invalid",
-    "mustBeValidZipCode": "must be a valid ZIP code",
+    "mustBeValidZipCode": "must be a valid US ZIP code",
     "mustBeValidPostalCode": "must be a valid postal code",
     "invalidFormat": "has invalid format",
     "examples": {
@@ -160,7 +167,7 @@
   "address": {
     "required": "is required",
     "invalid": "is invalid",
-    "mustBeValidAddress": "must be a valid address",
+    "mustBeValidAddress": "must be a valid address object",
     "streetRequired": "street is required",
     "cityRequired": "city is required",
     "stateRequired": "state is required",

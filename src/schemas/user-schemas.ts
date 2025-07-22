@@ -5,6 +5,7 @@ import { zStringRequired, zStringOptional } from "./string-schemas";
 import { zEmailRequired, zEmailOptional } from "./email-schemas";
 import { zEnumRequired, zEnumOptional } from "./enum-schemas";
 import { formatErrorMessage } from "../common/message-handler";
+import type { LocaleCode } from "../localization/types";
 
 // --- User Schema Types ---
 
@@ -82,51 +83,57 @@ export const zPassword = (
     .refine(
       (password) => password.length >= minLength,
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          `must be at least ${minLength} characters long`
-        ),
+          messageKey: "user.passwordTooShort",
+          params: { min: String(minLength) },
+          locale: 'en'
+        }),
       },
     )
     .refine(
       (password) => !requireUppercase || /[A-Z]/.test(password),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "must contain at least one uppercase letter"
-        ),
+          messageKey: "user.passwordMissingUppercase",
+          locale: 'en'
+        }),
       },
     )
     .refine(
       (password) => !requireLowercase || /[a-z]/.test(password),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "must contain at least one lowercase letter"
-        ),
+          messageKey: "user.passwordMissingLowercase",
+          locale: 'en'
+        }),
       },
     )
     .refine(
       (password) => !requireNumbers || /\d/.test(password),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "must contain at least one number"
-        ),
+          messageKey: "user.passwordMissingNumbers",
+          locale: 'en'
+        }),
       },
     )
     .refine(
       (password) => !requireSpecialChars || /[!@#$%^&*(),.?":{}|<>]/.test(password),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "must contain at least one special character"
-        ),
+          messageKey: "user.passwordMissingSpecialChars",
+          locale: 'en'
+        }),
       },
     );
 
@@ -148,46 +155,61 @@ export const zUsername = (
     .refine(
       (username) => username.length >= minLength,
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be at least ${minLength} characters long`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "tooShort",
+          params: { min: String(minLength) },
+          locale: "en"
+        }),
       },
     )
     .refine(
       (username) => username.length <= maxLength,
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be at most ${maxLength} characters long`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "tooLong",
+          params: { max: String(maxLength) },
+          locale: "en"
+        }),
       },
     )
     .refine(
       (username) => /^[a-zA-Z0-9_-]+$/.test(username),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} can only contain letters, numbers, underscores, and hyphens`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "user.usernameInvalid",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     )
     .refine(
       (username) => !username.startsWith("_") && !username.endsWith("_"),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} cannot start or end with underscore`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "invalidUnderscorePosition",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     )
     .refine(
       (username) => !username.startsWith("-") && !username.endsWith("-"),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} cannot start or end with hyphen`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "invalidHyphenPosition",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     );
 
@@ -207,19 +229,25 @@ export const zDisplayName = (
     .refine(
       (name) => !name || name.length <= maxLength,
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be at most ${maxLength} characters long`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "tooLong",
+          params: { max: String(maxLength) },
+          locale: "en"
+        }),
       },
     )
     .refine(
       (name) => !name || name.trim().length > 0,
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} cannot be empty if provided`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "cannotBeEmpty",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     );
 
@@ -274,29 +302,41 @@ export const zUserRegistration = (
       msgType,
     ),
     acceptTerms: z.boolean({
-      message:
-        msgType === MsgType.Message
-          ? "You must accept the terms and conditions"
-          : "Terms acceptance is required",
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "user.termsNotAccepted",
+        params: { fieldName },
+        locale: "en"
+      }),
     }).refine(val => val === true, {
-      message:
-        msgType === MsgType.Message
-          ? "You must accept the terms and conditions"
-          : "Terms and conditions must be accepted",
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "user.termsNotAccepted",
+        params: { fieldName },
+        locale: "en"
+      }),
     }),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "user.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   })
   .refine(
     (data) => data.password === data.confirmPassword,
     {
-      message:
-        msgType === MsgType.Message
-          ? "Passwords do not match"
-          : "Password and confirmation password must match",
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "user.passwordsDoNotMatch",
+        params: { fieldName },
+        locale: "en"
+      }),
       path: ["confirmPassword"],
     },
   );
@@ -329,10 +369,13 @@ export const zUserLogin = (
     ),
     rememberMe: z.boolean().optional(),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "user.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -414,10 +457,13 @@ export const zUserOptional = (
     .refine(
       (val) => val === undefined || (typeof val === "object" && val !== null),
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be a valid user object`,
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType,
+          messageKey: "mustBeValidUserObject",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     );
 
@@ -495,10 +541,13 @@ export const zUserRequired = (
     emailVerified: z.boolean().optional(),
     phoneVerified: z.boolean().optional(),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "user.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -540,10 +589,13 @@ export const zUserUpdate = (
       msgType,
     ),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must be a valid update object`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "mustBeValidUpdateObject",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -578,28 +630,37 @@ export const zPasswordChange = (
       msgType,
     ),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "user.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   })
   .refine(
     (data) => data.newPassword === data.confirmPassword,
     {
-      message:
-        msgType === MsgType.Message
-          ? "New passwords do not match"
-          : "New password and confirmation must match",
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "user.passwordsDoNotMatch",
+        params: { fieldName },
+        locale: "en"
+      }),
       path: ["confirmPassword"],
     },
   )
   .refine(
     (data) => data.currentPassword !== data.newPassword,
     {
-      message:
-        msgType === MsgType.Message
-          ? "New password must be different from current password"
-          : "New password must be different from current password",
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "passwordMustBeDifferent",
+        params: { fieldName },
+        locale: "en"
+      }),
       path: ["newPassword"],
     },
   );
@@ -620,10 +681,13 @@ export const zPasswordReset = (
       msgType,
     ),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "user.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -656,8 +720,11 @@ export const zAdminUserManagement = (
       msgType,
     ),
   }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType,
+      messageKey: "user.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   });

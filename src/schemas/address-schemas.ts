@@ -87,11 +87,13 @@ export const zAddressOptional = (
         return result;
       })
     ], {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "must be a valid address object"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "address.mustBeValidAddress",
+        params: { fieldName },
+        locale: "en"
+      }),
     });
 
 /**
@@ -141,11 +143,13 @@ export const zAddressRequired = (
       msgType,
     ),
   }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "address.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   })
   .transform((val) => {
     // Remove empty string fields
@@ -189,11 +193,13 @@ export const zAddressSimple = (
       msgType,
     ),
   }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "address.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -256,11 +262,13 @@ export const zAddressUS = (
     }),
     country: z.literal("US").default("US"),
   }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "address.required",
+      params: { fieldName },
+      locale: "en"
+    }),
   })
   .transform((val) => {
     // Remove empty string fields

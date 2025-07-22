@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "../common/message-handler";
+import type { LocaleCode } from "../localization/types";
 
 // --- Types ---
 export type StringArrayOptional = z.infer<
@@ -26,14 +27,16 @@ export type StringArrayRequired = z.infer<
 export const zStringArrayOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
+  locale: LocaleCode = 'en'
 ) =>
   z
     .array(z.string({
-      message: formatErrorMessage(
+      message: formatErrorMessage({
         msg,
         msgType,
-        "must be an array of strings"
-      ),
+        messageKey: "array.mustBeStringArray",
+        locale
+      }),
     }))
     .optional();
 
@@ -54,11 +57,13 @@ export const zStringArrayOptional = (
 export const zStringArrayRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
+  locale: LocaleCode = 'en'
 ) =>
   z.array(z.string()).nonempty({
-    message: formatErrorMessage(
+    message: formatErrorMessage({
       msg,
       msgType,
-      "must be an array of strings with at least one item"
-    ),
+        messageKey: "array.mustNotBeEmpty",
+      locale
+    }),
   });

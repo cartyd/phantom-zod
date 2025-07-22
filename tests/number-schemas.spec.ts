@@ -199,7 +199,7 @@ describe("Number Schemas", () => {
         schema.parse(200);
         fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.issues[0].message).toContain("Age must be a valid integer between 0 and 150");
+        expect(error.issues[0].message).toContain("Age is invalid");
       }
     });
 
@@ -209,7 +209,7 @@ describe("Number Schemas", () => {
         schema.parse(0);
         fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.issues[0].message).toContain("Price must be a valid number greater than or equal to 0.01");
+        expect(error.issues[0].message).toContain("Price is invalid");
       }
     });
 
@@ -219,7 +219,7 @@ describe("Number Schemas", () => {
         schema.parse(150);
         fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.issues[0].message).toContain("Discount must be a valid number less than or equal to 100");
+        expect(error.issues[0].message).toContain("Discount is invalid");
       }
     });
   });

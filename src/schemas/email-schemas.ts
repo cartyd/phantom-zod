@@ -41,7 +41,7 @@ export const zEmailOptional = (
     .optional()
     .transform(trimOrUndefined)
     .refine(isEmail, {
-      message: formatErrorMessage(msg, msgType, "must be a valid email address"),
+        message: formatErrorMessage({ msg, msgType, messageKey: "email.mustBeValidEmail", locale: 'en' }),
     });
 
 
@@ -68,8 +68,8 @@ export const zEmailRequired = (
     .string()
     .trim()
     .nonempty({
-      message: formatErrorMessage(msg, msgType, "is required"),
+      message: formatErrorMessage({ msg, msgType, messageKey: "email.required", locale: 'en' }),
     })
     .email({
-      message: formatErrorMessage(msg, msgType, "must be a valid email address"),
+        message: formatErrorMessage({ msg, msgType, messageKey: "email.mustBeValidEmail", locale: 'en' }),
     });

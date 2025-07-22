@@ -44,18 +44,22 @@ export const zIdListOptional = (
       msgType,
     ))
     .min(minItems, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `must contain at least ${minItems} IDs`
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "arrayMinItems",
+        params: { fieldName, minItems },
+        locale: "en"
+      }),
     })
     .max(maxItems, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `must contain at most ${maxItems} IDs`
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "arrayMaxItems",
+        params: { fieldName, maxItems },
+        locale: "en"
+      }),
     })
     .optional();
 
@@ -83,18 +87,22 @@ export const zIdListRequired = (
     msgType,
   ))
   .min(minItems, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must contain at least ${minItems} IDs`
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "arrayMinItems",
+      params: { fieldName, minItems },
+      locale: "en"
+    }),
   })
   .max(maxItems, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must contain at most ${maxItems} IDs`
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "arrayMaxItems",
+      params: { fieldName, maxItems },
+      locale: "en"
+    }),
   });
 
 /**

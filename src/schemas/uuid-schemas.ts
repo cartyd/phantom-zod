@@ -2,6 +2,7 @@ import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "../common/message-handler";
 import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
+import type { LocaleCode } from "../localization/types";
 
 // --- UUID Schemas ---
 
@@ -15,16 +16,13 @@ import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
 export const zUuidOptional = (
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
-) =>
+  locale: LocaleCode = 'en'
+) => 
   z
     .string()
     .optional()
     .refine((val) => val === undefined || val === "" || UUID_PATTERN.test(val), {
-      message: formatErrorMessage(
-        msg,
-        msgType,
-        "must be a valid UUID"
-      ),
+        message: formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuid", locale }),
     });
 
 /**
@@ -37,22 +35,15 @@ export const zUuidOptional = (
 export const zUuidRequired = (
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
-) =>
+  locale: LocaleCode = 'en'
+) => 
   z
     .string()
     .nonempty({
-      message: formatErrorMessage(
-        msg,
-        msgType,
-        "is required"
-      ),
+      message: formatErrorMessage({ msg, msgType, messageKey: "uuid.required", locale }),
     })
     .refine((val) => UUID_PATTERN.test(val), {
-      message: formatErrorMessage(
-        msg,
-        msgType,
-        "must be a valid UUID"
-      ),
+        message: formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuid", locale }),
     });
 
 /**
@@ -65,18 +56,15 @@ export const zUuidRequired = (
 export const zUuidV4Optional = (
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
-) =>
+  locale: LocaleCode = 'en'
+) => 
   z
     .string()
     .optional()
     .refine(
       (val) => val === undefined || val === "" || UUID_V4_PATTERN.test(val),
       {
-        message: formatErrorMessage(
-          msg,
-          msgType,
-          "must be a valid UUIDv4"
-        ),
+        message: formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuidV4", locale }),
       },
     );
 
@@ -90,20 +78,13 @@ export const zUuidV4Optional = (
 export const zUuidV4Required = (
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
-) =>
+  locale: LocaleCode = 'en'
+) => 
   z
     .string()
     .nonempty({
-      message: formatErrorMessage(
-        msg,
-        msgType,
-        "is required"
-      ),
+        message: formatErrorMessage({ msg, msgType, messageKey: "uuid.required", locale }),
     })
     .refine((val) => UUID_V4_PATTERN.test(val), {
-      message: formatErrorMessage(
-        msg,
-        msgType,
-        "must be a valid UUIDv4"
-      ),
+      message: formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuidV4", locale }),
     });

@@ -121,25 +121,31 @@ export const zFileSize = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z.number({
-    message: formatErrorMessage(
-      fieldName,
+    message: formatErrorMessage({
+      msg: fieldName,
       msgType,
-      "must be a number"
-    ),
+      messageKey: "mustBeNumber",
+      params: { fieldName },
+      locale: "en"
+    }),
   })
   .positive({
-    message: formatErrorMessage(
-      fieldName,
+    message: formatErrorMessage({
+      msg: fieldName,
       msgType,
-      "must be greater than 0"
-    ),
+      messageKey: "mustBePositive",
+      params: { fieldName },
+      locale: "en"
+    }),
   })
   .max(maxSize, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must be less than ${formatBytes(maxSize)}`
-    ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "exceedsMaxSize",
+        params: { maxSize: formatBytes(maxSize) },
+        locale: "en"
+      }),
   });
 
 
@@ -168,11 +174,13 @@ export const zMimeType = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z.enum(allowedTypes as [string, ...string[]], {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must be one of: ${allowedTypes.join(", ")}`
-    ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "mustBeOneOf",
+        params: { values: allowedTypes.join(", ") },
+        locale: "en"
+      }),
   });
 
 
@@ -197,21 +205,25 @@ export const zFilename = (
     .refine(
       (name) => FILENAME_INVALID_CHARS_PATTERN.test(name),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "contains invalid characters"
-        ),
+          messageKey: "invalidCharacters",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     )
     .refine(
       (name) => !name.startsWith(".") && !name.endsWith("."),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "cannot start or end with a dot"
-        ),
+          messageKey: "invalidDotPosition",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     );
 
@@ -247,11 +259,13 @@ export const zFileUploadOptional = (
       ).refine(
         (name) => !requireExtension || name.includes("."),
         {
-          message: formatErrorMessage(
-            fieldName,
-            msgType,
-            "must have a file extension"
-          ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "mustHaveFileExtension",
+        params: { fieldName },
+        locale: "en"
+      }),
         },
       ),
       mimetype: zMimeType(
@@ -273,22 +287,26 @@ export const zFileUploadOptional = (
         msgType,
       ),
       buffer: z.instanceof(Buffer, {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "buffer must be a Buffer instance"
-        ),
+          messageKey: "mustBeBuffer",
+          params: { fieldName },
+          locale: "en"
+        }),
       }).optional(),
     })
     .optional()
     .refine(
       (val) => val === undefined || (typeof val === "object" && val !== null),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "must be a valid file object"
-        ),
+          messageKey: "mustBeValidFile",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     );
 };
@@ -324,11 +342,13 @@ export const zFileUploadRequired = (
     ).refine(
       (name) => !requireExtension || name.includes("."),
       {
-        message: formatErrorMessage(
-          fieldName,
+        message: formatErrorMessage({
+          msg: fieldName,
           msgType,
-          "must have a file extension"
-        ),
+          messageKey: "mustHaveFileExtension",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     ),
     mimetype: zMimeType(
@@ -350,18 +370,22 @@ export const zFileUploadRequired = (
       msgType,
     ),
     buffer: z.instanceof(Buffer, {
-      message: formatErrorMessage(
-        fieldName,
+      message: formatErrorMessage({
+        msg: fieldName,
         msgType,
-        "buffer must be a Buffer instance"
-      ),
+        messageKey: "mustBeBuffer",
+        params: { fieldName },
+        locale: "en"
+      }),
     }).optional(),
   }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType,
+        messageKey: "required",
+        params: { fieldName },
+        locale: "en"
+      }),
   });
 };
 
@@ -492,18 +516,22 @@ export const zMultipleFileUpload = (
 ) =>
   z.array(zFileUploadRequired(config, fieldName, msgType))
     .min(1, {
-      message: formatErrorMessage(
-        fieldName,
+      message: formatErrorMessage({
+        msg: fieldName,
         msgType,
-        "must contain at least one file"
-      ),
+        messageKey: "minFiles",
+        params: { fieldName },
+        locale: "en"
+      }),
     })
     .max(maxFiles, {
-      message: formatErrorMessage(
-        fieldName,
+      message: formatErrorMessage({
+        msg: fieldName,
         msgType,
-        `must contain at most ${maxFiles} files`
-      ),
+        messageKey: "maxFiles",
+        params: { maxFiles },
+        locale: "en"
+      }),
     });
 
 // --- Utility Functions ---

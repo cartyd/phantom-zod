@@ -55,11 +55,13 @@ export const zCurrencyCode = (
   msgType: MsgType = MsgType.FieldName,
 ) =>
   z.enum(ISO_4217_CURRENCIES, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "must be a valid ISO 4217 currency code"
-    ),
+    message: formatErrorMessage({
+      msg: fieldName,
+      msgType: msgType,
+      messageKey: "invalidCurrencyCode",
+      params: { fieldName },
+      locale: "en"
+    }),
   });
 
 /**
@@ -76,18 +78,22 @@ export const zMoneyAmount = (
 ) =>
   z
     .number({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "must be a number"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "numberRequired",
+        params: { fieldName },
+        locale: "en"
+      }),
     })
     .positive({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "must be greater than 0"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "mustBePositive",
+        params: { fieldName },
+        locale: "en"
+      }),
     })
     .refine(
       (val) => {
@@ -95,11 +101,13 @@ export const zMoneyAmount = (
         return decimals <= maxDecimals;
       },
       {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          `must have at most ${maxDecimals} decimal places`
-        ),
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType: msgType,
+          messageKey: "invalidDecimalPlaces",
+          params: { fieldName, max: maxDecimals },
+          locale: "en"
+        }),
       },
     );
 
@@ -117,28 +125,34 @@ export const zMoneyAmountFromString = (
 ) =>
   z
     .string({
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "must be a string"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "stringRequired",
+        params: { fieldName },
+        locale: "en"
+      }),
     })
     .regex(MONEY_DECIMAL_PATTERN, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "must be a valid decimal number"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "invalidFormat",
+        params: { fieldName },
+        locale: "en"
+      }),
     })
     .transform((val) => parseFloat(val))
     .refine(
       (val) => val > 0,
       {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          "must be greater than 0"
-        ),
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType: msgType,
+          messageKey: "mustBePositive",
+          params: { fieldName },
+          locale: "en"
+        }),
       },
     )
     .refine(
@@ -147,11 +161,13 @@ export const zMoneyAmountFromString = (
         return decimals <= maxDecimals;
       },
       {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          `must have at most ${maxDecimals} decimal places`
-        ),
+        message: formatErrorMessage({
+          msg: fieldName,
+          msgType: msgType,
+          messageKey: "invalidDecimalPlaces",
+          params: { fieldName, max: maxDecimals },
+          locale: "en"
+        }),
       },
     );
 
@@ -323,11 +339,13 @@ export const zPriceRange = (
   .refine(
     (data) => data.min <= data.max,
     {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "minimum must be less than or equal to maximum"
-      ),
+      message: formatErrorMessage({
+        msg: fieldName,
+        msgType: msgType,
+        messageKey: "rangeMinMax",
+        params: { fieldName },
+        locale: "en"
+      }),
       path: ["min"],
     },
   )

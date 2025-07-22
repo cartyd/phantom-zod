@@ -65,7 +65,7 @@ describe('Date Schemas', () => {
     describe('Custom field name', () => {
       it('should use custom field name in error message', () => {
         const customSchema = zDateOptional('Birth Date');
-        expect(() => customSchema.parse('invalid-date')).toThrow('Birth Date is invalid');
+        expect(() => customSchema.parse('invalid-date')).toThrow('Birth Date has invalid format (expected: YYYY-MM-DD)');
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -471,12 +471,12 @@ describe('Date Schemas', () => {
   describe('Error messages', () => {
     it('should provide helpful error messages for date format', () => {
       const schema = zDateRequired('Birth Date');
-      expect(() => schema.parse('invalid-date')).toThrow('Birth Date is invalid. Example of valid format: YYYY-MM-DD');
+      expect(() => schema.parse('invalid-date')).toThrow('Birth Date has invalid format (expected: YYYY-MM-DD)');
     });
 
     it('should provide helpful error messages for datetime format', () => {
       const schema = zDateTimeRequired('Created At');
-      expect(() => schema.parse('invalid-datetime')).toThrow('Created At is invalid. Example of valid format: YYYY-MM-DDTHH:mm:ssZ');
+      expect(() => schema.parse('invalid-datetime')).toThrow('Created At has invalid format (expected: YYYY-MM-DDTHH:mm:ssZ)');
     });
 
     it('should use custom message when msgType is Message', () => {
