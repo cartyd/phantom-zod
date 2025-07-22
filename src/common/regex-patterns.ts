@@ -16,8 +16,8 @@ export const US_PHONE_NATIONAL_PATTERN = /^\d{10}$/;
 export const US_PHONE_11_DIGIT_PATTERN = /^1\d{10}$/;
 export const US_PHONE_DIGITS_ONLY_PATTERN = /\D/g; // For removing non-digits
 
-// URL validation
-export const IPV4_PATTERN = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+// IPv4 validation
+export const IPV4_PATTERN = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/;
 
 // Postal code validation (US ZIP codes)
 export const US_ZIP_CODE_PATTERN = /^[\d]{5}(-\d{4})?$/;

@@ -244,13 +244,14 @@ describe('Regex Patterns', () => {
 
     it('should not match invalid IPv4 addresses', () => {
       const invalidIPv4 = [
-        // Note: Current pattern allows 256.256.256.256 (basic format check only)
-        '192.168.1', // incomplete
+        '192.168.1', // too few octets
         '192.168.1.1.1', // too many octets
-        'localhost',
-        'not.an.ip.address',
-        '',
-        '1234.5678.90.12', // clearly invalid format
+        'localhost', // incorrect number format
+        'not.an.ip.address', // incorrect number format
+        '', // incorrect number format
+        '1234.5678.90.12', // more than 3 numbers in octets
+        '-120.-140.-150.-160', // octets should not contain negative nubmers
+        '(1.1.1.1)', // octets should not contain symbols
       ];
 
       invalidIPv4.forEach(ip => {
@@ -258,15 +259,18 @@ describe('Regex Patterns', () => {
       });
     });
 
-    it('should match IPv4-like patterns (note: does not validate ranges)', () => {
-      // The current pattern is a basic format check, not a strict IPv4 validator
-      const basicIPv4Format = [
-        '256.256.256.256', // technically invalid but matches pattern
-        '999.999.999.999', // technically invalid but matches pattern
+    it('should not match octets above 255', () => {
+      const aboveMaximumIPv4Format = [
+        '256.256.256.256', // above maximum range 255.255.255.255
+        '999.999.999.999', // above maximum range 255.255.255.255
+        '256.255.255.255', // first octet above maximum range 255
+        '255.256.255.255', // second octet above maximum range 255
+        '255.255.256.255', // third octet above maximum range 255
+        '255.255.255.256', // fourth octet above maximum range 255
       ];
 
-      basicIPv4Format.forEach(ip => {
-        expect(IPV4_PATTERN.test(ip)).toBe(true);
+      aboveMaximumIPv4Format.forEach(ip => {
+        expect(IPV4_PATTERN.test(ip)).toBe(false);
       });
     });
   });
