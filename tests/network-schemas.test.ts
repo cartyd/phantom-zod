@@ -1,14 +1,37 @@
-import { zIPv4Required, zIPv4Optional, zIPv6Required, zIPv6Optional } from "../src/schemas/network-schemas";
-
-describe("Network Schemas", () => {
-  const validIPv4 = [
+import { zIPv4Optional, zIPv4Required, zIPv6Optional, zIPv6Required, zMacAddressOptional, zMacAddressRequired } from "../src/schemas/network-schemas";
+import { INVALID_HEX_CHAR_PATTERN, IPV4_INVALID_OCTETS, LETTER_CASE_PATTERN, IPV4_INVALID_CHAR_PATTERN, IPV6_MULTIPLE_DOUBLE_COLON_PATTERN, MAC_SEPARATOR_PATTERN, VALID_MAC_FORMAT_PATTERN } from "../src/common/regex-patterns";
+// Test Data Constants
+const TEST_DATA = {
+  // MAC Address Test Data
+  validMacAddresses: [
+    "00:1A:2B:3C:4D:5E",
+    "00-1A-2B-3C-4D-5E",
+    "001A2B3C4D5E",
+    "aa:bb:cc:dd:ee:ff",
+    "AA-BB-CC-DD-EE-FF",
+    "AABBCCDDEEFF",
+  ],
+  invalidMacAddresses: [
+    "00:1A:2B:3C:4D", // too short
+    "00:1A:2B:3C:4D:5E:7F", // too long
+    "00:1A:2B:3C:4D:5G", // invalid hex
+    "GG:HH:II:JJ:KK:LL", // invalid hex
+    "001A2B3C4D5", // too short
+    "001A2B3C4D5E7F", // too long
+    "", // empty string
+    "not-a-mac",
+    "00:1A:2B:3C:4D:5E:7F:8G",
+  ],
+  
+  // IPv4 Test Data
+  validIPv4: [
     "192.168.1.1",
     "127.0.0.1",
     "255.255.255.255",
     "0.0.0.0",
     "10.0.0.1",
-  ];
-  const invalidIPv4 = [
+  ],
+  invalidIPv4: [
     "192.168.1", // too few octets
     "192.168.1.1.1", // too many octets
     "localhost",
@@ -23,9 +46,10 @@ describe("Network Schemas", () => {
     "255.256.255.255",
     "255.255.256.255",
     "255.255.255.256",
-  ];
-
-  const validIPv6 = [
+  ],
+  
+  // IPv6 Test Data
+  validIPv6: [
     "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
     "2001:db8:1234:ffff:ffff:ffff:ffff:ffff",
     "fe80:0000:0000:0000:0202:b3ff:fe1e:8329",
@@ -41,8 +65,8 @@ describe("Network Schemas", () => {
     "fd12:3456:789a:1::1",
     "ff02::1",
     "ff05::2",
-  ];
-  const invalidIPv6 = [
+  ],
+  invalidIPv6: [
     "2001:db8:85a3:0000:0000:8a2e:0370:7334:1234",
     "2001:db8:85a3::8a2e::7334",
     "2001:db8:85a3:0000:0000:8a2e:0370",
@@ -71,65 +95,144 @@ describe("Network Schemas", () => {
     "",
     "2001-0db8-85a3-0000-0000-8a2e-0370-7334",
     "2001.0db8.85a3.0000.0000.8a2e.0370.7334",
-  ];
+  ],
+};
 
-  describe("zIPv4Required", () => {
-    test.each(validIPv4)("valid IPv4: %s", (ip) => {
-      expect(zIPv4Required().parse(ip)).toBe(ip);
+// Test Helper Functions
+const getDescriptiveTestName = (schemaName: string, data: string, isValid: boolean): string => {
+  const schemaType = schemaName.replace(/^z|Required$|Optional$/g, '');
+  const prefix = isValid ? 'accepts valid' : 'rejects invalid';
+  
+  // Handle empty strings specifically
+  if (data === '') {
+    return `${prefix} ${schemaType}: empty string`;
+  }
+  
+  // Add context for specific invalid patterns
+  if (!isValid) {
+    if (schemaType === 'MacAddress') {
+      if (data.length < 12) return `${prefix} ${schemaType}: too short (${data})`;
+      if (data.length > 17) return `${prefix} ${schemaType}: too long (${data})`;
+      // Use centralized regex constant for invalid hex characters
+      if (INVALID_HEX_CHAR_PATTERN.test(data)) return `${prefix} ${schemaType}: invalid hex characters (${data})`;
+      // Use centralized regex constant for valid MAC address format
+      if (!VALID_MAC_FORMAT_PATTERN.test(data)) return `${prefix} ${schemaType}: invalid format (${data})`;
+    }
+    
+    if (schemaType === 'IPv4') {
+      if (data.split('.').length < 4) return `${prefix} ${schemaType}: too few octets (${data})`;
+      if (data.split('.').length > 4) return `${prefix} ${schemaType}: too many octets (${data})`;
+      // Use centralized regex constant for octet out of range
+      if (IPV4_INVALID_OCTETS.test(data)) return `${prefix} ${schemaType}: octet out of range (${data})`;
+      // Use centralized regex constant for letters
+      if (LETTER_CASE_PATTERN.test(data)) return `${prefix} ${schemaType}: contains letters (${data})`;
+      // Use centralized regex constant for invalid characters
+      if (IPV4_INVALID_CHAR_PATTERN.test(data)) return `${prefix} ${schemaType}: invalid characters (${data})`;
+    }
+    
+    if (schemaType === 'IPv6') {
+      if (data.split(':').length > 8) return `${prefix} ${schemaType}: too many groups (${data})`;
+      if (data.includes(':::')) return `${prefix} ${schemaType}: triple colon (${data})`;
+      // Use centralized regex constant for multiple double colons
+      if (IPV6_MULTIPLE_DOUBLE_COLON_PATTERN.test(data)) return `${prefix} ${schemaType}: multiple double colons (${data})`;
+      // Use centralized regex constant for invalid hex characters
+      if (INVALID_HEX_CHAR_PATTERN.test(data)) return `${prefix} ${schemaType}: invalid hex characters (${data})`;
+      // Use centralized regex constant for trailing colon (not present, so keep inline for now)
+      if (data.endsWith(':') && !data.endsWith('::')) return `${prefix} ${schemaType}: trailing colon (${data})`;
+      // Use centralized regex constant for invalid zone identifier (not present, so keep inline for now)
+      if (data.includes('%') && (data.endsWith('%') || data.includes('%$'))) return `${prefix} ${schemaType}: invalid zone identifier (${data})`;
+    }
+  }
+  
+  // Add context for valid patterns
+  if (isValid && schemaType === 'MacAddress') {
+    if (data.includes(':')) return `${prefix} ${schemaType}: colon-separated format (${data})`;
+    if (data.includes('-')) return `${prefix} ${schemaType}: dash-separated format (${data})`;
+    if (!MAC_SEPARATOR_PATTERN.test(data)) return `${prefix} ${schemaType}: no separators format (${data})`;
+  }
+  
+  if (isValid && schemaType === 'IPv6') {
+    if (data.includes('::')) return `${prefix} ${schemaType}: compressed format (${data})`;
+    if (data.includes('%')) return `${prefix} ${schemaType}: with zone identifier (${data})`;
+    if (data.includes('.')) return `${prefix} ${schemaType}: embedded IPv4 (${data})`;
+  }
+  
+  // Default fallback
+  return `${prefix} ${schemaType}: ${data}`;
+};
+
+const testRequiredSchema = (schemaName: string, schemaFunction: () => any, validData: string[], invalidData: string[]) => {
+  describe(schemaName, () => {
+    // Test valid data with descriptive names
+    validData.forEach(data => {
+      test(getDescriptiveTestName(schemaName, data, true), () => {
+        expect(schemaFunction().parse(data)).toBe(data);
+      });
     });
-    test.each(invalidIPv4)("invalid IPv4: %s", (ip) => {
-      expect(() => zIPv4Required().parse(ip)).toThrow();
+    
+    // Test invalid data with descriptive names
+    invalidData.forEach(data => {
+      test(getDescriptiveTestName(schemaName, data, false), () => {
+        expect(() => schemaFunction().parse(data)).toThrow();
+      });
     });
-    test("empty string throws", () => {
-      expect(() => zIPv4Required().parse("")).toThrow();
+    
+    // Edge case tests with specific descriptions
+    test('rejects empty string as invalid input', () => {
+      expect(() => schemaFunction().parse('')).toThrow();
+    });
+    
+    test('rejects undefined as invalid input', () => {
+      expect(() => schemaFunction().parse(undefined)).toThrow();
+    });
+    
+    test('rejects null as invalid input', () => {
+      expect(() => schemaFunction().parse(null)).toThrow();
     });
   });
+};
 
-  describe("zIPv4Optional", () => {
-    test.each(validIPv4)("valid IPv4: %s", (ip) => {
-      expect(zIPv4Optional().parse(ip)).toBe(ip);
+const testOptionalSchema = (schemaName: string, schemaFunction: () => any, validData: string[], invalidData: string[]) => {
+  describe(schemaName, () => {
+    // Test valid data with descriptive names
+    validData.forEach(data => {
+      test(getDescriptiveTestName(schemaName, data, true), () => {
+        expect(schemaFunction().parse(data)).toBe(data);
+      });
     });
-    test.each(invalidIPv4)("invalid IPv4: %s", (ip) => {
-      expect(() => zIPv4Optional().parse(ip)).toThrow();
+    
+    // Test invalid data with descriptive names
+    invalidData.forEach(data => {
+      test(getDescriptiveTestName(schemaName, data, false), () => {
+        expect(() => schemaFunction().parse(data)).toThrow();
+      });
     });
-    test("returns undefined for undefined input", () => {
-      expect(zIPv4Optional().parse(undefined)).toBeUndefined();
+    
+    // Edge case tests with specific descriptions
+    test('accepts undefined and returns undefined (optional behavior)', () => {
+      expect(schemaFunction().parse(undefined)).toBeUndefined();
     });
-    test("returns undefined for null input", () => {
-      expect(zIPv4Optional().parse(null)).toBeUndefined();
+    
+    test('accepts null and returns undefined (optional behavior)', () => {
+      expect(schemaFunction().parse(null)).toBeUndefined();
     });
-    test("empty string throws", () => {
-      expect(() => zIPv4Optional().parse("")).toThrow();
+    
+    test('rejects empty string even in optional schema', () => {
+      expect(() => schemaFunction().parse('')).toThrow();
     });
   });
+};
 
-  describe("zIPv6Required", () => {
-    test.each(validIPv6)("valid IPv6: %s", (ip) => {
-      expect(zIPv6Required().parse(ip)).toBe(ip);
-    });
-    test.each(invalidIPv6)("invalid IPv6: %s", (ip) => {
-      expect(() => zIPv6Required().parse(ip)).toThrow();
-    });
-    test("empty string throws", () => {
-      expect(() => zIPv6Required().parse("")).toThrow();
-    });
-  });
-
-  describe("zIPv6Optional", () => {
-    test.each(validIPv6)("valid IPv6: %s", (ip) => {
-      expect(zIPv6Optional().parse(ip)).toBe(ip);
-    });
-    test.each(invalidIPv6)("invalid IPv6: %s", (ip) => {
-      expect(() => zIPv6Optional().parse(ip)).toThrow();
-    });
-    test("returns undefined for undefined input", () => {
-      expect(zIPv6Optional().parse(undefined)).toBeUndefined();
-    });
-    test("returns undefined for null input", () => {
-      expect(zIPv6Optional().parse(null)).toBeUndefined();
-    });
-    test("empty string throws", () => {
-      expect(() => zIPv6Optional().parse("")).toThrow();
-    });
-  });
+describe("Network Schemas", () => {
+  // MAC Address Tests
+  testRequiredSchema("zMacAddressRequired", zMacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
+  testOptionalSchema("zMacAddressOptional", zMacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
+  
+  // IPv4 Tests
+  testRequiredSchema("zIPv4Required", zIPv4Required, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
+  testOptionalSchema("zIPv4Optional", zIPv4Optional, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
+  
+  // IPv6 Tests
+  testRequiredSchema("zIPv6Required", zIPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
+  testOptionalSchema("zIPv6Optional", zIPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
 });
