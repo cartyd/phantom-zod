@@ -1,5 +1,28 @@
 # © 2025 Dave Carty. Licensed under the ISC License.
+
 # Phantom Zod
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Available Schemas](#available-schemas)
+  - [Email Schemas](#email-schemas)
+  - [Phone Schemas](#phone-schemas)
+  - [String Schemas](#string-schemas)
+- [Error Message Customization](#error-message-customization)
+- [Phone Number Formats](#phone-number-formats)
+  - [E.164 Format (Default)](#e164-format-default)
+  - [National Format](#national-format)
+- [Advanced Usage](#advanced-usage)
+  - [Form Validation](#form-validation)
+  - [Error Handling](#error-handling)
+- [TypeScript Support](#typescript-support)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
+- [Changelog](#changelog)
 
 A TypeScript-first schema validation library built on top of Zod, providing pre-built validators for common data types with comprehensive error handling and customizable messages.
 
