@@ -7,6 +7,7 @@ import {
   US_PHONE_11_DIGIT_PATTERN,
   US_PHONE_DIGITS_ONLY_PATTERN,
   IPV4_PATTERN,
+  IPV6_PATTERN,
   US_ZIP_CODE_PATTERN,
   FILENAME_INVALID_CHARS_PATTERN,
   INTEGER_PATTERN,
@@ -273,6 +274,131 @@ describe('Regex Patterns', () => {
         expect(IPV4_PATTERN.test(ip)).toBe(false);
       });
     });
+  });
+
+  describe('IPV6_PATTERN', () => {
+    it('should match valid standard IPv6 addresses', () => {
+      const validIPv6Format = [
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334', // Fully expanded format
+        '2001:db8:1234:ffff:ffff:ffff:ffff:ffff',  // Maxed-out segments
+        'fe80:0000:0000:0000:0202:b3ff:fe1e:8329', // Link-local with full expansion
+      ];
+
+      validIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(true);
+      });
+    });
+
+    it('should match valid compressed IPv6 addresses', () => {
+      const validIPv6Format = [
+        
+        '2001:db8::1',              // Compressed zeros
+        'fe80::1ff:fe23:4567:890a', // Common link-local compressed
+        '::1',                      // Loopback address
+        '::ffff:c000:0280',         // IPv4-mapped IPv6 address
+      ];
+
+      validIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(true);
+      });
+    });
+
+    it('should match valid IPv6 addresses with embedded IPv4 address in the last 2 segments', () => {
+      const validIPv6Format = [
+        '::ffff:192.0.2.128',    // IPv4-mapped IPv6
+        '2001:db8::192.0.2.128', // IPv6 with embedded IPv4
+      ];
+
+      validIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(true);
+      });
+    });
+
+    it('should match valid IPv6 Link-local addresses with zone index', () => {
+      const validIPv6Format = [
+        'fe80::1%eth0',                    // Link-local with interface name
+        'fe80::a00:27ff:fe4e:66a1%enp0s3', // Another link-local with interface
+      ];
+
+      validIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(true);
+      });
+    });
+
+    it('should match valid Unique Local IPv6 addresses', () => {
+      const validIPv6Format = [
+        'fc00::1234',          // Unique local address (ULA)
+        'fd12:3456:789a:1::1', // ULA with subnet
+      ];
+
+      validIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(true);
+      });
+    });
+
+    it('should match valid Multicast IPv6 addresses', () => {
+      const validIPv6Format = [
+        'ff02::1', // All nodes on the local link
+        'ff05::2', // All routers on the site
+      ];
+
+      validIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(true);
+      });
+    });
+
+    it('should not match invalid IPv6 Format', () => {
+      const invalidIPv6Format = [
+
+        // ❌ Invalid Standard IPv6
+        '2001:db8:85a3:0000:0000:8a2e:0370:7334:1234', // Too many segments (9 instead of 8)
+        '2001:db8:85a3::8a2e::7334',                   // Multiple "::" compressions
+        '2001:db8:85a3:0000:0000:8a2e:0370',           // Too few segments (7 instead of 8)
+        '2001:db8:85a3:0000:0000:8a2e:0370:7334:',     // Trailing colon
+
+        // ❌ Invalid Compressed IPv6
+        '2001::db8::1',                                // Multiple "::"
+        ':::',                                         // Too many colons
+        '::g',                                         // Invalid hex character
+        '2001:db8::1::',                               // Multiple "::" again
+
+        // ❌ Invalid IPv6 with Embedded IPv4
+        '::ffff:999.0.2.128',                          // IPv4 segment out of range
+        '::ffff:192.0.2.256',                          // IPv4 segment out of range
+        '::ffff:192.0.2',                              // Incomplete IPv4
+        '2001:db8::192.0.2.128.1',                     // Too many IPv4 segments
+
+        // ❌ Invalid Link-local Address
+        'fe80::1%',                                    // Missing interface name
+        'fe80::1%$',                                   // Invalid interface character
+        'fe80::1%eth0%extra',                          // Multiple zone indices
+
+        // ❌ Invalid Unique Local Address
+        'fc00:::1234',                                 // Triple colon
+        'fd12:3456:789a:1::1::',                       // Multiple "::"
+        'fd12:3456:789a:1::1:xyz',                     // Invalid hex characters
+
+        // ❌ Invalid Multicast Address
+        'ff02::1::2',                                  // Multiple "::"
+        'ff05::zz',                                    // Invalid hex characters
+        'ff02:1',                                      // Too few segments
+
+        // ❌ Miscellaneous Edge Cases
+        '12345::',                                     // Segment too long (more than 4 hex digits)
+        '::12345',                                     // Segment too long
+        ':::',                                         // Triple colon again
+        '::ffff:192.0.2.128:1234',                     // Extra segment after IPv4
+        '',                                            // Empty String
+        '2001-0db8-85a3-0000-0000-8a2e-0370-7334',     // Incorrect Delimiter (-)
+        '2001.0db8.85a3.0000.0000.8a2e.0370.7334',     // Incorrect Delimiter in upper segments (.)
+
+      ];
+
+      invalidIPv6Format.forEach(ipv6 => {
+        expect(IPV6_PATTERN.test(ipv6)).toBe(false);
+      });
+    });
+
   });
 
   describe('US_ZIP_CODE_PATTERN', () => {
