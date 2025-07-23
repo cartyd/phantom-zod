@@ -8,6 +8,7 @@ import {
   US_PHONE_DIGITS_ONLY_PATTERN,
   IPV4_PATTERN,
   IPV6_PATTERN,
+  MAC_ADDRESS_PATTERN,
   US_ZIP_CODE_PATTERN,
   FILENAME_INVALID_CHARS_PATTERN,
   INTEGER_PATTERN,
@@ -396,6 +397,60 @@ describe('Regex Patterns', () => {
 
       invalidIPv6Format.forEach(ipv6 => {
         expect(IPV6_PATTERN.test(ipv6)).toBe(false);
+      });
+    });
+
+  });
+
+  describe('MAC_ADDRESS_PATTERN', () => {
+
+    it('should match valid MAC Addresses Format', () => {
+      const validMACAddressFormat = [
+        '00:1A:2B:3C:4D:5E',  // Colon-delimited format
+        '00-1A-2B-3C-4D-5E',  // Hyphen-delimited format
+        '001A2B3C4D5E',       // No delimiter format
+        'aa:bb:cc:dd:ee:ff',  // Lowercase hex with colons
+        'AA-BB-CC-DD-EE-FF',  // Uppercase hex with hyphens
+        'A1:B2:C3:D4:E5:F6',  // Mixed hex with colons
+        'A1B2C3D4E5F6',       // No delimiter, mixed hex
+        'aa:bb:cc:DD:EE:FF',  // Mixed Upper and Lower Case (colon)
+        'aa-bb-cc-DD-EE-FF',  // Mixed Upper and Lower Case (hyphen)
+        'aabbccDDEEFF',       // Mixed Upper and Lower Case (no delimiter)
+        '111111111111',       // all same (as long as length of 12)
+      ];
+
+      validMACAddressFormat.forEach(mac => {
+        expect(MAC_ADDRESS_PATTERN.test(mac)).toBe(true);
+      });
+    });
+
+    it('should not match invalid MAC Addresses Format', () => {
+      const invalidMACAddressFormat = [
+        '00:1A:2B:3C:4D',       // Too few segments
+        '00-1A-2B-3C-4D-5E-6F', // Too many segments
+        '00:1A:2B:3C:4D:5E:',   // Trailing colon
+        ':00:1A:2B:3C:4D:5E',   // Leading colon
+        '00:1A:2B:3C:4D:5G',    // Invalid hex character 'G'
+        '00-1A-2B-3C-4D-5Z',    // Invalid hex character 'Z'
+        '001A2B3C4D5',          // Too few characters (11 instead of 12)
+        '001A2B3C4D5E7F',       // Too many characters (14 instead of 12)
+        '00:1A:2B:3C:4D:5E:6F', // Extra segment
+        '00:1A:2B:3C:4D:5',     // One segment too short
+        '00:1A:2B:3C:4D:5E:GH', // Invalid characters and extra segment
+        '00:1A:2B:3C:4D:5E-6F', // Mixed delimiters
+        '001A2B3C:4D:5E-6F',    // Multi Mix delimiters
+        '00-1A:2B-3C:4D-5E',    // Alternating delimiters
+        '00:1A:2B:3C:4D:5E ',   // Trailing space
+        ' 00:1A:2B:3C:4D:5E',   // Leading space
+        '00:1A:2B:3C:4D:5E\n',  // Newline character
+        '',                     // Empty String
+        '001M2B3C4X5',          // Multiple Invalid chars "MX" in no delimiter formamt
+        '1111111111111',        // all same (13 instead of 12)
+        '11111111111',          // all same (11 instead of 12)
+      ];
+
+      invalidMACAddressFormat.forEach(mac => {
+        expect(MAC_ADDRESS_PATTERN.test(mac)).toBe(false);
       });
     });
 
