@@ -1,4 +1,4 @@
-import { trimOrUndefined, trimOrEmpty } from '../src/utils/string-utils';
+import { trimOrUndefined, trimOrEmpty } from '../src/common/utils/string-utils';
 import { runTableTests } from './setup';
 
 describe('Utility Functions', () => {
