@@ -2,7 +2,6 @@ import js from "@eslint/js";
 import ts from "@typescript-eslint/eslint-plugin";
 import parser from "@typescript-eslint/parser";
 import globals from "globals";
-import sortClassMembers from "eslint-plugin-sort-class-members";
 
 export default [
   {
@@ -28,7 +27,6 @@ export default [
     },
     plugins: {
       "@typescript-eslint": ts, // Correct format for plugins
-      "sort-class-members": sortClassMembers,
     },
     ...js.configs.recommended,
     rules: {
@@ -97,19 +95,28 @@ export default [
       "arrow-spacing": ["error", { before: true, after: true }], // Enforcing spaces around arrows in arrow functions
 
       // Class member ordering
-      "sort-class-members/sort-class-members": [
+      "@typescript-eslint/member-ordering": [
         "error",
         {
-          order: [
-            "[static-properties]",
-            "[static-methods]",
-            "[properties]",
-            "[conventional-private-properties]",
-            "constructor",
-            "[methods]",
-            "[conventional-private-methods]",
-          ],
-          accessorPairPositioning: "getThenSet",
+          default: {
+            memberTypes: [
+              // Static members
+              "static-field",
+              "static-method",
+              
+              // Instance members
+              "field",
+              "private-field",
+              
+              // Constructor
+              "constructor",
+              
+              // Methods
+              "method",
+              "private-method",
+            ],
+            order: "alphabetically",
+          },
         },
       ],
     },

@@ -25,18 +25,15 @@ export const zIPv4Optional = (
   msg = "IPv4 address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: any,
-  locale?: import("../localization/types").LocaleCode,
-  fallback?: string,
-  localizationManager?: any,
-  logger?: any
+  params?: import("../localization/types").MessageParams,
+  fallback?: string
 ) =>
   z
     .union([
       z.string({
-        message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback, localizationManager, logger }),
+        message: formatErrorMessage({ msg, msgType, messageKey, params, fallback }),
       }).refine((val) => IPV4_PATTERN.test(val), {
-        message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback: "is not a valid IPv4 address", localizationManager, logger }),
+        message: formatErrorMessage({ msg, msgType, messageKey, params, fallback: "is not a valid IPv4 address" }),
       }),
       z.null(),
       z.undefined(),
@@ -60,18 +57,15 @@ export const zIPv4Required = (
   msg = "IPv4 address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: any,
-  locale?: import("../localization/types").LocaleCode,
-  fallback?: string,
-  localizationManager?: any,
-  logger?: any
+  params?: import("../localization/types").MessageParams,
+  fallback?: string
 ) =>
   z
     .string({
-      message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback, localizationManager, logger }),
+      message: formatErrorMessage({ msg, msgType, messageKey, params, fallback }),
     })
     .refine((val) => IPV4_PATTERN.test(val), {
-      message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback: "is not a valid IPv4 address", localizationManager, logger }),
+      message: formatErrorMessage({ msg, msgType, messageKey, params, fallback: "is not a valid IPv4 address" }),
     });
 
 
@@ -95,18 +89,15 @@ export const zIPv6Optional = (
   msg = "IPv6 address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: any,
-  locale?: import("../localization/types").LocaleCode,
-  fallback?: string,
-  localizationManager?: any,
-  logger?: any
+  params?: import("../localization/types").MessageParams,
+  fallback?: string
 ) =>
   z
     .union([
       z.string({
-        message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback, localizationManager, logger }),
+        message: formatErrorMessage({ msg, msgType, messageKey, params, fallback }),
       }).refine((val) => IPV6_PATTERN.test(val), {
-        message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback: "is not a valid IPv6 address", localizationManager, logger }),
+        message: formatErrorMessage({ msg, msgType, messageKey, params, fallback: "is not a valid IPv6 address" }),
       }),
       z.null(),
       z.undefined(),
@@ -130,18 +121,15 @@ export const zIPv6Required = (
   msg = "IPv6 address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: any,
-  locale?: import("../localization/types").LocaleCode,
-  fallback?: string,
-  localizationManager?: any,
-  logger?: any
+  params?: import("../localization/types").MessageParams,
+  fallback?: string
 ) =>
   z
     .string({
-      message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback, localizationManager, logger }),
+      message: formatErrorMessage({ msg, msgType, messageKey, params, fallback }),
     })
     .refine((val) => IPV6_PATTERN.test(val), {
-      message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback: "is not a valid IPv6 address", localizationManager, logger }),
+      message: formatErrorMessage({ msg, msgType, messageKey, params, fallback: "is not a valid IPv6 address" }),
     });
 
 /**
@@ -164,18 +152,15 @@ export const zMacAddressOptional = (
   msg = "MAC address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: any,
-  locale?: import("../localization/types").LocaleCode,
-  fallback?: string,
-  localizationManager?: any,
-  logger?: any
+  params?: import("../localization/types").MessageParams,
+  fallback?: string
 ) =>
   z
     .union([
       z.string({
-        message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback, localizationManager, logger }),
+        message: formatErrorMessage({ msg, msgType, messageKey, params, fallback }),
       }).refine((val) => MAC_ADDRESS_PATTERN.test(val), {
-        message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback: "is not a valid MAC address", localizationManager, logger }),
+        message: formatErrorMessage({ msg, msgType, messageKey, params, fallback: "is not a valid MAC address" }),
       }),
       z.null(),
       z.undefined(),
@@ -200,16 +185,13 @@ export const zMacAddressRequired = (
   msg = "MAC address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: any,
-  locale?: import("../localization/types").LocaleCode,
-  fallback?: string,
-  localizationManager?: any,
-  logger?: any
+  params?: import("../localization/types").MessageParams,
+  fallback?: string
 ) =>
   z
     .string({
-      message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback, localizationManager, logger }),
+      message: formatErrorMessage({ msg, msgType, messageKey, params, fallback }),
     })
     .refine((val) => MAC_ADDRESS_PATTERN.test(val), {
-      message: formatErrorMessage({ msg, msgType, messageKey, params, locale, fallback: "is not a valid MAC address", localizationManager, logger }),
+      message: formatErrorMessage({ msg, msgType, messageKey, params, fallback: "is not a valid MAC address" }),
     });
