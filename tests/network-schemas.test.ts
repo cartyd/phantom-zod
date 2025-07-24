@@ -1,5 +1,6 @@
 import { zIPv4Optional, zIPv4Required, zIPv6Optional, zIPv6Required, zMacAddressOptional, zMacAddressRequired } from "../src/schemas/network-schemas";
 import { INVALID_HEX_CHAR_PATTERN, IPV4_INVALID_OCTETS, LETTER_CASE_PATTERN, IPV4_INVALID_CHAR_PATTERN, IPV6_MULTIPLE_DOUBLE_COLON_PATTERN, MAC_SEPARATOR_PATTERN, VALID_MAC_FORMAT_PATTERN } from "../src/common/regex-patterns";
+import { MsgType } from "../src/schemas/msg-type";
 // Test Data Constants
 const TEST_DATA = {
   // MAC Address Test Data
@@ -161,64 +162,74 @@ const getDescriptiveTestName = (schemaName: string, data: string, isValid: boole
   return `${prefix} ${schemaType}: ${data}`;
 };
 
-const testRequiredSchema = (schemaName: string, schemaFunction: () => any, validData: string[], invalidData: string[]) => {
+const testRequiredSchema = (schemaName: string, createSchema: (...args: any[]) => any, validData: string[], invalidData: string[]) => {
   describe(schemaName, () => {
     // Test valid data with descriptive names
     validData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, true), () => {
-        expect(schemaFunction().parse(data)).toBe(data);
+        const schema = createSchema("Test", MsgType.FieldName);
+        expect(schema.parse(data)).toBe(data);
       });
     });
-    
+
     // Test invalid data with descriptive names
     invalidData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, false), () => {
-        expect(() => schemaFunction().parse(data)).toThrow();
+        const schema = createSchema("Test", MsgType.FieldName);
+        expect(() => schema.parse(data)).toThrow();
       });
     });
-    
+
     // Edge case tests with specific descriptions
     test('rejects empty string as invalid input', () => {
-      expect(() => schemaFunction().parse('')).toThrow();
+      const schema = createSchema("Test", MsgType.FieldName);
+      expect(() => schema.parse('')).toThrow();
     });
-    
+
     test('rejects undefined as invalid input', () => {
-      expect(() => schemaFunction().parse(undefined)).toThrow();
+      const schema = createSchema("Test", MsgType.FieldName);
+      expect(() => schema.parse(undefined)).toThrow();
     });
-    
+
     test('rejects null as invalid input', () => {
-      expect(() => schemaFunction().parse(null)).toThrow();
+      const schema = createSchema("Test", MsgType.FieldName);
+      expect(() => schema.parse(null)).toThrow();
     });
   });
 };
 
-const testOptionalSchema = (schemaName: string, schemaFunction: () => any, validData: string[], invalidData: string[]) => {
+const testOptionalSchema = (schemaName: string, createSchema: (...args: any[]) => any, validData: string[], invalidData: string[]) => {
   describe(schemaName, () => {
     // Test valid data with descriptive names
     validData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, true), () => {
-        expect(schemaFunction().parse(data)).toBe(data);
+        const schema = createSchema("Test", MsgType.FieldName);
+        expect(schema.parse(data)).toBe(data);
       });
     });
-    
+
     // Test invalid data with descriptive names
     invalidData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, false), () => {
-        expect(() => schemaFunction().parse(data)).toThrow();
+        const schema = createSchema("Test", MsgType.FieldName);
+        expect(() => schema.parse(data)).toThrow();
       });
     });
-    
+
     // Edge case tests with specific descriptions
     test('accepts undefined and returns undefined (optional behavior)', () => {
-      expect(schemaFunction().parse(undefined)).toBeUndefined();
+      const schema = createSchema("Test", MsgType.FieldName);
+      expect(schema.parse(undefined)).toBeUndefined();
     });
-    
+
     test('accepts null and returns undefined (optional behavior)', () => {
-      expect(schemaFunction().parse(null)).toBeUndefined();
+      const schema = createSchema("Test", MsgType.FieldName);
+      expect(schema.parse(null)).toBeUndefined();
     });
-    
+
     test('rejects empty string even in optional schema', () => {
-      expect(() => schemaFunction().parse('')).toThrow();
+      const schema = createSchema("Test", MsgType.FieldName);
+      expect(() => schema.parse('')).toThrow();
     });
   });
 };
@@ -227,11 +238,11 @@ describe("Network Schemas", () => {
   // MAC Address Tests
   testRequiredSchema("zMacAddressRequired", zMacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
   testOptionalSchema("zMacAddressOptional", zMacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
-  
+
   // IPv4 Tests
   testRequiredSchema("zIPv4Required", zIPv4Required, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
   testOptionalSchema("zIPv4Optional", zIPv4Optional, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
-  
+
   // IPv6 Tests
   testRequiredSchema("zIPv6Required", zIPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
   testOptionalSchema("zIPv6Optional", zIPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
