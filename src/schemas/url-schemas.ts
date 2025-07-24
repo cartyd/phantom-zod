@@ -1,18 +1,9 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "../common/message-handler";
+import type { IMessageHandler } from "../common/message-handler";
 import { IPV4_PATTERN } from "../common/regex-patterns";
 
 
-// --- URL Schemas ---
-
-/**
- * Optional URL schema.
- * Accepts a string that is a valid URL or undefined.
- * @param msg - The field name or custom message for error output.
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for an optional URL.
- */
 // Custom URL validator function to handle edge cases manually
 const isValidUrl = (url: string): boolean => {
   try {
@@ -60,35 +51,66 @@ const isValidUrl = (url: string): boolean => {
   }
 };
 
-export const zUrlOptional = (
-  msg = "URL",
-  msgType: MsgType = MsgType.FieldName,
-  
-) =>
-  z
-    .string()
-    .refine((val) => isValidUrl(val), {
-        message: formatErrorMessage({ msg, msgType, messageKey: "url.mustBeValidUrl"}),
-    })
-    .optional();
+/**
+ * Creates a factory function for URL schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing URL schema creation functions
+ */
+export const createUrlSchemas = (messageHandler: IMessageHandler) => {
+  /**
+   * Optional URL schema.
+   * Accepts a string that is a valid URL or undefined.
+   */
+  const zUrlOptional = (
+    msg = "URL",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .string()
+      .refine((val) => isValidUrl(val), {
+          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "url.mustBeValidUrl"}),
+      })
+      .optional();
+
+  /**
+   * Required URL schema.
+   * Accepts a non-empty string that is a valid URL.
+   */
+  const zUrlRequired = (
+    msg = "URL",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .string()
+      .nonempty({
+        message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "url.required"}),
+      })
+      .refine((val) => isValidUrl(val), {
+          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "url.mustBeValidUrl"}),
+      });
+
+  return {
+    zUrlOptional,
+    zUrlRequired,
+  };
+};
 
 /**
- * Required URL schema.
- * Accepts a non-empty string that is a valid URL.
- * @param msg - The field name or custom message for error output.
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a required URL.
+ * Individual schema creation functions that accept messageHandler as first parameter
  */
-export const zUrlRequired = (
+
+export const zUrlOptional = (
+  messageHandler: IMessageHandler,
   msg = "URL",
   msgType: MsgType = MsgType.FieldName,
-  
-) =>
-  z
-    .string()
-    .nonempty({
-      message: formatErrorMessage({ msg, msgType, messageKey: "url.required"}),
-    })
-    .refine((val) => isValidUrl(val), {
-        message: formatErrorMessage({ msg, msgType, messageKey: "url.mustBeValidUrl"}),
-    });
+) => {
+  return createUrlSchemas(messageHandler).zUrlOptional(msg, msgType);
+};
+
+export const zUrlRequired = (
+  messageHandler: IMessageHandler,
+  msg = "URL",
+  msgType: MsgType = MsgType.FieldName,
+) => {
+  return createUrlSchemas(messageHandler).zUrlRequired(msg, msgType);
+};

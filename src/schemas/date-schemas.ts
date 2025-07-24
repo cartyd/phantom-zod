@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { formatErrorMessage } from "../common/message-handler";
+import type { IMessageHandler } from "../common/message-handler";
 import { MsgType } from "./msg-type";
 
 
@@ -81,13 +81,14 @@ const getExampleFormat = (format: DateFormat): string => {
  * @returns Zod schema for date/datetime validation
  */
 // Helper for consistent error message formatting
-const dateErrorMessage = (msg: string, msgType: MsgType, format: DateFormat) =>
-  formatErrorMessage({
-    msg,
-    msgType,
-    messageKey: "date.invalidFormat",
-    params: { format: getExampleFormat(format) }
-  });
+const createDateErrorMessage = (messageHandler: IMessageHandler) => 
+  (msg: string, msgType: MsgType, format: DateFormat) =>
+    messageHandler.formatErrorMessage({
+      msg,
+      msgType,
+      messageKey: "date.invalidFormat",
+      params: { format: getExampleFormat(format) }
+    });
 
 /**
  * Shared date parsing utility that handles both date and datetime formats.
