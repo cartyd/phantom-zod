@@ -1,11 +1,12 @@
 {
   "name": "phantom-zod",
   "version": "1.0.1",
+  "type": "module",
   "description": "Schema validation library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/localization/locales/*.json dist/localization/locales/",
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",

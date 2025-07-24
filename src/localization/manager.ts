@@ -3,15 +3,75 @@ import type {
   LocalizationMessages, 
   MessageParams, 
   MessageKeyPath,
-  MessageRetriever 
+  MessageRetriever,
+  ILocalizationManager 
 } from './types';
+
+/**
+ * Logger interface for configurable logging
+ */
+interface Logger {
+  warn(message: string, ...args: any[]): void;
+}
+
+/**
+ * Default logger that uses console
+ */
+const defaultLogger: Logger = {
+  warn: (message: string, ...args: any[]) => console.warn(message, ...args)
+};
 
 /**
  * Localization manager for handling message retrieval and interpolation
  */
-export class LocalizationManager {
+export class LocalizationManager implements ILocalizationManager {
   private messages = new Map<LocaleCode, LocalizationMessages>();
   private fallbackLocale: LocaleCode = 'en';
+  private currentLocale: LocaleCode = 'en';
+  private logger: Logger = defaultLogger;
+
+  /**
+   * Validate that imported JSON matches LocalizationMessages interface
+   */
+  private isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      typeof obj.locale === 'string' &&
+      typeof obj.common === 'object' &&
+      typeof obj.string === 'object' &&
+      typeof obj.email === 'object' &&
+      typeof obj.number === 'object'
+      // Add more validation as needed
+    );
+  }
+
+  /**
+   * Static mapping of locale codes to their import functions
+   * This enables static analysis and better bundling
+   */
+  private static readonly localeImports: Record<LocaleCode, () => Promise<{ default: any }>> = {
+    'en': () => import('./locales/en.json'),
+    'en-US': () => import('./locales/en-US.json'),
+    'en-GB': () => import('./locales/en-GB.json'),
+    'es': () => import('./locales/es.json'),
+    'es-ES': () => import('./locales/es-ES.json'),
+    'es-MX': () => import('./locales/es-MX.json'),
+    'fr': () => import('./locales/fr.json'),
+    'fr-FR': () => import('./locales/fr-FR.json'),
+    'fr-CA': () => import('./locales/fr-CA.json'),
+    'de': () => import('./locales/de.json'),
+    'de-DE': () => import('./locales/de-DE.json'),
+    'it': () => import('./locales/it.json'),
+    'pt': () => import('./locales/pt.json'),
+    'pt-BR': () => import('./locales/pt-BR.json'),
+    'ru': () => import('./locales/ru.json'),
+    'zh': () => import('./locales/zh.json'),
+    'zh-CN': () => import('./locales/zh-CN.json'),
+    'zh-TW': () => import('./locales/zh-TW.json'),
+    'ja': () => import('./locales/ja.json'),
+    'ko': () => import('./locales/ko.json'),
+  };
 
   /**
    * Load locale messages from JSON file
@@ -21,12 +81,31 @@ export class LocalizationManager {
       return; // Already loaded
     }
 
+    const importFunction = LocalizationManager.localeImports[locale];
+    if (!importFunction) {
+      throw new Error(`Unsupported locale '${locale}'. Available locales: ${Object.keys(LocalizationManager.localeImports).join(', ')}`);
+    }
+
     try {
-      const messages = await import(`./locales/${locale}.json`);
-      this.registerMessages(messages as LocalizationMessages);
+      const messages = await importFunction();
+      const localeData = messages.default;
+      
+      if (!this.isValidLocalizationMessages(localeData)) {
+        throw new Error(`Invalid localization messages format in ${locale}.json`);
+      }
+      
+      this.registerMessages(localeData);
     } catch (error) {
-      console.warn(`Failed to load locale '${locale}':`, error);
-      throw new Error(`Locale '${locale}' not found`);
+      if (error instanceof Error && error.message.includes('Invalid localization messages format')) {
+        // Re-throw validation errors as-is (they have clear messages)
+        throw error;
+      }
+      if (error instanceof Error && error.message.includes('Unsupported locale')) {
+        // Re-throw unsupported locale errors as-is
+        throw error;
+      }
+      // For file not found and other import errors, provide a clear error
+      throw new Error(`Failed to load locale '${locale}': ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -41,7 +120,34 @@ export class LocalizationManager {
    * Set the fallback locale
    */
   setFallbackLocale(locale: LocaleCode): void {
+    if (!this.isValidLocaleCode(locale)) {
+      throw new Error(`Invalid locale code '${locale}'. Must be one of: ${this.getSupportedLocales().join(', ')}`);
+    }
     this.fallbackLocale = locale;
+  }
+
+  /**
+   * Get the fallback locale
+   */
+  getFallbackLocale(): LocaleCode {
+    return this.fallbackLocale;
+  }
+
+  /**
+   * Set the current active locale
+   */
+  setLocale(locale: LocaleCode): void {
+    if (!this.isValidLocaleCode(locale)) {
+      throw new Error(`Invalid locale code '${locale}'. Must be one of: ${this.getSupportedLocales().join(', ')}`);
+    }
+    this.currentLocale = locale;
+  }
+
+  /**
+   * Get the current active locale
+   */
+  getLocale(): LocaleCode {
+    return this.currentLocale;
   }
 
   /**
@@ -52,17 +158,25 @@ export class LocalizationManager {
   }
 
   /**
+   * Set a custom logger for handling warnings and errors
+   * @param logger - Custom logger implementation
+   */
+  setLogger(logger: Logger): void {
+    this.logger = logger;
+  }
+
+  /**
    * Get a message by key with optional parameter interpolation
    * @param key - Message key in dot notation (e.g., 'string.required')
    * @param params - Parameters for message interpolation
    * @param locale - Optional locale override
    */
   getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string {
-    const targetLocale = locale || this.fallbackLocale;
+    const targetLocale = locale ?? this.currentLocale;
     
     const message = this.getMessageFromLocale(targetLocale, key) 
-      || this.getMessageFromLocale(this.fallbackLocale, key)
-      || key; // Fallback to key itself
+      ?? this.getMessageFromLocale(this.fallbackLocale, key)
+      ?? key; // Fallback to key itself
 
     return this.interpolateMessage(message, params);
   }
@@ -77,7 +191,13 @@ export class LocalizationManager {
     locale?: LocaleCode
   ): string {
     const message = this.getMessage(messageKey, params, locale);
-    return `${fieldName} ${message}`;
+    
+    // Get the error formatting template from localization messages
+    const formatTemplate = this.getMessage('common.errorFormat', { fieldName, message }, locale) 
+      || this.getMessage('errorFormat', { fieldName, message }, locale)
+      || '{fieldName} {message}'; // Ultimate fallback
+    
+    return this.interpolateMessage(formatTemplate, { fieldName, message });
   }
 
   /**
@@ -104,6 +224,20 @@ export class LocalizationManager {
   }
 
   /**
+   * Get all supported locale codes (whether loaded or not)
+   */
+  getSupportedLocales(): LocaleCode[] {
+    return Object.keys(LocalizationManager.localeImports) as LocaleCode[];
+  }
+
+  /**
+   * Validate if a locale code is supported
+   */
+  private isValidLocaleCode(locale: string): locale is LocaleCode {
+    return locale in LocalizationManager.localeImports;
+  }
+
+  /**
    * Get message from specific locale
    */
   private getMessageFromLocale(locale: LocaleCode, key: string): string | undefined {
@@ -116,8 +250,12 @@ export class LocalizationManager {
   /**
    * Get nested value from object using dot notation
    */
-  private getNestedValue(obj: any, path: string): string | undefined {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+  private getNestedValue(obj: LocalizationMessages, path: string): string | undefined {
+    const result = path.split('.').reduce((current: any, key: string) => {
+      return current && typeof current === 'object' ? current[key] : undefined;
+    }, obj);
+    
+    return typeof result === 'string' ? result : undefined;
   }
 
   /**
@@ -134,6 +272,27 @@ export class LocalizationManager {
 }
 
 /**
- * Global localization manager instance
+ * Create a new LocalizationManager instance
+ * Useful for testing or when you need multiple independent managers
  */
-export const localizationManager = new LocalizationManager();
+export function createLocalizationManager(): LocalizationManager {
+  return new LocalizationManager();
+}
+
+/**
+ * Default global localization manager instance
+ * This is provided for convenience but can be replaced or avoided in tests
+ */
+export const localizationManager = createLocalizationManager();
+
+/**
+ * Reset the global localization manager to a fresh state
+ * Primarily useful for testing to ensure clean state between tests
+ */
+export function resetGlobalLocalizationManager(): void {
+  // Clear existing data
+  const currentManager = localizationManager as any;
+  currentManager.messages.clear();
+  currentManager.currentLocale = 'en';
+  currentManager.fallbackLocale = 'en';
+}

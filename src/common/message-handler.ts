@@ -18,6 +18,12 @@ const defaultLogger: Logger = {
 };
 
 let currentLogger: Logger = defaultLogger;
+
+/**
+ * Default error message key for fallback
+ */
+const DEFAULT_ERROR_MESSAGE_KEY = "string.invalid";
+
 /**
  * Global configuration state
  */
@@ -200,6 +206,5 @@ export const formatErrorMessage = (options: FormatErrorOptions): string => {
 
 
 
-const DEFAULT_ERROR_MESSAGE_KEY = "string.invalid";
 
 

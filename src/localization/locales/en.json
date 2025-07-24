@@ -13,7 +13,8 @@
     "notFound": "not found",
     "duplicate": "is duplicate",
     "empty": "is empty",
-    "notEmpty": "must not be empty"
+    "notEmpty": "must not be empty",
+    "errorFormat": "{fieldName} {message}"
   },
   "string": {
     "required": "is required",

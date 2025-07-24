@@ -1,56 +1,80 @@
-// Import types first
+// Import types used in this file
 import type { 
   LocaleCode, 
   LocalizationMessages, 
-  MessageParams, 
-  MessageKeyPath,
-  MessageRetriever,
-  LocaleConfig 
+  MessageParams
 } from './types';
 
-// Export types
+// Export all types for consumers
 export type { 
   LocaleCode, 
   LocalizationMessages, 
   MessageParams, 
   MessageKeyPath,
   MessageRetriever,
-  LocaleConfig 
+  LocaleConfig,
+  ILocalizationManager 
 } from './types';
 
 // Export manager
 export { LocalizationManager, localizationManager } from './manager';
 
-// Initialize default English locale
+// Import manager instance for initialization
 import { localizationManager } from './manager';
+
+// Import default locale data
 import enMessages from './locales/en.json';
 
-// Register English as default and fallback locale
-localizationManager.registerMessages(enMessages as LocalizationMessages);
-localizationManager.setFallbackLocale('en');
-
 /**
- * Load and register a locale
- * @param locale - Locale code to load
+ * Type guard to validate that imported JSON matches LocalizationMessages interface
  */
-export async function loadLocale(locale: LocaleCode): Promise<void> {
-  await localizationManager.loadLocale(locale);
+function isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.locale === 'string' &&
+    typeof obj.common === 'object' &&
+    typeof obj.string === 'object' &&
+    typeof obj.email === 'object' &&
+    typeof obj.number === 'object'
+    // Add more validation as needed
+  );
 }
 
 /**
- * Load multiple locales
- * @param locales - Array of locale codes to load
+ * Initialize the localization system with default English locale
+ * Call this function before using other localization functions
  */
-export async function loadLocales(locales: LocaleCode[]): Promise<void> {
-  await localizationManager.loadLocales(locales);
+export function initializeLocalization(): void {
+  if (!isValidLocalizationMessages(enMessages)) {
+    throw new Error('Invalid localization messages format in en.json');
+  }
+  localizationManager.registerMessages(enMessages);
+  localizationManager.setFallbackLocale('en');
 }
 
+// Auto-initialize for convenience (can be disabled by calling initializeLocalization manually)
+initializeLocalization();
+
 /**
- * Get message with specific locale
+ * Get message with specific locale, with enhanced default behavior
+ * This is kept as a convenience function since it improves the default locale handling
  * @param key - Message key
  * @param params - Parameters for interpolation
- * @param locale - Locale to use (defaults to English)
+ * @param locale - Locale to use (defaults to manager's fallback locale)
  */
-export function getMessage(key: string, params?: MessageParams, locale: LocaleCode = 'en'): string {
-  return localizationManager.getMessage(key, params, locale);
+export function getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string {
+  const targetLocale = locale ?? localizationManager.getFallbackLocale();
+  return localizationManager.getMessage(key, params, targetLocale);
 }
+
+// For convenience, export commonly used manager methods as aliases
+// Use localizationManager directly for full API access
+export const {
+  loadLocale,
+  loadLocales, 
+  setLocale,
+  getLocale,
+  hasLocale,
+  getAvailableLocales
+} = localizationManager;

@@ -339,3 +339,29 @@ export interface MessageRetriever {
   <T extends MessageKeyPath>(key: T, params?: MessageParams): string;
   (key: string, params?: MessageParams): string;
 }
+
+/**
+ * Common interface for LocalizationManager implementations
+ * Provides a contract for all localization manager functionality
+ */
+export interface ILocalizationManager {
+  // Locale management
+  setLocale(locale: LocaleCode): void;
+  getLocale(): LocaleCode;
+  setFallbackLocale(locale: LocaleCode): void;
+  getFallbackLocale(): LocaleCode;
+  
+  // Dynamic loading
+  loadLocale(locale: LocaleCode): Promise<void>;
+  loadLocales(locales: LocaleCode[]): Promise<void>;
+  ensureLocaleLoaded(locale: LocaleCode): Promise<void>;
+  
+  // Message operations
+  getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string;
+  getErrorMessage(fieldName: string, messageKey: MessageKeyPath, params?: MessageParams, locale?: LocaleCode): string;
+  registerMessages(messages: LocalizationMessages): void;
+  
+  // Utility methods
+  hasLocale(locale: LocaleCode): boolean;
+  getAvailableLocales(): LocaleCode[];
+}
