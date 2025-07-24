@@ -3,8 +3,7 @@ import type {
   LocalizationMessages, 
   MessageParams, 
   MessageKeyPath,
-  MessageRetriever,
-  ILocalizationManager 
+  LocalizationManagerInterface 
 } from './types';
 
 /**
@@ -24,7 +23,7 @@ const defaultLogger: Logger = {
 /**
  * Localization manager for handling message retrieval and interpolation
  */
-export class LocalizationManager implements ILocalizationManager {
+export class LocalizationManager implements LocalizationManagerInterface {
   private messages = new Map<LocaleCode, LocalizationMessages>();
   private fallbackLocale: LocaleCode = 'en';
   private currentLocale: LocaleCode = 'en';
@@ -50,28 +49,30 @@ export class LocalizationManager implements ILocalizationManager {
    * Static mapping of locale codes to their import functions
    * This enables static analysis and better bundling
    */
-  private static readonly localeImports: Record<LocaleCode, () => Promise<{ default: any }>> = {
-    'en': () => import('./locales/en.json'),
-    'en-US': () => import('./locales/en-US.json'),
-    'en-GB': () => import('./locales/en-GB.json'),
-    'es': () => import('./locales/es.json'),
-    'es-ES': () => import('./locales/es-ES.json'),
-    'es-MX': () => import('./locales/es-MX.json'),
-    'fr': () => import('./locales/fr.json'),
-    'fr-FR': () => import('./locales/fr-FR.json'),
-    'fr-CA': () => import('./locales/fr-CA.json'),
-    'de': () => import('./locales/de.json'),
-    'de-DE': () => import('./locales/de-DE.json'),
-    'it': () => import('./locales/it.json'),
-    'pt': () => import('./locales/pt.json'),
-    'pt-BR': () => import('./locales/pt-BR.json'),
-    'ru': () => import('./locales/ru.json'),
-    'zh': () => import('./locales/zh.json'),
-    'zh-CN': () => import('./locales/zh-CN.json'),
-    'zh-TW': () => import('./locales/zh-TW.json'),
-    'ja': () => import('./locales/ja.json'),
-    'ko': () => import('./locales/ko.json'),
-  };
+  private static readonly localeImports: Record<LocaleCode, () => Promise<{ default: any }>> = (() => {
+    const imports: Record<string, () => Promise<{ default: any }>> = {};
+    imports.en = () => import('./locales/en.json');
+    imports['en-US'] = () => import('./locales/en-US.json');
+    imports['en-GB'] = () => import('./locales/en-GB.json');
+    imports.es = () => import('./locales/es.json');
+    imports['es-ES'] = () => import('./locales/es-ES.json');
+    imports['es-MX'] = () => import('./locales/es-MX.json');
+    imports.fr = () => import('./locales/fr.json');
+    imports['fr-FR'] = () => import('./locales/fr-FR.json');
+    imports['fr-CA'] = () => import('./locales/fr-CA.json');
+    imports.de = () => import('./locales/de.json');
+    imports['de-DE'] = () => import('./locales/de-DE.json');
+    imports.it = () => import('./locales/it.json');
+    imports.pt = () => import('./locales/pt.json');
+    imports['pt-BR'] = () => import('./locales/pt-BR.json');
+    imports.ru = () => import('./locales/ru.json');
+    imports.zh = () => import('./locales/zh.json');
+    imports['zh-CN'] = () => import('./locales/zh-CN.json');
+    imports['zh-TW'] = () => import('./locales/zh-TW.json');
+    imports.ja = () => import('./locales/ja.json');
+    imports.ko = () => import('./locales/ko.json');
+    return imports as Record<LocaleCode, () => Promise<{ default: any }>>;
+  })();
 
   /**
    * Load locale messages from JSON file

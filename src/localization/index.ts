@@ -13,7 +13,7 @@ export type {
   MessageKeyPath,
   MessageRetriever,
   LocaleConfig,
-  ILocalizationManager 
+  LocalizationManagerInterface 
 } from './types';
 
 // Export manager

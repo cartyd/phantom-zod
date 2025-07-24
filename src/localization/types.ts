@@ -344,7 +344,7 @@ export interface MessageRetriever {
  * Common interface for LocalizationManager implementations
  * Provides a contract for all localization manager functionality
  */
-export interface ILocalizationManager {
+export interface LocalizationManagerInterface {
   // Locale management
   setLocale(locale: LocaleCode): void;
   getLocale(): LocaleCode;

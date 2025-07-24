@@ -18,6 +18,7 @@ const createMinimalMessages = (locale: LocaleCode, overrides: any = {}): Localiz
     duplicate: 'is duplicate',
     empty: 'is empty',
     notEmpty: 'must not be empty',
+    errorFormat: '{fieldName} {message}',
     ...overrides.common
   },
   string: {
@@ -202,6 +203,9 @@ const mockEnglishMessages = createMinimalMessages('en');
 (mockEnglishMessages as any).nested = { deep: { value: 'deep nested value with {param}' } };
 
 const mockSpanishMessages = createMinimalMessages('es', {
+  common: {
+    errorFormat: '{fieldName} {message}'
+  },
   string: {
     required: 'es requerido',
     tooShort: 'es demasiado corto (mínimo: {min} caracteres)',
