@@ -60,7 +60,7 @@ export const zCurrencyCode = (
       msgType: msgType,
       messageKey: "invalidCurrencyCode",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -83,7 +83,7 @@ export const zMoneyAmount = (
         msgType: msgType,
         messageKey: "numberRequired",
         params: { fieldName },
-        locale: "en"
+        
       }),
     })
     .positive({
@@ -92,7 +92,7 @@ export const zMoneyAmount = (
         msgType: msgType,
         messageKey: "mustBePositive",
         params: { fieldName },
-        locale: "en"
+        
       }),
     })
     .refine(
@@ -106,7 +106,7 @@ export const zMoneyAmount = (
           msgType: msgType,
           messageKey: "invalidDecimalPlaces",
           params: { fieldName, max: maxDecimals },
-          locale: "en"
+          
         }),
       },
     );
@@ -130,7 +130,7 @@ export const zMoneyAmountFromString = (
         msgType: msgType,
         messageKey: "stringRequired",
         params: { fieldName },
-        locale: "en"
+        
       }),
     })
     .regex(MONEY_DECIMAL_PATTERN, {
@@ -139,7 +139,7 @@ export const zMoneyAmountFromString = (
         msgType: msgType,
         messageKey: "invalidFormat",
         params: { fieldName },
-        locale: "en"
+        
       }),
     })
     .transform((val) => parseFloat(val))
@@ -151,7 +151,7 @@ export const zMoneyAmountFromString = (
           msgType: msgType,
           messageKey: "mustBePositive",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     )
@@ -166,7 +166,7 @@ export const zMoneyAmountFromString = (
           msgType: msgType,
           messageKey: "invalidDecimalPlaces",
           params: { fieldName, max: maxDecimals },
-          locale: "en"
+          
         }),
       },
     );
@@ -344,7 +344,7 @@ export const zPriceRange = (
         msgType: msgType,
         messageKey: "rangeMinMax",
         params: { fieldName },
-        locale: "en"
+        
       }),
       path: ["min"],
     },

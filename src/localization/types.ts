@@ -236,6 +236,23 @@ export interface AddressMessages extends Pick<CommonMessages, 'required' | 'inva
 }
 
 /**
+ * Network-specific validation messages
+ */
+export interface NetworkMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+  mustBeValidIPv4: string;
+  mustBeValidIPv6: string;
+  mustBeValidMacAddress: string;
+  invalidIPv4Format: string;
+  invalidIPv6Format: string;
+  invalidMacFormat: string;
+  examples: {
+    ipv4: string;
+    ipv6: string;
+    mac: string;
+  };
+}
+
+/**
  * User-specific validation messages
  */
 export interface UserMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
@@ -275,6 +292,7 @@ export interface LocalizationMessages {
   fileUpload: FileUploadMessages;
   pagination: PaginationMessages;
   address: AddressMessages;
+  network: NetworkMessages;
   user: UserMessages;
 }
 
@@ -330,6 +348,8 @@ export type MessageKeyPath =
   | `fileUpload.examples.${keyof FileUploadMessages['examples']}`
   | `pagination.${keyof PaginationMessages}`
   | `address.${keyof AddressMessages}`
+  | `network.${keyof NetworkMessages}`
+  | `network.examples.${keyof NetworkMessages['examples']}`
   | `user.${keyof UserMessages}`;
 
 /**

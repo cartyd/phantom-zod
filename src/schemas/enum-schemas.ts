@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "../common/message-handler";
-import type { LocaleCode } from "../localization/types";
+
 
 
 export type EnumOptional<TValue extends [string, ...string[]]> = z.infer<
@@ -33,7 +33,7 @@ export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) =>
   z
     .enum(values as unknown as [string, ...string[]], {
@@ -42,7 +42,7 @@ export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
         msgType,
         messageKey: "enum.mustBeOneOf",
         params: { values: values.join(", ") },
-        locale
+        
       }),
     })
     .optional();
@@ -62,7 +62,7 @@ export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) =>
   z.enum(values as unknown as [string, ...string[]], {
     message: formatErrorMessage({
@@ -70,6 +70,6 @@ export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
       msgType,
       messageKey: "enum.mustBeOneOf",
       params: { values: values.join(", ") },
-      locale
+      
     }),
   });

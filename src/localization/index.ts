@@ -36,7 +36,8 @@ function isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
     typeof obj.common === 'object' &&
     typeof obj.string === 'object' &&
     typeof obj.email === 'object' &&
-    typeof obj.number === 'object'
+    typeof obj.number === 'object' &&
+    typeof obj.network === 'object'
     // Add more validation as needed
   );
 }

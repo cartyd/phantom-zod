@@ -43,7 +43,7 @@ export const zPagination = (
         msgType: msgType,
         messageKey: "numberRequired",
         params: { fieldName, constraint: "integer" },
-        locale: "en"
+        
       }),
     }).int().nonnegative().default(0),
     limit: z.number({
@@ -52,7 +52,7 @@ export const zPagination = (
         msgType: msgType,
         messageKey: "limitRange",
         params: { fieldName, min: 1, max: maxLimit },
-        locale: "en"
+        
       }),
     }).int().positive().max(maxLimit).default(defaultLimit),
     sort: zStringOptional(
@@ -65,7 +65,7 @@ export const zPagination = (
         msgType: msgType,
         messageKey: "orderChoice",
         params: { fieldName, choices: "asc, desc" },
-        locale: "en"
+        
       }),
     }).optional(),
   }).refine(data => data.page >= 0, {
@@ -74,7 +74,7 @@ export const zPagination = (
       msgType: msgType,
       messageKey: "nonNegativeInteger",
       params: { fieldName },
-      locale: "en"
+      
     }),
     path: ["page"],
   });
@@ -109,7 +109,7 @@ export const zPaginationQuery = (
           msgType: msgType,
           messageKey: "nonNegativeInteger",
           params: { fieldName },
-          locale: "en"
+          
         }),
       }),
     limit: z.string()
@@ -122,7 +122,7 @@ export const zPaginationQuery = (
           msgType: msgType,
           messageKey: "limitRange",
           params: { fieldName, min: 1, max: maxLimit },
-          locale: "en"
+          
         }),
       }),
     sort: zStringOptional(
@@ -135,7 +135,7 @@ export const zPaginationQuery = (
         msgType: msgType,
         messageKey: "orderChoice",
         params: { fieldName, choices: "asc, desc" },
-        locale: "en"
+        
       }),
     }).optional(),
   });
@@ -165,7 +165,7 @@ export const zCursorPagination = (
         msgType: msgType,
         messageKey: "stringRequired",
         params: { fieldName },
-        locale: "en"
+        
       }),
     }).optional(),
     limit: z.number({
@@ -174,7 +174,7 @@ export const zCursorPagination = (
         msgType: msgType,
         messageKey: "limitRange",
         params: { fieldName, min: 1, max: maxLimit },
-        locale: "en"
+        
       }),
     }).int().positive().max(maxLimit).default(defaultLimit),
     sort: zStringOptional(
@@ -187,7 +187,7 @@ export const zCursorPagination = (
         msgType: msgType,
         messageKey: "orderChoice",
         params: { fieldName, choices: "asc, desc" },
-        locale: "en"
+        
       }),
     }).optional(),
   });
@@ -217,7 +217,7 @@ export const zOffsetPagination = (
         msgType: msgType,
         messageKey: "nonNegativeInteger",
         params: { fieldName },
-        locale: "en"
+        
       }),
     }).int().nonnegative().default(0),
     limit: z.number({
@@ -226,7 +226,7 @@ export const zOffsetPagination = (
         msgType: msgType,
         messageKey: "limitRange",
         params: { fieldName, min: 1, max: maxLimit },
-        locale: "en"
+        
       }),
     }).int().positive().max(maxLimit).default(defaultLimit),
     sort: zStringOptional(
@@ -239,7 +239,7 @@ export const zOffsetPagination = (
         msgType: msgType,
         messageKey: "orderChoice",
         params: { fieldName, choices: "asc, desc" },
-        locale: "en"
+        
       }),
     }).optional(),
   });
@@ -271,7 +271,7 @@ export const zPaginationResponse = (
       msgType: msgType,
       messageKey: "invalid",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -300,6 +300,6 @@ export const zPaginatedData = <T extends z.ZodTypeAny>(
       msgType: msgType,
       messageKey: "invalid",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });

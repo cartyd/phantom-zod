@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { formatErrorMessage } from "../common/message-handler";
 import { MsgType } from "./msg-type";
-import type { LocaleCode } from "../localization/types";
+
 
 // --- Types ---
 export type BooleanOptional = z.infer<ReturnType<typeof zBooleanOptional>>;
@@ -38,12 +38,12 @@ export type BooleanStringRequired = z.infer<
 export const zBooleanOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) => {
   return z.unknown()
     .refine(
       val => val === undefined || typeof val === "boolean",
-      { message: formatErrorMessage({ msg, msgType, messageKey: "boolean.mustBeBoolean", locale }) }
+      { message: formatErrorMessage({ msg, msgType, messageKey: "boolean.mustBeBoolean"}) }
     )
     .transform(val => val === undefined ? undefined : Boolean(val));
 };
@@ -68,12 +68,12 @@ export const zBooleanOptional = (
 export const zBooleanRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) => {
   return z.unknown()
     .refine(
       val => typeof val === "boolean",
-      { message: formatErrorMessage({ msg, msgType, messageKey: "boolean.mustBeBoolean", locale }) }
+      { message: formatErrorMessage({ msg, msgType, messageKey: "boolean.mustBeBoolean"}) }
     )
     .transform(val => Boolean(val));
 };
@@ -96,14 +96,14 @@ export const zBooleanRequired = (
 export const zBooleanStringRequired = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) => {
   return baseBooleanStringSchema
     .refine(
       val =>
         (typeof val === "boolean") ||
         (typeof val === "string" && ["true", "false"].includes(val.trim().toLowerCase())),
-      { message: formatErrorMessage({ msg, msgType, messageKey: "boolean.mustBeBooleanString", locale }) }
+      { message: formatErrorMessage({ msg, msgType, messageKey: "boolean.mustBeBooleanString"}) }
     )
     .transform(val =>
       typeof val === "boolean"
@@ -131,9 +131,9 @@ export const zBooleanStringRequired = (
 export const zBooleanStringOptional = (
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) => {
-  return zBooleanStringRequired(msg, msgType, locale).optional();
+  return zBooleanStringRequired(msg, msgType).optional();
 };
 
 const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);

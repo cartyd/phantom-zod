@@ -1,6 +1,35 @@
 import { MsgType } from "../src/schemas/msg-type";
-import { zStringOptional, zStringRequired } from "../src/schemas/string-schemas";
+import { createStringSchemas } from "../src/schemas/string-schemas";
+import type { IMessageHandler } from "../src/common/message-handler";
 import { generateTestData, runTableTests } from "./setup";
+
+// Mock message handler for testing
+const mockMessageHandler: IMessageHandler = {
+  formatErrorMessage: ({ msg, msgType, messageKey, params }) => {
+    if (msgType === MsgType.Message) {
+      return msg;
+    }
+    
+    // Simple mock implementation for field name formatting
+    switch (messageKey) {
+      case "string.required":
+        return `${msg} is required`;
+      case "string.mustBeString":
+        return `${msg} must be a string`;
+      case "string.invalid":
+        return `${msg} is invalid`;
+      case "string.tooShort":
+        return `${msg} is too short (minimum: ${params?.min} characters)`;
+      case "string.tooLong":
+        return `${msg} is too long (maximum: ${params?.max} characters)`;
+      default:
+        return `${msg} is invalid`;
+    }
+  }
+};
+
+// Create schema functions with injected message handler
+const { zStringOptional, zStringRequired } = createStringSchemas(mockMessageHandler);
 
 describe('String Schemas', () => {
   describe('zStringOptional', () => {

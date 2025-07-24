@@ -49,7 +49,7 @@ export const zIdListOptional = (
         msgType: msgType,
         messageKey: "arrayMinItems",
         params: { fieldName, minItems },
-        locale: "en"
+        
       }),
     })
     .max(maxItems, {
@@ -58,7 +58,7 @@ export const zIdListOptional = (
         msgType: msgType,
         messageKey: "arrayMaxItems",
         params: { fieldName, maxItems },
-        locale: "en"
+        
       }),
     })
     .optional();
@@ -92,7 +92,7 @@ export const zIdListRequired = (
       msgType: msgType,
       messageKey: "arrayMinItems",
       params: { fieldName, minItems },
-      locale: "en"
+      
     }),
   })
   .max(maxItems, {
@@ -101,7 +101,7 @@ export const zIdListRequired = (
       msgType: msgType,
       messageKey: "arrayMaxItems",
       params: { fieldName, maxItems },
-      locale: "en"
+      
     }),
   });
 

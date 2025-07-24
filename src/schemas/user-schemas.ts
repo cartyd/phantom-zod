@@ -5,7 +5,7 @@ import { zStringRequired, zStringOptional } from "./string-schemas";
 import { zEmailRequired, zEmailOptional } from "./email-schemas";
 import { zEnumRequired, zEnumOptional } from "./enum-schemas";
 import { formatErrorMessage } from "../common/message-handler";
-import type { LocaleCode } from "../localization/types";
+
 
 // --- User Schema Types ---
 
@@ -88,7 +88,7 @@ export const zPassword = (
           msgType,
           messageKey: "user.passwordTooShort",
           params: { min: String(minLength) },
-          locale: 'en'
+          
         }),
       },
     )
@@ -99,7 +99,7 @@ export const zPassword = (
           msg: fieldName,
           msgType,
           messageKey: "user.passwordMissingUppercase",
-          locale: 'en'
+          
         }),
       },
     )
@@ -110,7 +110,7 @@ export const zPassword = (
           msg: fieldName,
           msgType,
           messageKey: "user.passwordMissingLowercase",
-          locale: 'en'
+          
         }),
       },
     )
@@ -121,7 +121,7 @@ export const zPassword = (
           msg: fieldName,
           msgType,
           messageKey: "user.passwordMissingNumbers",
-          locale: 'en'
+          
         }),
       },
     )
@@ -132,7 +132,7 @@ export const zPassword = (
           msg: fieldName,
           msgType,
           messageKey: "user.passwordMissingSpecialChars",
-          locale: 'en'
+          
         }),
       },
     );
@@ -160,7 +160,7 @@ export const zUsername = (
           msgType,
           messageKey: "tooShort",
           params: { min: String(minLength) },
-          locale: "en"
+          
         }),
       },
     )
@@ -172,7 +172,7 @@ export const zUsername = (
           msgType,
           messageKey: "tooLong",
           params: { max: String(maxLength) },
-          locale: "en"
+          
         }),
       },
     )
@@ -184,7 +184,7 @@ export const zUsername = (
           msgType,
           messageKey: "user.usernameInvalid",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     )
@@ -196,7 +196,7 @@ export const zUsername = (
           msgType,
           messageKey: "invalidUnderscorePosition",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     )
@@ -208,7 +208,7 @@ export const zUsername = (
           msgType,
           messageKey: "invalidHyphenPosition",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     );
@@ -234,7 +234,7 @@ export const zDisplayName = (
           msgType,
           messageKey: "tooLong",
           params: { max: String(maxLength) },
-          locale: "en"
+          
         }),
       },
     )
@@ -246,7 +246,7 @@ export const zDisplayName = (
           msgType,
           messageKey: "cannotBeEmpty",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     );
@@ -307,7 +307,7 @@ export const zUserRegistration = (
         msgType,
         messageKey: "user.termsNotAccepted",
         params: { fieldName },
-        locale: "en"
+        
       }),
     }).refine(val => val === true, {
       message: formatErrorMessage({
@@ -315,7 +315,7 @@ export const zUserRegistration = (
         msgType,
         messageKey: "user.termsNotAccepted",
         params: { fieldName },
-        locale: "en"
+        
       }),
     }),
   }, {
@@ -324,7 +324,7 @@ export const zUserRegistration = (
       msgType,
       messageKey: "user.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   })
   .refine(
@@ -335,7 +335,7 @@ export const zUserRegistration = (
         msgType,
         messageKey: "user.passwordsDoNotMatch",
         params: { fieldName },
-        locale: "en"
+        
       }),
       path: ["confirmPassword"],
     },
@@ -374,7 +374,7 @@ export const zUserLogin = (
       msgType,
       messageKey: "user.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -462,7 +462,7 @@ export const zUserOptional = (
           msgType,
           messageKey: "mustBeValidUserObject",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     );
@@ -546,7 +546,7 @@ export const zUserRequired = (
       msgType,
       messageKey: "user.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -594,7 +594,7 @@ export const zUserUpdate = (
       msgType,
       messageKey: "mustBeValidUpdateObject",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -635,7 +635,7 @@ export const zPasswordChange = (
       msgType,
       messageKey: "user.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   })
   .refine(
@@ -646,7 +646,7 @@ export const zPasswordChange = (
         msgType,
         messageKey: "user.passwordsDoNotMatch",
         params: { fieldName },
-        locale: "en"
+        
       }),
       path: ["confirmPassword"],
     },
@@ -659,7 +659,7 @@ export const zPasswordChange = (
         msgType,
         messageKey: "passwordMustBeDifferent",
         params: { fieldName },
-        locale: "en"
+        
       }),
       path: ["newPassword"],
     },
@@ -686,7 +686,7 @@ export const zPasswordReset = (
       msgType,
       messageKey: "user.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -725,6 +725,6 @@ export const zAdminUserManagement = (
       msgType,
       messageKey: "user.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });

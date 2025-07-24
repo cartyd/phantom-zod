@@ -92,7 +92,7 @@ export const zAddressOptional = (
         msgType: msgType,
         messageKey: "address.mustBeValidAddress",
         params: { fieldName },
-        locale: "en"
+        
       }),
     });
 
@@ -148,7 +148,7 @@ export const zAddressRequired = (
       msgType: msgType,
       messageKey: "address.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   })
   .transform((val) => {
@@ -198,7 +198,7 @@ export const zAddressSimple = (
       msgType: msgType,
       messageKey: "address.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   });
 
@@ -267,7 +267,7 @@ export const zAddressUS = (
       msgType: msgType,
       messageKey: "address.required",
       params: { fieldName },
-      locale: "en"
+      
     }),
   })
   .transform((val) => {

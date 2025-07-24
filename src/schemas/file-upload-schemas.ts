@@ -126,7 +126,7 @@ export const zFileSize = (
       msgType,
       messageKey: "mustBeNumber",
       params: { fieldName },
-      locale: "en"
+      
     }),
   })
   .positive({
@@ -135,7 +135,7 @@ export const zFileSize = (
       msgType,
       messageKey: "mustBePositive",
       params: { fieldName },
-      locale: "en"
+      
     }),
   })
   .max(maxSize, {
@@ -144,7 +144,7 @@ export const zFileSize = (
         msgType,
         messageKey: "exceedsMaxSize",
         params: { maxSize: formatBytes(maxSize) },
-        locale: "en"
+        
       }),
   });
 
@@ -179,7 +179,7 @@ export const zMimeType = (
         msgType,
         messageKey: "mustBeOneOf",
         params: { values: allowedTypes.join(", ") },
-        locale: "en"
+        
       }),
   });
 
@@ -210,7 +210,7 @@ export const zFilename = (
           msgType,
           messageKey: "invalidCharacters",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     )
@@ -222,7 +222,7 @@ export const zFilename = (
           msgType,
           messageKey: "invalidDotPosition",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     );
@@ -264,7 +264,7 @@ export const zFileUploadOptional = (
         msgType,
         messageKey: "mustHaveFileExtension",
         params: { fieldName },
-        locale: "en"
+        
       }),
         },
       ),
@@ -292,7 +292,7 @@ export const zFileUploadOptional = (
           msgType,
           messageKey: "mustBeBuffer",
           params: { fieldName },
-          locale: "en"
+          
         }),
       }).optional(),
     })
@@ -305,7 +305,7 @@ export const zFileUploadOptional = (
           msgType,
           messageKey: "mustBeValidFile",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     );
@@ -347,7 +347,7 @@ export const zFileUploadRequired = (
           msgType,
           messageKey: "mustHaveFileExtension",
           params: { fieldName },
-          locale: "en"
+          
         }),
       },
     ),
@@ -375,7 +375,7 @@ export const zFileUploadRequired = (
         msgType,
         messageKey: "mustBeBuffer",
         params: { fieldName },
-        locale: "en"
+        
       }),
     }).optional(),
   }, {
@@ -384,7 +384,7 @@ export const zFileUploadRequired = (
         msgType,
         messageKey: "required",
         params: { fieldName },
-        locale: "en"
+        
       }),
   });
 };
@@ -521,7 +521,7 @@ export const zMultipleFileUpload = (
         msgType,
         messageKey: "minFiles",
         params: { fieldName },
-        locale: "en"
+        
       }),
     })
     .max(maxFiles, {
@@ -530,7 +530,7 @@ export const zMultipleFileUpload = (
         msgType,
         messageKey: "maxFiles",
         params: { maxFiles },
-        locale: "en"
+        
       }),
     });
 

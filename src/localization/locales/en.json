@@ -177,6 +177,21 @@
     "invalidState": "has invalid state code",
     "invalidCountry": "has invalid country code"
   },
+  "network": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeValidIPv4": "must be a valid IPv4 address",
+    "mustBeValidIPv6": "must be a valid IPv6 address",
+    "mustBeValidMacAddress": "must be a valid MAC address",
+    "invalidIPv4Format": "is not a valid IPv4 address",
+    "invalidIPv6Format": "is not a valid IPv6 address",
+    "invalidMacFormat": "is not a valid MAC address",
+    "examples": {
+      "ipv4": "192.168.1.1",
+      "ipv6": "2001:0db8:85a3::8a2e:0370:7334",
+      "mac": "00:1A:2B:3C:4D:5E"
+    }
+  },
   "user": {
     "required": "is required",
     "invalid": "is invalid",

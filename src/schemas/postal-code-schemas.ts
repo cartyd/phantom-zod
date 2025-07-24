@@ -2,7 +2,7 @@ import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { formatErrorMessage } from "../common/message-handler";
 import { US_ZIP_CODE_PATTERN } from "../common/regex-patterns";
-import type { LocaleCode } from "../localization/types";
+
 
 // --- Postal Code Schemas ---
 
@@ -16,12 +16,12 @@ import type { LocaleCode } from "../localization/types";
 export const zPostalCodeOptional = (
   msg = "Postal Code",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) =>
   z
     .string()
     .regex(US_ZIP_CODE_PATTERN, {
-      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode", locale }),
+      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode"}),
     })
     .refine((val) => {
       // Reject reserved/invalid codes
@@ -42,7 +42,7 @@ export const zPostalCodeOptional = (
       
       return true;
     }, {
-      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode", locale }),
+      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode"}),
     })
     .optional();
 
@@ -56,15 +56,15 @@ export const zPostalCodeOptional = (
 export const zPostalCodeRequired = (
   msg = "Postal Code",
   msgType: MsgType = MsgType.FieldName,
-  locale: LocaleCode = 'en'
+  
 ) =>
   z
     .string()
     .nonempty({
-      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.required", locale }),
+      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.required"}),
     })
     .regex(US_ZIP_CODE_PATTERN, {
-      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode", locale }),
+      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode"}),
     })
     .refine((val) => {
       // Reject reserved/invalid codes
@@ -85,5 +85,5 @@ export const zPostalCodeRequired = (
       
       return true;
     }, {
-      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode", locale }),
+      message: formatErrorMessage({ msg, msgType, messageKey: "postalCode.mustBeValidZipCode"}),
     });

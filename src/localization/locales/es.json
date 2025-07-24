@@ -58,5 +58,133 @@
     "mustBeNumber": "debe ser un número",
     "mustBeInteger": "debe ser un número entero",
     "outOfRange": "está fuera de rango ({min} a {max})"
+  },
+  "boolean": {
+    "invalid": "es inválido",
+    "mustBeBoolean": "debe ser un valor booleano",
+    "mustBeBooleanString": "debe ser un valor booleano (\"true\" o \"false\")",
+    "invalidBooleanString": "debe ser \"true\" o \"false\""
+  },
+  "array": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "empty": "está vacío",
+    "tooSmall": "debe tener al menos {min} elementos",
+    "tooBig": "debe tener como máximo {max} elementos",
+    "mustBeArray": "debe ser un arreglo",
+    "mustBeStringArray": "debe ser un arreglo de cadenas de texto",
+    "mustHaveMinItems": "debe tener al menos {min} elementos",
+    "mustHaveMaxItems": "debe tener como máximo {max} elementos",
+    "mustNotBeEmpty": "debe ser un arreglo de cadenas con al menos un elemento",
+    "duplicateItems": "contiene elementos duplicados"
+  },
+  "enum": {
+    "invalid": "es inválido",
+    "mustBeOneOf": "debe ser uno de: {values}",
+    "invalidOption": "no es una opción válida",
+    "availableOptions": "las opciones disponibles son: {values}"
+  },
+  "date": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidDate": "debe ser una fecha válida",
+    "mustBeValidDateTime": "debe ser una fecha y hora válidas",
+    "invalidFormat": "tiene formato inválido (esperado: {format})",
+    "invalidDateString": "no es una cadena de fecha válida",
+    "examples": {
+      "date": "YYYY-MM-DD",
+      "dateTime": "YYYY-MM-DDTHH:mm:ssZ"
+    }
+  },
+  "money": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidAmount": "debe ser una cantidad válida",
+    "mustBeValidCurrency": "debe ser una moneda válida",
+    "mustBePositiveAmount": "debe ser una cantidad positiva",
+    "invalidCurrencyCode": "tiene código de moneda inválido",
+    "invalidDecimalPlaces": "tiene demasiados decimales (máximo: {max})",
+    "mustBeMoneyObject": "debe ser un objeto de dinero válido"
+  },
+  "postalCode": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidZipCode": "debe ser un código postal estadounidense válido",
+    "mustBeValidPostalCode": "debe ser un código postal válido",
+    "invalidFormat": "tiene formato inválido",
+    "examples": {
+      "us": "12345 o 12345-6789",
+      "uk": "SW1A 1AA",
+      "ca": "K1A 0A6"
+    }
+  },
+  "fileUpload": {
+    "invalid": "es inválido",
+    "tooBig": "es demasiado grande (máximo: {maxSize})",
+    "mustBeValidFile": "debe ser un archivo válido",
+    "fileSizeExceeded": "excede el tamaño máximo de archivo ({maxSize})",
+    "invalidFileType": "tiene tipo de archivo inválido",
+    "invalidMimeType": "tiene tipo MIME inválido (permitidos: {allowedTypes})",
+    "invalidFileName": "tiene nombre de archivo inválido",
+    "fileRequired": "el archivo es requerido",
+    "examples": {
+      "maxSize": "Tamaño máximo: {size}",
+      "allowedTypes": "Tipos permitidos: {types}"
+    }
+  },
+  "pagination": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "invalidPageNumber": "tiene número de página inválido",
+    "invalidLimit": "tiene límite inválido (debe estar entre {min} y {max})",
+    "invalidOffset": "tiene desplazamiento inválido",
+    "invalidCursor": "tiene cursor inválido",
+    "invalidSortOrder": "tiene orden de clasificación inválido (debe ser 'asc' o 'desc')",
+    "pageOutOfRange": "la página está fuera de rango",
+    "limitExceeded": "límite excedido (máximo: {max})"
+  },
+  "address": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidAddress": "debe ser un objeto de dirección válido",
+    "streetRequired": "la calle es requerida",
+    "cityRequired": "la ciudad es requerida",
+    "stateRequired": "el estado es requerido",
+    "countryRequired": "el país es requerido",
+    "postalCodeRequired": "el código postal es requerido",
+    "invalidState": "tiene código de estado inválido",
+    "invalidCountry": "tiene código de país inválido"
+  },
+  "network": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "mustBeValidIPv4": "debe ser una dirección IPv4 válida",
+    "mustBeValidIPv6": "debe ser una dirección IPv6 válida",
+    "mustBeValidMacAddress": "debe ser una dirección MAC válida",
+    "invalidIPv4Format": "no es una dirección IPv4 válida",
+    "invalidIPv6Format": "no es una dirección IPv6 válida",
+    "invalidMacFormat": "no es una dirección MAC válida",
+    "examples": {
+      "ipv4": "192.168.1.1",
+      "ipv6": "2001:0db8:85a3::8a2e:0370:7334",
+      "mac": "00:1A:2B:3C:4D:5E"
+    }
+  },
+  "user": {
+    "required": "es requerido",
+    "invalid": "es inválido",
+    "usernameInvalid": "tiene formato de nombre de usuario inválido",
+    "passwordWeak": "la contraseña es demasiado débil",
+    "passwordTooShort": "la contraseña es demasiado corta (mínimo: {min} caracteres)",
+    "passwordMissingUppercase": "la contraseña debe contener al menos una letra mayúscula",
+    "passwordMissingLowercase": "la contraseña debe contener al menos una letra minúscula",
+    "passwordMissingNumbers": "la contraseña debe contener al menos un número",
+    "passwordMissingSpecialChars": "la contraseña debe contener al menos un carácter especial",
+    "passwordsDoNotMatch": "las contraseñas no coinciden",
+    "emailAlreadyExists": "el correo electrónico ya existe",
+    "usernameAlreadyExists": "el nombre de usuario ya existe",
+    "invalidRole": "tiene rol inválido",
+    "invalidAccountType": "tiene tipo de cuenta inválido",
+    "termsNotAccepted": "los términos y condiciones deben ser aceptados"
   }
 }

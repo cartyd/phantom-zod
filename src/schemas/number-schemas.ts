@@ -97,7 +97,7 @@ export function makeNumberSchema({
           ...(typeof min === "number" && { min: String(min) }),
           ...(typeof max === "number" && { max: String(max) })
         },
-        locale: 'en'
+        
       }),
     },
   );
