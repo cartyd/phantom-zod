@@ -1,13 +1,68 @@
-/**
- * Message interpolation parameters
- */
-export interface MessageParams {
-  [key: string]: string | number;
-}
+export {
+  StringMessageParams,
+  NumberMessageParams,
+  EmailMessageParams,
+  PhoneMessageParams,
+  UuidMessageParams,
+  UrlMessageParams,
+  BooleanMessageParams,
+  ArrayMessageParams,
+  EnumMessageParams,
+  DateMessageParams,
+  MoneyMessageParams,
+  PostalCodeMessageParams,
+  FileUploadMessageParams,
+  PaginationMessageParams,
+  AddressMessageParams,
+  NetworkMessageParams,
+  UserMessageParams,
+} from './message-params.types';
+
+
+import type {
+  StringMessageParams,
+  NumberMessageParams,
+  EmailMessageParams,
+  PhoneMessageParams,
+  UuidMessageParams,
+  UrlMessageParams,
+  BooleanMessageParams,
+  ArrayMessageParams,
+  EnumMessageParams,
+  DateMessageParams,
+  MoneyMessageParams,
+  PostalCodeMessageParams,
+  FileUploadMessageParams,
+  PaginationMessageParams,
+  AddressMessageParams,
+  NetworkMessageParams,
+  UserMessageParams,
+} from './message-params.types';
 
 /**
- * Message definition with optional parameters
+ * Represents the union of all possible parameter types used for various message categories.
+ * Each category (such as string, number, email, etc.) contributes its specific parameter types,
+ * allowing `MessageParams` to be used flexibly across different message validation and localization scenarios.
  */
+export type MessageParams =
+  | StringMessageParams[keyof StringMessageParams]
+  | NumberMessageParams[keyof NumberMessageParams]
+  | EmailMessageParams[keyof EmailMessageParams]
+  | PhoneMessageParams[keyof PhoneMessageParams]
+  | UuidMessageParams[keyof UuidMessageParams]
+  | UrlMessageParams[keyof UrlMessageParams]
+  | BooleanMessageParams[keyof BooleanMessageParams]
+  | ArrayMessageParams[keyof ArrayMessageParams]
+  | EnumMessageParams[keyof EnumMessageParams]
+  | DateMessageParams[keyof DateMessageParams]
+  | MoneyMessageParams[keyof MoneyMessageParams]
+  | PostalCodeMessageParams[keyof PostalCodeMessageParams]
+  | FileUploadMessageParams[keyof FileUploadMessageParams]
+  | PaginationMessageParams[keyof PaginationMessageParams]
+  | AddressMessageParams[keyof AddressMessageParams]
+  | NetworkMessageParams[keyof NetworkMessageParams]
+  | UserMessageParams[keyof UserMessageParams];
+
 export interface MessageDefinition {
   message: string;
   params?: MessageParams;

@@ -2,7 +2,9 @@ import { z } from "zod";
 
 import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "./msg-type";
-import type { ErrorMessageFormatter } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler.types";
+import type { StringMessageParams } from "../localization/message-params.types";
+
 
 /**
  * Creates a factory function for string schemas with injected message handler
@@ -46,6 +48,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
           msg,
           msgType,
           messageKey: "string.mustBeString",
+          params: {} as StringMessageParams["mustBeString"],
         }),
       })
       .optional()
@@ -57,6 +60,8 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
             messageKey: "string.invalid",
+            // 'invalid' does not require params in StringMessageParams
+            params: {},
           }),
         },
       );
@@ -70,7 +75,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
             messageKey: "string.tooShort",
-            params: { min: String(minLength) },
+            params: { min: minLength } as StringMessageParams["tooShort"],
           }),
         },
       );
@@ -84,7 +89,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
             messageKey: "string.tooLong",
-            params: { max: String(maxLength) },
+            params: { max: maxLength } as StringMessageParams["tooLong"],
           }),
         },
       );
@@ -124,6 +129,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
           msg,
           msgType,
           messageKey: "string.mustBeString",
+          params: {} as StringMessageParams["mustBeString"],
         }),
       })
       .transform((val) => val.trim())
@@ -134,6 +140,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
             messageKey: "string.required",
+            params: {} as StringMessageParams["required"],
           }),
         },
       );
@@ -147,7 +154,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
             messageKey: "string.tooShort",
-            params: { min: String(minLength) },
+            params: { min: minLength } as StringMessageParams["tooShort"],
           }),
         },
       );
@@ -162,7 +169,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
             messageKey: "string.tooLong",
-            params: { max: String(maxLength) },
+            params: { max: maxLength } as StringMessageParams["tooLong"],
           }),
         },
       );

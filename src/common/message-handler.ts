@@ -1,15 +1,22 @@
-import { Logger } from "./logger";
+import { Logger } from "./logger.types";
 import { LocalizationManager } from "../localization/manager";
-import type { FormatErrorOptions, ErrorMessageFormatter } from "./message-handler.types";
-import type { MessageKeyPath } from "../localization/message-key-path.types";
-import type { MessageParams } from "../localization/message.types";
-import { MsgType } from "../schemas/msg-type";
-
+import { MessageGroupMap, formatMessage } from '../localization/message-params.types';
 
 /**
- * Default error message key for fallback
+ * Type-safe error message handler using the unified formatMessage function.
+ * Enforces correct params for each message group and key at compile time.
  */
-const DEFAULT_ERROR_MESSAGE_KEY: MessageKeyPath = "string.invalid";
+export type FormatErrorOptions<G extends keyof MessageGroupMap, K extends keyof MessageGroupMap[G]> = {
+  group: G;
+  messageKey: K;
+  params: MessageGroupMap[G][K];
+  msg: string;
+  msgType: string;
+};
+
+export interface ErrorMessageFormatter {
+  formatErrorMessage<G extends keyof MessageGroupMap, K extends keyof MessageGroupMap[G]>(opts: FormatErrorOptions<G, K>): string;
+}
 
 /**
  * Message handler class that uses dependency injection for Logger and LocalizationManager
@@ -21,104 +28,42 @@ export class MessageHandler implements ErrorMessageFormatter {
     private readonly localizationManager: LocalizationManager
   ) {}
 
-  /**
-   * Helper function for consistent message concatenation
-   */
-  private concatenateMessage(msg: string, content?: string): string {
-    return content ? `${msg} ${content}` : msg;
-  }
 
   /**
-   * Safely retrieves a localized message with fallback handling
-   */
-  private safeGetMessage(
-    messageKey: MessageKeyPath,
-    params?: MessageParams
-  ): string {
-    try {
-      const message = this.localizationManager.getMessage(messageKey, params);
-      // Check if the message is valid (not just the key returned back)
-      return message && message !== messageKey ? message : "";
-    } catch (error) {
-      this.logger.warn?.("Failed to retrieve localized message", {
-        messageKey,
-        error: error instanceof Error ? error.message : error,
-      });
-      return "";
-    }
-  }
-
-  /**
-   * Determines message content with localization fallback handling
-   */
-  private determineMessageContent(
-    messageKey: MessageKeyPath | null,
-    params: MessageParams | undefined
-  ): string {
-    // Try requested message key first
-    if (messageKey) {
-      const message = this.safeGetMessage(messageKey, params);
-      if (message) return message;
-    }
-
-    // Try default error message key
-    const defaultMessage = this.safeGetMessage(DEFAULT_ERROR_MESSAGE_KEY);
-    if (defaultMessage) {
-      return defaultMessage;
-    }
-
-    // Log warning about missing content and return empty string for graceful degradation
-    this.logger.warn?.("No valid message content found", {
-      messageKey: messageKey || DEFAULT_ERROR_MESSAGE_KEY,
-      component: "formatErrorMessage",
-    });
-    return ""; // Return empty string to let concatenateMessage handle it gracefully
-  }
-
-  /**
-   * Formats an error message based on the message type, with localization support.
+   * Formats an error message using the provided options, ensuring type safety based on the message group and key.
+   * Utilizes the unified `formatMessage` function for consistent formatting.
+   * Optionally logs debug information about the formatting process.
    *
-   * The locale is determined by the LocalizationManager's current locale setting.
-   *
-   * @param options - An object containing all formatting options.
+   * @typeParam TGroup - The key representing the message group in `MessageGroupMap`.
+   * @typeParam TKey - The key representing the specific message within the group.
+   * @param options - The formatting options, including group, message key, and parameters.
    * @returns The formatted error message as a string.
    *
    * @example
-   * // Using localization
-   * messageHandler.formatErrorMessage({ msg: "email", msgType: MsgType.FieldName, messageKey: "string.invalid" });
-   * // Returns: "email must be valid" (localized)
-   *
-   * // Direct message
-   * messageHandler.formatErrorMessage({ msg: "Custom error message", msgType: MsgType.Message });
-   * // Returns: "Custom error message"
+   * // Example usage:
+   * const handler = createMessageHandler(logger, localizationManager);
+   * const errorMsg = handler.formatErrorMessage({
+   *   group: "validation",
+   *   messageKey: "required",
+   *   params: { field: "email" },
+   *   msg: "email",
+   *   msgType: "FieldName"
+   * });
+   * // Returns: "email is required" (localized)
    */
-  formatErrorMessage(options: FormatErrorOptions): string {
-    const {
-      msg,
-      msgType,
-      messageKey,
-      params,
-    } = options;
-
-    if (msgType === MsgType.Message) {
-      return msg;
-    }
-
-    const messageContent = this.determineMessageContent(
-      messageKey ?? null,
-      params
-    );
-
-    const finalMessage = this.concatenateMessage(msg, messageContent);
-    
-    // Only log debugging information, not the error message itself
+  formatErrorMessage<TGroup extends keyof MessageGroupMap, TKey extends keyof MessageGroupMap[TGroup]>(options: FormatErrorOptions<TGroup, TKey>): string {
+    // Directly use the unified formatMessage function for type-safe formatting
+    const formatted = formatMessage(options);
+    // Optionally log debug info
     this.logger.debug?.("Error message formatted", {
-      messageKey,
-      params,
+      group: options.group,
+      messageKey: options.messageKey,
+      params: options.params,
       component: "formatErrorMessage",
     });
-    
-    return finalMessage;
+    return formatted;
+    // Only return the formatted message from formatMessage
+    // (finalMessage is no longer used)
   }
 }
 
