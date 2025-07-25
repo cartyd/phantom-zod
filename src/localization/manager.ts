@@ -1,10 +1,8 @@
-import type { 
-  LocaleCode, 
-  LocalizationMessages, 
-  MessageParams, 
-  MessageKeyPath,
-  LocalizationManagerInterface 
-} from './types';
+import type { LocalizationService } from './localization-manager.types';
+import type { LocaleCode } from './locale.types';
+import type { LocalizationMessages } from './message.types';
+import type { MessageParams } from './message.types';
+import type { MessageKeyPath } from './message-key-path.types';
 
 /**
  * Logger interface for configurable logging
@@ -23,7 +21,35 @@ const defaultLogger: Logger = {
 /**
  * Localization manager for handling message retrieval and interpolation
  */
-export class LocalizationManager implements LocalizationManagerInterface {
+export class LocalizationManager implements LocalizationService {
+  /**
+   * Get all message keys for a given locale (or current locale if not provided)
+   */
+  getMessageKeys(locale?: LocaleCode): string[] {
+    const targetLocale = locale ?? this.currentLocale;
+    const messages = this.messages.get(targetLocale);
+    if (!messages) return [];
+    // Recursively collect all keys in dot notation
+    const collectKeys = (obj: any, prefix = ''): string[] => {
+      if (typeof obj !== 'object' || obj === null) return [];
+      return Object.entries(obj).flatMap(([key, value]) => {
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+        if (typeof value === 'string') return [fullKey];
+        return collectKeys(value, fullKey);
+      });
+    };
+    return collectKeys(messages);
+  }
+
+  /**
+   * Check if a message key is defined for a given locale (or current locale if not provided)
+   */
+  isMessageDefined(key: string, locale?: LocaleCode): boolean {
+    const targetLocale = locale ?? this.currentLocale;
+    const messages = this.messages.get(targetLocale);
+    if (!messages) return false;
+    return typeof this.getNestedValue(messages, key) === 'string';
+  }
   private messages = new Map<LocaleCode, LocalizationMessages>();
   private fallbackLocale: LocaleCode = 'en';
   private currentLocale: LocaleCode = 'en';
