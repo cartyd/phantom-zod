@@ -1,6 +1,7 @@
 import { Logger } from "./logger";
-import { LocalizationManager } from "../localization";
-import type { MessageParams, MessageKeyPath } from "../localization/types";
+import { LocalizationManager } from "../localization/manager";
+import type { MessageParams } from "../localization/message.types";
+import type { MessageKeyPath } from "../localization/message-key-path.types";
 import { MsgType } from "../schemas/msg-type";
 
 /**
