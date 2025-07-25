@@ -2,14 +2,14 @@ import { z } from "zod";
 
 import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "./msg-type";
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 
 /**
  * Creates a factory function for string schemas with injected message handler
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing string schema creation functions
  */
-export const createStringSchemas = (messageHandler: IMessageHandler) => {
+export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a Zod schema for an optional string value with custom error messaging.
    *
@@ -186,7 +186,7 @@ export const createStringSchemas = (messageHandler: IMessageHandler) => {
  * @param maxLength - Optional maximum length constraint
  */
 export const zStringOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
   minLength?: number,
@@ -204,7 +204,7 @@ export const zStringOptional = (
  * @param maxLength - Optional maximum length constraint
  */
 export const zStringRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
   minLength = 1,

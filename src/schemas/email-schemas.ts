@@ -1,7 +1,7 @@
 import { MsgType } from "./msg-type";
 import { z } from "zod";
 import { trimOrUndefined } from "../common/utils/string-utils";
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import { EMAIL_PATTERN } from "../common/regex-patterns";
 
 /**
@@ -18,7 +18,7 @@ export const isEmail = (val: string | undefined): boolean =>
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing email schema creation functions
  */
-export const createEmailSchemas = (messageHandler: IMessageHandler) => {
+export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a Zod schema for an optional email address.
    * @param msg - The field name or custom message for error output.
@@ -74,7 +74,7 @@ export const createEmailSchemas = (messageHandler: IMessageHandler) => {
  * @param msgType - Determines if 'msg' is a field name or a custom message
  */
 export const zEmailOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg: string = "Email Address",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -88,7 +88,7 @@ export const zEmailOptional = (
  * @param msgType - The type of message formatting to use
  */
 export const zEmailRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg: string = "Email Address",
   msgType: MsgType = MsgType.FieldName,
 ) => {

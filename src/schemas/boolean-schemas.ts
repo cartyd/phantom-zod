@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import { MsgType } from "./msg-type";
 
 
@@ -11,7 +11,7 @@ const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing boolean schema creation functions
  */
-export const createBooleanSchemas = (messageHandler: IMessageHandler) => {
+export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a Zod schema that validates an optional boolean value.
    */
@@ -86,7 +86,7 @@ export const createBooleanSchemas = (messageHandler: IMessageHandler) => {
  */
 
 export const zBooleanOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -94,7 +94,7 @@ export const zBooleanOptional = (
 };
 
 export const zBooleanRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -102,7 +102,7 @@ export const zBooleanRequired = (
 };
 
 export const zBooleanStringRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -110,7 +110,7 @@ export const zBooleanStringRequired = (
 };
 
 export const zBooleanStringOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   msgType: MsgType = MsgType.FieldName,
 ) => {

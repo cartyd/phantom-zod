@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../common/utils/string-utils";
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import {
   US_PHONE_E164_PATTERN,
   US_PHONE_NATIONAL_PATTERN,
@@ -34,7 +34,7 @@ function normalizePhone(val: string, format: PhoneFormat): string | null {
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing phone schema creation functions
  */
-export const createPhoneSchemas = (messageHandler: IMessageHandler) => {
+export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Optional US phone number schema, normalized to E.164 or 10-digit format.
    * @param msg - The field name or custom message for error output.
@@ -131,7 +131,7 @@ export const createPhoneSchemas = (messageHandler: IMessageHandler) => {
  * @param msgType - Determines if 'msg' is a field name or a custom message
  */
 export const zPhoneOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Phone",
   format: PhoneFormat = PhoneFormat.E164,
   msgType: MsgType = MsgType.FieldName,
@@ -147,7 +147,7 @@ export const zPhoneOptional = (
  * @param msgType - Determines if 'msg' is a field name or a custom message
  */
 export const zPhoneRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Phone",
   format: PhoneFormat = PhoneFormat.E164,
   msgType: MsgType = MsgType.FieldName,

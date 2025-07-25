@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import { INTEGER_PATTERN, FLOAT_PATTERN } from "../common/regex-patterns";
 /**
  * Enum to specify if the output should be a string or a number.
@@ -29,7 +29,7 @@ export enum NumberFieldType {
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing number schema creation functions
  */
-export const createNumberSchemas = (messageHandler: IMessageHandler) => {
+export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a Zod schema for validating numbers (or numeric strings) with optional constraints.
    */
@@ -187,7 +187,7 @@ export const createNumberSchemas = (messageHandler: IMessageHandler) => {
  */
 
 export const zNumberOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   type: NumberFieldType = NumberFieldType.Integer,
   min?: number,
@@ -198,7 +198,7 @@ export const zNumberOptional = (
 };
 
 export const zNumberRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   type: NumberFieldType = NumberFieldType.Integer,
   min?: number,
@@ -209,7 +209,7 @@ export const zNumberRequired = (
 };
 
 export const zNumberStringOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   type: NumberFieldType = NumberFieldType.Integer,
   min?: number,
@@ -220,7 +220,7 @@ export const zNumberStringOptional = (
 };
 
 export const zNumberStringRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "Value",
   type: NumberFieldType = NumberFieldType.Integer,
   min?: number,

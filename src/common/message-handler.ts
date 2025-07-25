@@ -14,7 +14,7 @@ export interface FormatErrorOptions {
  * Interface for message handling implementations
  * Provides a contract for formatting error messages with localization support
  */
-export interface IMessageHandler {
+export interface ErrorMessageFormatter {
   /**
    * Formats an error message based on the message type with localization support.
    * 
@@ -43,7 +43,7 @@ const DEFAULT_ERROR_MESSAGE_KEY: MessageKeyPath = "string.invalid";
  * Message handler class that uses dependency injection for Logger and LocalizationManager
  * Implements IMessageHandler interface for consistent API contract
  */
-export class MessageHandler implements IMessageHandler {
+export class MessageHandler implements ErrorMessageFormatter {
   constructor(
     private readonly logger: Logger,
     private readonly localizationManager: LocalizationManager
@@ -156,6 +156,6 @@ export class MessageHandler implements IMessageHandler {
  * @param localizationManager - LocalizationManager instance to use
  * @returns New MessageHandler instance implementing IMessageHandler interface
  */
-export function createMessageHandler(logger: Logger, localizationManager: LocalizationManager): IMessageHandler {
+export function createMessageHandler(logger: Logger, localizationManager: LocalizationManager): ErrorMessageFormatter {
   return new MessageHandler(logger, localizationManager);
 }

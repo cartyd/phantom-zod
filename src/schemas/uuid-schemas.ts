@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
 
 
@@ -9,7 +9,7 @@ import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing UUID schema creation functions
  */
-export const createUuidSchemas = (messageHandler: IMessageHandler) => {
+export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Optional UUID schema.
    * Accepts a string that matches any UUID version (1-5) or undefined/empty.
@@ -90,7 +90,7 @@ export const createUuidSchemas = (messageHandler: IMessageHandler) => {
  */
 
 export const zUuidOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -98,7 +98,7 @@ export const zUuidOptional = (
 };
 
 export const zUuidRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -106,7 +106,7 @@ export const zUuidRequired = (
 };
 
 export const zUuidV4Optional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -114,7 +114,7 @@ export const zUuidV4Optional = (
 };
 
 export const zUuidV4Required = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "ID",
   msgType: MsgType = MsgType.FieldName,
 ) => {

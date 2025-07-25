@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import { MsgType } from "./msg-type";
 
 
@@ -81,7 +81,7 @@ const getExampleFormat = (format: DateFormat): string => {
  * @returns Zod schema for date/datetime validation
  */
 // Helper for consistent error message formatting
-const createDateErrorMessage = (messageHandler: IMessageHandler) => 
+const createDateErrorMessage = (messageHandler: ErrorMessageFormatter) => 
   (msg: string, msgType: MsgType, format: DateFormat) =>
     messageHandler.formatErrorMessage({
       msg,

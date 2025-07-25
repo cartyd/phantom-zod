@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "./msg-type";
-import type { IMessageHandler } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../common/message-handler";
 import { IPV4_PATTERN } from "../common/regex-patterns";
 
 
@@ -56,7 +56,7 @@ const isValidUrl = (url: string): boolean => {
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing URL schema creation functions
  */
-export const createUrlSchemas = (messageHandler: IMessageHandler) => {
+export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Optional URL schema.
    * Accepts a string that is a valid URL or undefined.
@@ -100,7 +100,7 @@ export const createUrlSchemas = (messageHandler: IMessageHandler) => {
  */
 
 export const zUrlOptional = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "URL",
   msgType: MsgType = MsgType.FieldName,
 ) => {
@@ -108,7 +108,7 @@ export const zUrlOptional = (
 };
 
 export const zUrlRequired = (
-  messageHandler: IMessageHandler,
+  messageHandler: ErrorMessageFormatter,
   msg = "URL",
   msgType: MsgType = MsgType.FieldName,
 ) => {
