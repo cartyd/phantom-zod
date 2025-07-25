@@ -3,6 +3,14 @@ import { LocalizationManager } from "../localization";
 import type { MessageParams, MessageKeyPath } from "../localization/types";
 import { MsgType } from "../schemas/msg-type";
 
+/**
+ * Options for formatting an error message.
+ *
+ * @property {MessageKeyPath} [messageKey] - Optional key path for the message, used for localization or message lookup.
+ * @property {string} msg - The error message to be formatted.
+ * @property {MsgType} msgType - The type of the message, indicating its severity or category.
+ * @property {MessageParams} [params] - Optional parameters to be used for message interpolation or formatting.
+ */
 export interface FormatErrorOptions {
   messageKey?: MessageKeyPath;
   msg: string;

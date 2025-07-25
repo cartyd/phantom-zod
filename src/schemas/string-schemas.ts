@@ -10,25 +10,29 @@ import type { ErrorMessageFormatter } from "../common/message-handler";
  * @returns An object containing string schema creation functions
  */
 export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
+
   /**
-   * Creates a Zod schema for an optional string value with custom error messaging.
+   * Creates a Zod schema for an optional trimmed string with customizable error messages and length constraints.
    *
-   * - Trims the input string or returns an empty string if undefined.
-   * - Refines the value to ensure it is a string.
-   * - Allows customization of the error message and its type.
+   * @param msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @param minLength - Optional minimum length constraint for the string. If provided, validation will fail if the string is shorter.
+   * @param maxLength - Optional maximum length constraint for the string. If provided, validation will fail if the string is longer.
+   * @returns A Zod schema that validates an optional string, trims it, and applies length constraints if specified.
    *
-   * @param msg - The base error message to display if validation fails. Defaults to "Value".
-   * @param msgType - The type of message formatting to use (from `MsgType`). Defaults to `MsgType.FieldName`.
-   * @param minLength - Optional minimum length constraint
-   * @param maxLength - Optional maximum length constraint
-   * @returns A Zod schema for an optional, trimmed string with custom error handling.
+   * @remarks
+   * - The schema will transform undefined or empty values to an empty string.
+   * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
+   * - Length constraints are only applied if the respective parameters are provided.
    *
    * @example
    * const { zStringOptional } = createStringSchemas(messageHandler);
-   * const schema = zStringOptional("Username");
-   * schema.parse("  alice  "); // "alice"
-   * schema.parse(undefined);   // ""
-   * schema.parse("");          // ""
+   * const schema = zStringOptional("Display Name", MsgType.FieldName, 2, 10);
+   * schema.parse("  John  "); // "John"
+   * schema.parse(undefined);  // ""
+   * schema.parse("");         // ""
+   * schema.parse("A");        // throws ZodError (too short)
+   * schema.parse("This name is too long"); // throws ZodError (too long)
    */
   const zStringOptional = (
     msg = "Value",
