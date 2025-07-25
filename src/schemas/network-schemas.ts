@@ -5,6 +5,8 @@ import { formatErrorMessage } from "../common/message-handler";
 import { IPV4_PATTERN, IPV6_PATTERN, MAC_ADDRESS_PATTERN } from "../common/regex-patterns";
 import { MsgType } from "./msg-type";
 
+import type { MessageParams } from "../localization/message.types";
+
 /**
  * Creates a Zod schema for an optional IPv4 address string.
  *
@@ -25,7 +27,7 @@ export const zIPv4Optional = (
   msg = "IPv4 address",
   msgType: MsgType = MsgType.FieldName,
   messageKey?: string,
-  params?: import("../localization/types").MessageParams,
+  params?: MessageParams,
   fallback?: string
 ) =>
   z

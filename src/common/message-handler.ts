@@ -1,47 +1,10 @@
 import { Logger } from "./logger";
 import { LocalizationManager } from "../localization/manager";
-import type { MessageParams } from "../localization/message.types";
+import type { FormatErrorOptions, ErrorMessageFormatter } from "./message-handler.types";
 import type { MessageKeyPath } from "../localization/message-key-path.types";
+import type { MessageParams } from "../localization/message.types";
 import { MsgType } from "../schemas/msg-type";
 
-/**
- * Options for formatting an error message.
- *
- * @property {MessageKeyPath} [messageKey] - Optional key path for the message, used for localization or message lookup.
- * @property {string} msg - The error message to be formatted.
- * @property {MsgType} msgType - The type of the message, indicating its severity or category.
- * @property {MessageParams} [params] - Optional parameters to be used for message interpolation or formatting.
- */
-export interface FormatErrorOptions {
-  messageKey?: MessageKeyPath;
-  msg: string;
-  msgType: MsgType;
-  params?: MessageParams;
-}
-
-/**
- * Interface for message handling implementations
- * Provides a contract for formatting error messages with localization support
- */
-export interface ErrorMessageFormatter {
-  /**
-   * Formats an error message based on the message type with localization support.
-   * 
-   * The locale is determined by the LocalizationManager's current locale setting.
-   * 
-   * @param options - An object containing all formatting options
-   * @returns The formatted error message as a string
-   * 
-   * @example
-   * messageHandler.formatErrorMessage({ 
-   *   msg: "email", 
-   *   msgType: MsgType.FieldName, 
-   *   messageKey: "string.invalid" 
-   * });
-   * // Returns: "email must be valid" (localized)
-   */
-  formatErrorMessage(options: FormatErrorOptions): string;
-}
 
 /**
  * Default error message key for fallback
