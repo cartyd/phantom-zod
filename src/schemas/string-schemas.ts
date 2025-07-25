@@ -3,8 +3,7 @@ import { z } from "zod";
 import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "./msg-type";
 import type { ErrorMessageFormatter } from "../common/message-handler.types";
-import type { StringMessageParams } from "../localization/message-params.types";
-
+import type { StringSchemaOptions } from "./schema-options";
 
 /**
  * Creates a factory function for string schemas with injected message handler
@@ -12,14 +11,31 @@ import type { StringMessageParams } from "../localization/message-params.types";
  * @returns An object containing string schema creation functions
  */
 export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
+  /**
+   * Creates a base string schema with consistent error messaging.
+   * @param msg - The field name or custom message for error messages
+   * @param msgType - The type of message formatting to use
+   * @returns Base Zod string schema with error message
+   */
+  const createBaseStringSchema = (msg: string, msgType: MsgType) => {
+    return z.string({
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "mustBeString",
+        msg,
+        msgType,
+      }),
+    });
+  };
 
   /**
    * Creates a Zod schema for an optional trimmed string with customizable error messages and length constraints.
    *
-   * @param msg - The field name or custom message to use in error messages. Defaults to "Value".
-   * @param msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
-   * @param minLength - Optional minimum length constraint for the string. If provided, validation will fail if the string is shorter.
-   * @param maxLength - Optional maximum length constraint for the string. If provided, validation will fail if the string is longer.
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @param options.minLength - Optional minimum length constraint for the string. If provided, validation will fail if the string is shorter.
+   * @param options.maxLength - Optional maximum length constraint for the string. If provided, validation will fail if the string is longer.
    * @returns A Zod schema that validates an optional string, trims it, and applies length constraints if specified.
    *
    * @remarks
@@ -29,72 +45,20 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    *
    * @example
    * const { zStringOptional } = createStringSchemas(messageHandler);
-   * const schema = zStringOptional("Display Name", MsgType.FieldName, 2, 10);
+   * const schema = zStringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
    * schema.parse("  John  "); // "John"
    * schema.parse(undefined);  // ""
    * schema.parse("");         // ""
    * schema.parse("A");        // throws ZodError (too short)
    * schema.parse("This name is too long"); // throws ZodError (too long)
    */
-  const zStringOptional = (
-    msg = "Value",
-    msgType: MsgType = MsgType.FieldName,
-    minLength?: number,
-    maxLength?: number
-  ) => {
-    let schema = z
-      .string({
-        message: messageHandler.formatErrorMessage({
-          msg,
-          msgType,
-          messageKey: "string.mustBeString",
-          params: {} as StringMessageParams["mustBeString"],
-        }),
-      })
+  const zStringOptional = (options: StringSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName, minLength, maxLength } = options;
+    let schema = createBaseStringSchema(msg, msgType)
       .optional()
-      .transform(trimOrEmpty)
-      .refine(
-        (val: string) => typeof val === "string",
-        {
-          message: messageHandler.formatErrorMessage({
-            msg,
-            msgType,
-            messageKey: "string.invalid",
-            // 'invalid' does not require params in StringMessageParams
-            params: {},
-          }),
-        },
-      );
+      .transform(trimOrEmpty);
 
-    // Add length constraints if provided
-    if (minLength !== undefined) {
-      schema = schema.refine(
-        (val: string) => !val || val.length >= minLength,
-        {
-          message: messageHandler.formatErrorMessage({
-            msg,
-            msgType,
-            messageKey: "string.tooShort",
-            params: { min: minLength } as StringMessageParams["tooShort"],
-          }),
-        },
-      );
-    }
-
-    if (maxLength !== undefined) {
-      schema = schema.refine(
-        (val: string) => !val || val.length <= maxLength,
-        {
-          message: messageHandler.formatErrorMessage({
-            msg,
-            msgType,
-            messageKey: "string.tooLong",
-            params: { max: maxLength } as StringMessageParams["tooLong"],
-          }),
-        },
-      );
-    }
-
+    schema = addLengthConstraints(schema, messageHandler, msg, msgType, minLength, maxLength);
     return schema;
   };
 
@@ -102,79 +66,36 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Creates a Zod string schema that:
    * - Trims whitespace from the input string.
    * - Requires the string to be non-empty after trimming.
-   * - Provides customizable error messages using the provided `msg` and `msgType`.
+   * - Provides customizable error messages using the provided options.
    *
-   * @param msg - The base message or field name to use in error messages. Defaults to "Value".
-   * @param msgType - The type of message formatting to use, based on the `MsgType` enum. Defaults to `MsgType.FieldName`.
-   * @param minLength - Minimum length constraint (defaults to 1)
-   * @param maxLength - Optional maximum length constraint
+   * @param options - Configuration options for the schema
+   * @param options.msg - The base message or field name to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use, based on the `MsgType` enum. Defaults to `MsgType.FieldName`.
+   * @param options.minLength - Minimum length constraint (defaults to 1)
+   * @param options.maxLength - Optional maximum length constraint
    * @returns A Zod string schema with trimming and required validation.
    *
    * @example
    * const { zStringRequired } = createStringSchemas(messageHandler);
-   * const schema = zStringRequired("Username");
+   * const schema = zStringRequired({ msg: "Username", minLength: 3 });
    * schema.parse("  alice  "); // "alice"
    * schema.parse("");          // throws ZodError
    * schema.parse("   ");       // throws ZodError
    */
-  const zStringRequired = (
-    msg = "Value",
-    msgType: MsgType = MsgType.FieldName,
-    minLength = 1,
-    maxLength?: number
-  ) => {
-    let schema = z
-      .string({
+  const zStringRequired = (options: StringSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName, minLength = 1, maxLength } = options;
+    let schema = createBaseStringSchema(msg, msgType)
+      .transform(trimOrEmpty)
+      .refine((trimmed: string) => trimmed.length > 0, {
         message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "required",
           msg,
           msgType,
-          messageKey: "string.mustBeString",
-          params: {} as StringMessageParams["mustBeString"],
         }),
-      })
-      .transform((val) => val.trim())
-      .refine(
-        (trimmed: string) => trimmed.length > 0,
-        {
-          message: messageHandler.formatErrorMessage({
-            msg,
-            msgType,
-            messageKey: "string.required",
-            params: {} as StringMessageParams["required"],
-          }),
-        },
-      );
+      });
 
-    // Add minimum length validation if greater than 1
-    if (minLength > 1) {
-      schema = schema.refine(
-        (val: string) => val.length >= minLength,
-        {
-          message: messageHandler.formatErrorMessage({
-            msg,
-            msgType,
-            messageKey: "string.tooShort",
-            params: { min: minLength } as StringMessageParams["tooShort"],
-          }),
-        },
-      );
-    }
-
-    // Add maximum length validation if provided
-    if (maxLength !== undefined) {
-      schema = schema.refine(
-        (val: string) => val.length <= maxLength,
-        {
-          message: messageHandler.formatErrorMessage({
-            msg,
-            msgType,
-            messageKey: "string.tooLong",
-            params: { max: maxLength } as StringMessageParams["tooLong"],
-          }),
-        },
-      );
-    }
-
+    schema = addLengthConstraints(schema, messageHandler, msg, msgType, minLength, maxLength);
     return schema;
   };
 
@@ -184,42 +105,59 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-/**
- * Individual schema creation functions that accept messageHandler as first parameter
- */
 
 /**
- * Creates a Zod schema for an optional string value with custom error messaging.
- * @param messageHandler - The message handler to use for error messages
- * @param msg - The base error message to display if validation fails
- * @param msgType - The type of message formatting to use
- * @param minLength - Optional minimum length constraint
- * @param maxLength - Optional maximum length constraint
+ * Adds minimum and/or maximum length constraints to a Zod schema for strings.
+ *
+ * This function refines the provided schema by enforcing the specified `minLength` and/or `maxLength`
+ * constraints. If a constraint is violated, a formatted error message is generated using the provided
+ * `messageHandler`. If the value is not a string or is falsy, the constraint is not enforced.
+ *
+ * @template T - A Zod schema type.
+ * @param schema - The Zod schema to which length constraints will be added.
+ * @param messageHandler - An error message formatter used to generate error messages.
+ * @param msg - A custom message to include in the error.
+ * @param msgType - The type of message (used for formatting).
+ * @param minLength - The minimum allowed string length (optional).
+ * @param maxLength - The maximum allowed string length (optional).
+ * @returns The refined schema with length constraints applied.
  */
-export const zStringOptional = (
+function addLengthConstraints<T extends z.ZodTypeAny>(
+  schema: T,
   messageHandler: ErrorMessageFormatter,
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
+  msg: string,
+  msgType: MsgType,
   minLength?: number,
   maxLength?: number
-) => {
-  return createStringSchemas(messageHandler).zStringOptional(msg, msgType, minLength, maxLength);
-};
-
-/**
- * Creates a Zod string schema with trimming and required validation.
- * @param messageHandler - The message handler to use for error messages
- * @param msg - The base message or field name to use in error messages
- * @param msgType - The type of message formatting to use
- * @param minLength - Minimum length constraint (defaults to 1)
- * @param maxLength - Optional maximum length constraint
- */
-export const zStringRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-  minLength = 1,
-  maxLength?: number
-) => {
-  return createStringSchemas(messageHandler).zStringRequired(msg, msgType, minLength, maxLength);
-};
+): T {
+  let result = schema;
+  if (minLength !== undefined) {
+    result = result.refine((val: unknown) => {
+      if (!val || typeof val !== 'string') return true;
+      return val.length >= minLength;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "tooShort",
+        params: { min: minLength },
+        msg,
+        msgType,
+      }),
+    }) as T;
+  }
+  if (maxLength !== undefined) {
+    result = result.refine((val: unknown) => {
+      if (!val || typeof val !== 'string') return true;
+      return val.length <= maxLength;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "tooLong",
+        params: { max: maxLength },
+        msg,
+        msgType,
+      }),
+    }) as T;
+  }
+  return result;
+}

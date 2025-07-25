@@ -62,8 +62,6 @@ export class MessageHandler implements ErrorMessageFormatter {
       component: "formatErrorMessage",
     });
     return formatted;
-    // Only return the formatted message from formatMessage
-    // (finalMessage is no longer used)
   }
 }
 

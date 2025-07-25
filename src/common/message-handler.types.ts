@@ -13,13 +13,21 @@ import type { MsgType } from "../schemas/msg-type";
 export type FormatErrorOptions<
   TGroup extends keyof MessageGroupMap = keyof MessageGroupMap,
   TKey extends keyof MessageGroupMap[TGroup] = keyof MessageGroupMap[TGroup]
-> = {
-  group: TGroup;
-  messageKey: TKey;
-  params: MessageGroupMap[TGroup][TKey];
-  msg: string;
-  msgType: MsgType;
-};
+> = {} extends MessageGroupMap[TGroup][TKey]
+  ? {
+      group: TGroup;
+      messageKey: TKey;
+      msg: string;
+      msgType: MsgType;
+      params?: MessageGroupMap[TGroup][TKey];
+    }
+  : {
+      group: TGroup;
+      messageKey: TKey;
+      msg: string;
+      msgType: MsgType;
+      params: MessageGroupMap[TGroup][TKey];
+    };
 
 /**
  * Interface for formatting error messages.
