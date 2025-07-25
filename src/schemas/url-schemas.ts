@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { MsgType } from "./msg-type";
-import type { ErrorMessageFormatter } from "../common/message-handler";
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/message-handler";
 import { IPV4_PATTERN } from "../common/regex-patterns";
 
 
@@ -95,22 +95,3 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-/**
- * Individual schema creation functions that accept messageHandler as first parameter
- */
-
-export const zUrlOptional = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "URL",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createUrlSchemas(messageHandler).zUrlOptional(msg, msgType);
-};
-
-export const zUrlRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "URL",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createUrlSchemas(messageHandler).zUrlRequired(msg, msgType);
-};

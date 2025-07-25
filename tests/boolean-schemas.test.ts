@@ -1,13 +1,33 @@
-import { 
-  zBooleanOptional, 
-  zBooleanRequired, 
-  zBooleanStringOptional, 
-  zBooleanStringRequired 
-} from '../src/schemas/boolean-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { createBooleanSchemas } from '../src/schemas/boolean-schemas';
+import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests, extractZodIssueMessage } from './setup';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
+
+// Create a type-safe mock using the test helper
+const mockMessageHandler = createTestMessageHandler(
+  // Custom mock implementation (optional)
+  (options) => {
+    if (options.msgType === MsgType.Message) {
+      return options.msg;
+    }
+    
+    // Simple mock implementation for field name formatting
+    switch (options.messageKey) {
+      case "mustBeBoolean":
+        return `${options.msg} must be a boolean value`;
+      case "mustBeBooleanString":
+        return `${options.msg} must be a boolean value ("true" or "false")`;
+      default:
+        return `${options.msg} is invalid`;
+    }
+  }
+);
+
+// Create schema functions with injected message handler
+const { zBooleanOptional, zBooleanRequired, zBooleanStringOptional, zBooleanStringRequired } = createBooleanSchemas(mockMessageHandler);
 
 describe('Boolean Schemas', () => {
+
   describe('zBooleanOptional', () => {
     const schema = zBooleanOptional();
 
@@ -61,7 +81,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanOptional('Active');
+        const schema = zBooleanOptional({ msg: 'Active' });
         try {
           schema.parse('true');
           fail('Expected schema to throw error');
@@ -71,7 +91,7 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanOptional('Invalid boolean format', MsgType.Message);
+        const schema = zBooleanOptional({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('true')).toThrow('Invalid boolean format');
       });
     });
@@ -125,7 +145,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanRequired('Active');
+        const schema = zBooleanRequired({ msg: 'Active' });
         try {
           schema.parse('true');
           fail('Expected schema to throw error');
@@ -135,7 +155,7 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanRequired('Invalid boolean format', MsgType.Message);
+        const schema = zBooleanRequired({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('true')).toThrow('Invalid boolean format');
       });
     });
@@ -246,7 +266,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanStringOptional('Active');
+        const schema = zBooleanStringOptional({ msg: 'Active' });
         try {
           schema.parse('invalid');
           fail('Expected schema to throw error');
@@ -256,7 +276,7 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanStringOptional('Invalid boolean format', MsgType.Message);
+        const schema = zBooleanStringOptional({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid boolean format');
       });
     });
@@ -336,7 +356,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanStringRequired('Active');
+        const schema = zBooleanStringRequired({ msg: 'Active' });
         try {
           schema.parse('invalid');
           fail('Expected schema to throw error');
@@ -346,7 +366,7 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanStringRequired('Invalid boolean format', MsgType.Message);
+        const schema = zBooleanStringRequired({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid boolean format');
       });
     });

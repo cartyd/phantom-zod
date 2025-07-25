@@ -1,6 +1,7 @@
-import { zIPv4Optional, zIPv4Required, zIPv6Optional, zIPv6Required, zMacAddressOptional, zMacAddressRequired } from "../src/schemas/network-schemas";
+import { createNetworkSchemas } from "../src/schemas/network-schemas";
 import { INVALID_HEX_CHAR_PATTERN, IPV4_INVALID_OCTETS, LETTER_CASE_PATTERN, IPV4_INVALID_CHAR_PATTERN, IPV6_MULTIPLE_DOUBLE_COLON_PATTERN, MAC_SEPARATOR_PATTERN, VALID_MAC_FORMAT_PATTERN } from "../src/common/regex-patterns";
-import { MsgType } from "../src/schemas/msg-type";
+import { MsgType } from "../src/common/types/msg-type";
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 // Test Data Constants
 const TEST_DATA = {
   // MAC Address Test Data
@@ -235,6 +236,10 @@ const testOptionalSchema = (schemaName: string, createSchema: (...args: any[]) =
 };
 
 describe("Network Schemas", () => {
+  const messageHandler = createTestMessageHandler();
+  const schemas = createNetworkSchemas(messageHandler);
+  const { zIPv4Optional, zIPv4Required, zIPv6Optional, zIPv6Required, zMacAddressOptional, zMacAddressRequired } = schemas;
+
   // MAC Address Tests
   testRequiredSchema("zMacAddressRequired", zMacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
   testOptionalSchema("zMacAddressOptional", zMacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);

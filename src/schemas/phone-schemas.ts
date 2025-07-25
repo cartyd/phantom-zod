@@ -1,15 +1,13 @@
 import { z } from "zod";
-import { MsgType } from "./msg-type";
+import { MsgType } from "../common/types/msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../common/utils/string-utils";
-import type { ErrorMessageFormatter } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { PhoneSchemaOptions } from "../common/types/schema-options.types";
 import {
   US_PHONE_E164_PATTERN,
-  US_PHONE_NATIONAL_PATTERN,
-  US_PHONE_11_DIGIT_PATTERN,
-  NON_DIGITS
-} from "../common/regex-patterns";
+  US_PHONE_NATIONAL_PATTERN} from "../common/regex-patterns";
 
-import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from "../common/utils/phone-utils";
+import { normalizeUSPhone } from "../common/utils/phone-utils";
 
 /**
  * Enum for supported phone number formats.
@@ -29,6 +27,12 @@ function normalizePhone(val: string, format: PhoneFormat): string | null {
   return normalizeUSPhone(val, format);
 }
 
+// --- Types ---
+// Note: These types reference the factory functions, so they need to be created from the factory
+type PhoneSchemasFactory = ReturnType<typeof createPhoneSchemas>;
+export type PhoneOptional = z.infer<ReturnType<PhoneSchemasFactory['zPhoneOptional']>>;
+export type PhoneRequired = z.infer<ReturnType<PhoneSchemasFactory['zPhoneRequired']>>;
+
 /**
  * Creates a factory function for phone schemas with injected message handler
  * @param messageHandler - The message handler to use for error messages
@@ -36,18 +40,47 @@ function normalizePhone(val: string, format: PhoneFormat): string | null {
  */
 export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
-   * Optional US phone number schema, normalized to E.164 or 10-digit format.
-   * @param msg - The field name or custom message for error output.
-   * @param format - The desired phone format (E.164 or National).
-   * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
+   * Creates a base string schema for phone validation with consistent error messaging.
+   * @param msg - The field name or custom message for error messages
+   * @param msgType - The type of message formatting to use
+   * @returns Base Zod string schema with error message
    */
-  const zPhoneOptional = (
-    msg = "Phone",
-    format: PhoneFormat = PhoneFormat.E164,
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    z
-      .string()
+  const createBasePhoneSchema = (msg: string, msgType: MsgType) => {
+    return z.string({
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "mustBeString",
+        msg,
+        msgType,
+      }),
+    });
+  };
+
+  /**
+   * Creates a Zod schema for an optional phone number with customizable format and error messages.
+   *
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Phone".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @param options.format - The desired phone format (E.164 or National). Defaults to `PhoneFormat.E164`.
+   * @returns A Zod schema that validates an optional phone number and normalizes it to the specified format.
+   *
+   * @remarks
+   * - The schema will transform undefined or empty values to undefined.
+   * - Phone numbers are normalized using `normalizePhone` function.
+   * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
+   *
+   * @example
+   * const { zPhoneOptional } = createPhoneSchemas(messageHandler);
+   * const schema = zPhoneOptional({ msg: "Contact Phone", format: PhoneFormat.E164 });
+   * schema.parse("123-456-7890"); // "+11234567890"
+   * schema.parse(undefined);       // undefined
+   * schema.parse("");              // undefined
+   */
+  const zPhoneOptional = (options: PhoneSchemaOptions = {}) => {
+    const { msg = "Phone", msgType = MsgType.FieldName, format = PhoneFormat.E164 } = options;
+    
+    return createBasePhoneSchema(msg, msgType)
       .optional()
       .transform((val) => {
         const trimmed = trimOrEmpty(val);
@@ -66,29 +99,50 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
             : US_PHONE_NATIONAL_PATTERN.test(val)),
         {
           message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: format === PhoneFormat.E164 ? "invalidE164Format" : "invalidNationalFormat",
+            params: { e164: "+11234567890", national: "1234567890" },
             msg,
             msgType,
-            messageKey: format === PhoneFormat.E164 ? "phone.invalidE164Format" : "phone.invalidNationalFormat",
-            params: { example: format === PhoneFormat.E164 ? "+11234567890" : "1234567890" },
           }),
         },
       );
+  };
 
   /**
-   * Required US phone number schema, normalized to E.164 or 10-digit format.
-   * @param msg - The field name or custom message for error output.
-   * @param format - The desired phone format (E.164 or National).
-   * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
+   * Creates a Zod schema for a required phone number with customizable format and error messages.
+   *
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Phone".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @param options.format - The desired phone format (E.164 or National). Defaults to `PhoneFormat.E164`.
+   * @returns A Zod schema that validates a required phone number and normalizes it to the specified format.
+   *
+   * @remarks
+   * - The schema requires a non-empty phone number after trimming.
+   * - Phone numbers are normalized using `normalizePhone` function.
+   * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
+   *
+   * @example
+   * const { zPhoneRequired } = createPhoneSchemas(messageHandler);
+   * const schema = zPhoneRequired({ msg: "Contact Phone", format: PhoneFormat.National });
+   * schema.parse("123-456-7890"); // "1234567890"
+   * schema.parse("");              // throws ZodError
    */
-  const zPhoneRequired = (
-    msg = "Phone",
-    format: PhoneFormat = PhoneFormat.E164,
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    z
-      .string()
-      .nonempty({
-        message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "phone.required"}),
+  const zPhoneRequired = (options: PhoneSchemaOptions = {}) => {
+    const { msg = "Phone", msgType = MsgType.FieldName, format = PhoneFormat.E164 } = options;
+    
+    return createBasePhoneSchema(msg, msgType)
+      .refine((val) => {
+        const trimmed = trimOrEmpty(val);
+        return trimmed.length > 0;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "phone",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
       })
       .transform((val) => {
         const trimmed = trimOrUndefined(val);
@@ -105,13 +159,15 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
             : US_PHONE_NATIONAL_PATTERN.test(val)),
         {
           message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: format === PhoneFormat.E164 ? "invalidE164Format" : "invalidNationalFormat",
+            params: { e164: "+11234567890", national: "1234567890" },
             msg,
             msgType,
-            messageKey: format === PhoneFormat.E164 ? "phone.invalidE164Format" : "phone.invalidNationalFormat",
-            params: { example: format === PhoneFormat.E164 ? "+11234567890" : "1234567890" },
           }),
         },
       );
+  };
 
   return {
     zPhoneOptional,
@@ -119,38 +175,3 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-/**
- * Individual schema creation functions that accept messageHandler as first parameter
- */
-
-/**
- * Optional US phone number schema, normalized to E.164 or 10-digit format.
- * @param messageHandler - The message handler to use for error messages
- * @param msg - The field name or custom message for error output
- * @param format - The desired phone format (E.164 or National)
- * @param msgType - Determines if 'msg' is a field name or a custom message
- */
-export const zPhoneOptional = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Phone",
-  format: PhoneFormat = PhoneFormat.E164,
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createPhoneSchemas(messageHandler).zPhoneOptional(msg, format, msgType);
-};
-
-/**
- * Required US phone number schema, normalized to E.164 or 10-digit format.
- * @param messageHandler - The message handler to use for error messages
- * @param msg - The field name or custom message for error output
- * @param format - The desired phone format (E.164 or National)
- * @param msgType - Determines if 'msg' is a field name or a custom message
- */
-export const zPhoneRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Phone",
-  format: PhoneFormat = PhoneFormat.E164,
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createPhoneSchemas(messageHandler).zPhoneRequired(msg, format, msgType);
-};

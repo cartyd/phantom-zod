@@ -1,23 +1,9 @@
 import { z } from "zod";
-
-import { MsgType } from "./msg-type";
-import { zStringRequired, zStringOptional } from "./string-schemas";
-import { zEmailRequired, zEmailOptional } from "./email-schemas";
-import { zEnumRequired, zEnumOptional } from "./enum-schemas";
-import { formatErrorMessage } from "../common/message-handler";
-
-
-// --- User Schema Types ---
-
-/**
- * Type for an optional user.
- */
-export type UserOptional = z.infer<ReturnType<typeof zUserOptional>>;
-
-/**
- * Type for a required user.
- */
-export type UserRequired = z.infer<ReturnType<typeof zUserRequired>>;
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import { createStringSchemas } from "./string-schemas";
+import { createEmailSchemas } from "./email-schemas";
+import { createEnumSchemas } from "./enum-schemas";
 
 // --- User Role Constants ---
 
@@ -57,674 +43,416 @@ export const ACCOUNT_TYPES = [
   "admin",
 ] as const;
 
-// --- Password Validation ---
-
 /**
- * Password strength validation schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minLength - Minimum password length (default: 8).
- * @param requireUppercase - Require uppercase letters (default: true).
- * @param requireLowercase - Require lowercase letters (default: true).
- * @param requireNumbers - Require numbers (default: true).
- * @param requireSpecialChars - Require special characters (default: true).
- * @returns Zod schema for password validation.
+ * Creates a factory function for user schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing user schema creation functions
  */
-export const zPassword = (
-  fieldName = "Password",
-  msgType: MsgType = MsgType.FieldName,
-  minLength = 8,
-  requireUppercase = true,
-  requireLowercase = true,
-  requireNumbers = true,
-  requireSpecialChars = true,
-) =>
-  zStringRequired(fieldName, msgType)
-    .refine(
-      (password) => password.length >= minLength,
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
+export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
+  const stringSchemas = createStringSchemas(messageHandler);
+  const emailSchemas = createEmailSchemas(messageHandler);
+  const enumSchemas = createEnumSchemas(messageHandler);
+
+  /**
+   * Password strength validation schema.
+   * Validates password with configurable requirements.
+   */
+  const zPassword = (
+    msg = "Password",
+    msgType: MsgType = MsgType.FieldName,
+    minLength = 8,
+    requireUppercase = true,
+    requireLowercase = true,
+    requireNumbers = true,
+    requireSpecialChars = true,
+  ) =>
+    stringSchemas.zStringRequired({ msg, msgType })
+      .refine(
+        (password) => password.length >= minLength,
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "passwordTooShort",
+            msg,
+            msgType,
+            params: { min: minLength },
+          }),
+        },
+      )
+      .refine(
+        (password) => !requireUppercase || /[A-Z]/.test(password),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "passwordMissingUppercase",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine(
+        (password) => !requireLowercase || /[a-z]/.test(password),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "passwordMissingLowercase",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine(
+        (password) => !requireNumbers || /\d/.test(password),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "passwordMissingNumbers",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine(
+        (password) => !requireSpecialChars || /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "passwordMissingSpecialChars",
+            msg,
+            msgType,
+          }),
+        },
+      );
+
+  /**
+   * Username validation schema.
+   * Validates username with length and character requirements.
+   */
+  const zUsername = (
+    msg = "Username",
+    msgType: MsgType = MsgType.FieldName,
+    minLength = 3,
+    maxLength = 30,
+  ) =>
+    stringSchemas.zStringRequired({ msg, msgType, minLength, maxLength })
+      .refine(
+        (username) => /^[a-zA-Z0-9_-]+$/.test(username),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "usernameInvalid",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine(
+        (username) => !username.startsWith("_") && !username.endsWith("_"),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "invalidUnderscorePosition",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine(
+        (username) => !username.startsWith("-") && !username.endsWith("-"),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "invalidHyphenPosition",
+            msg,
+            msgType,
+          }),
+        },
+      );
+
+  /**
+   * Display name validation schema.
+   * Optional field with length validation.
+   */
+  const zDisplayName = (
+    msg = "Display Name",
+    msgType: MsgType = MsgType.FieldName,
+    maxLength = 50,
+  ) =>
+    stringSchemas.zStringOptional({ msg, msgType, maxLength })
+      .refine(
+        (name) => !name || name.trim().length > 0,
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "string",
+            messageKey: "cannotBeEmpty",
+            msg,
+            msgType,
+          }),
+        },
+      );
+
+  /**
+   * Basic user registration schema.
+   */
+  const zUserRegistration = (
+    msg = "User Registration",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      username: zUsername("Username", msgType),
+      email: emailSchemas.zEmailRequired("Email", msgType),
+      password: zPassword("Password", msgType),
+      confirmPassword: stringSchemas.zStringRequired({ msg: "Confirm Password", msgType }),
+      displayName: zDisplayName("Display Name", msgType),
+      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
+      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
+      acceptTerms: z.boolean({
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "termsNotAccepted",
+          msg,
           msgType,
-          messageKey: "user.passwordTooShort",
-          params: { min: String(minLength) },
-          
         }),
-      },
-    )
-    .refine(
-      (password) => !requireUppercase || /[A-Z]/.test(password),
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
+      }).refine(val => val === true, {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "termsNotAccepted",
+          msg,
           msgType,
-          messageKey: "user.passwordMissingUppercase",
-          
         }),
-      },
-    )
+      }),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
+        msgType,
+      }),
+    })
     .refine(
-      (password) => !requireLowercase || /[a-z]/.test(password),
+      (data) => data.password === data.confirmPassword,
       {
-        message: formatErrorMessage({
-          msg: fieldName,
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordsDoNotMatch",
+          msg,
           msgType,
-          messageKey: "user.passwordMissingLowercase",
-          
         }),
-      },
-    )
-    .refine(
-      (password) => !requireNumbers || /\d/.test(password),
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "user.passwordMissingNumbers",
-          
-        }),
-      },
-    )
-    .refine(
-      (password) => !requireSpecialChars || /[!@#$%^&*(),.?":{}|<>]/.test(password),
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "user.passwordMissingSpecialChars",
-          
-        }),
+        path: ["confirmPassword"],
       },
     );
 
-/**
- * Username validation schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minLength - Minimum username length (default: 3).
- * @param maxLength - Maximum username length (default: 30).
- * @returns Zod schema for username validation.
- */
-export const zUsername = (
-  fieldName = "Username",
-  msgType: MsgType = MsgType.FieldName,
-  minLength = 3,
-  maxLength = 30,
-) =>
-  zStringRequired(fieldName, msgType)
-    .refine(
-      (username) => username.length >= minLength,
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "tooShort",
-          params: { min: String(minLength) },
-          
-        }),
-      },
-    )
-    .refine(
-      (username) => username.length <= maxLength,
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "tooLong",
-          params: { max: String(maxLength) },
-          
-        }),
-      },
-    )
-    .refine(
-      (username) => /^[a-zA-Z0-9_-]+$/.test(username),
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "user.usernameInvalid",
-          params: { fieldName },
-          
-        }),
-      },
-    )
-    .refine(
-      (username) => !username.startsWith("_") && !username.endsWith("_"),
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "invalidUnderscorePosition",
-          params: { fieldName },
-          
-        }),
-      },
-    )
-    .refine(
-      (username) => !username.startsWith("-") && !username.endsWith("-"),
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "invalidHyphenPosition",
-          params: { fieldName },
-          
-        }),
-      },
-    );
-
-/**
- * Display name validation schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxLength - Maximum display name length (default: 50).
- * @returns Zod schema for display name validation.
- */
-export const zDisplayName = (
-  fieldName = "Display Name",
-  msgType: MsgType = MsgType.FieldName,
-  maxLength = 50,
-) =>
-  zStringOptional(fieldName, msgType)
-    .refine(
-      (name) => !name || name.length <= maxLength,
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "tooLong",
-          params: { max: String(maxLength) },
-          
-        }),
-      },
-    )
-    .refine(
-      (name) => !name || name.trim().length > 0,
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType,
-          messageKey: "cannotBeEmpty",
-          params: { fieldName },
-          
-        }),
-      },
-    );
-
-// --- User Schemas ---
-
-/**
- * Basic user registration schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for user registration.
- * 
- * @example
- * const registrationSchema = zUserRegistration("User Registration");
- * const result = registrationSchema.parse({
- *   username: "johndoe",
- *   email: "john@example.com",
- *   password: "SecurePass123!",
- *   confirmPassword: "SecurePass123!"
- * });
- */
-export const zUserRegistration = (
-  fieldName = "User Registration",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    username: zUsername(
-      msgType === MsgType.Message ? "Username is required" : "Username",
-      msgType,
-    ),
-    email: zEmailRequired(
-      msgType === MsgType.Message ? "Email is required" : "Email",
-      msgType,
-    ),
-    password: zPassword(
-      msgType === MsgType.Message ? "Password is required" : "Password",
-      msgType,
-    ),
-    confirmPassword: zStringRequired(
-      msgType === MsgType.Message ? "Password confirmation is required" : "Confirm Password",
-      msgType,
-    ),
-    displayName: zDisplayName(
-      msgType === MsgType.Message ? "Display name is optional" : "Display Name",
-      msgType,
-    ),
-    firstName: zStringOptional(
-      msgType === MsgType.Message ? "First name is optional" : "First Name",
-      msgType,
-    ),
-    lastName: zStringOptional(
-      msgType === MsgType.Message ? "Last name is optional" : "Last Name",
-      msgType,
-    ),
-    acceptTerms: z.boolean({
-      message: formatErrorMessage({
-        msg: fieldName,
+  /**
+   * User login schema.
+   */
+  const zUserLogin = (
+    msg = "User Login",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      identifier: stringSchemas.zStringRequired({ msg: "Username/Email", msgType }),
+      password: stringSchemas.zStringRequired({ msg: "Password", msgType }),
+      rememberMe: z.boolean().optional(),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
         msgType,
-        messageKey: "user.termsNotAccepted",
-        params: { fieldName },
-        
       }),
-    }).refine(val => val === true, {
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType,
-        messageKey: "user.termsNotAccepted",
-        params: { fieldName },
-        
-      }),
-    }),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "user.required",
-      params: { fieldName },
-      
-    }),
-  })
-  .refine(
-    (data) => data.password === data.confirmPassword,
-    {
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType,
-        messageKey: "user.passwordsDoNotMatch",
-        params: { fieldName },
-        
-      }),
-      path: ["confirmPassword"],
-    },
-  );
+    });
 
-/**
- * User login schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for user login.
- * 
- * @example
- * const loginSchema = zUserLogin("Login");
- * const result = loginSchema.parse({
- *   identifier: "johndoe",
- *   password: "SecurePass123!"
- * });
- */
-export const zUserLogin = (
-  fieldName = "User Login",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    identifier: zStringRequired(
-      msgType === MsgType.Message ? "Username or email is required" : "Username/Email",
-      msgType,
-    ),
-    password: zStringRequired(
-      msgType === MsgType.Message ? "Password is required" : "Password",
-      msgType,
-    ),
-    rememberMe: z.boolean().optional(),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "user.required",
-      params: { fieldName },
-      
-    }),
-  });
+  /**
+   * Optional user profile schema.
+   */
+  const zUserOptional = (
+    msg = "User",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .object({
+        id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
+        username: zUsername("Username", msgType),
+        email: emailSchemas.zEmailRequired("Email", msgType),
+        displayName: zDisplayName("Display Name", msgType),
+        firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
+        lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
+        role: enumSchemas.zEnumRequired([...USER_ROLES], { msg: "Role", msgType }),
+        status: enumSchemas.zEnumRequired([...USER_STATUS], { msg: "Status", msgType }),
+        accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], { msg: "Account Type", msgType }),
+        avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
+        bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+        createdAt: z.date().optional(),
+        updatedAt: z.date().optional(),
+        lastLoginAt: z.date().optional(),
+        emailVerified: z.boolean().optional(),
+        phoneVerified: z.boolean().optional(),
+      })
+      .optional()
+      .refine(
+        (val) => val === undefined || (typeof val === "object" && val !== null),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "mustBeValidUserObject",
+            msg,
+            msgType,
+          }),
+        },
+      );
 
-/**
- * Optional user profile schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for an optional user profile.
- * 
- * @example
- * const userSchema = zUserOptional("User Profile");
- * const result = userSchema.parse({
- *   id: "123",
- *   username: "johndoe",
- *   email: "john@example.com",
- *   role: "user",
- *   status: "active"
- * });
- */
-export const zUserOptional = (
-  fieldName = "User",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z
-    .object({
-      id: zStringRequired(
-        msgType === MsgType.Message ? "User ID is required" : "User ID",
-        msgType,
-      ),
-      username: zUsername(
-        msgType === MsgType.Message ? "Username is required" : "Username",
-        msgType,
-      ),
-      email: zEmailRequired(
-        msgType === MsgType.Message ? "Email is required" : "Email",
-        msgType,
-      ),
-      displayName: zDisplayName(
-        msgType === MsgType.Message ? "Display name is optional" : "Display Name",
-        msgType,
-      ),
-      firstName: zStringOptional(
-        msgType === MsgType.Message ? "First name is optional" : "First Name",
-        msgType,
-      ),
-      lastName: zStringOptional(
-        msgType === MsgType.Message ? "Last name is optional" : "Last Name",
-        msgType,
-      ),
-      role: zEnumRequired(
-        [...USER_ROLES],
-        msgType === MsgType.Message ? "Role is required" : "Role",
-        msgType,
-      ),
-      status: zEnumRequired(
-        [...USER_STATUS],
-        msgType === MsgType.Message ? "Status is required" : "Status",
-        msgType,
-      ),
-      accountType: zEnumOptional(
-        [...ACCOUNT_TYPES],
-        msgType === MsgType.Message ? "Account type is optional" : "Account Type",
-        msgType,
-      ),
-      avatar: zStringOptional(
-        msgType === MsgType.Message ? "Avatar URL is optional" : "Avatar",
-        msgType,
-      ),
-      bio: zStringOptional(
-        msgType === MsgType.Message ? "Bio is optional" : "Bio",
-        msgType,
-      ),
+  /**
+   * Required user profile schema.
+   */
+  const zUserRequired = (
+    msg = "User",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
+      username: zUsername("Username", msgType),
+      email: emailSchemas.zEmailRequired("Email", msgType),
+      displayName: zDisplayName("Display Name", msgType),
+      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
+      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
+      role: enumSchemas.zEnumRequired([...USER_ROLES], { msg: "Role", msgType }),
+      status: enumSchemas.zEnumRequired([...USER_STATUS], { msg: "Status", msgType }),
+      accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], { msg: "Account Type", msgType }),
+      avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
+      bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
       createdAt: z.date().optional(),
       updatedAt: z.date().optional(),
       lastLoginAt: z.date().optional(),
       emailVerified: z.boolean().optional(),
       phoneVerified: z.boolean().optional(),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
+        msgType,
+      }),
+    });
+
+  /**
+   * User profile update schema (allows partial updates).
+   */
+  const zUserUpdate = (
+    msg = "User Update",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      displayName: zDisplayName("Display Name", msgType),
+      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
+      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
+      avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
+      bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
+        msgType,
+      }),
+    });
+
+  /**
+   * Password change schema.
+   */
+  const zPasswordChange = (
+    msg = "Password Change",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      currentPassword: stringSchemas.zStringRequired({ msg: "Current Password", msgType }),
+      newPassword: zPassword("New Password", msgType),
+      confirmPassword: stringSchemas.zStringRequired({ msg: "Confirm Password", msgType }),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
+        msgType,
+      }),
     })
-    .optional()
     .refine(
-      (val) => val === undefined || (typeof val === "object" && val !== null),
+      (data) => data.newPassword === data.confirmPassword,
       {
-        message: formatErrorMessage({
-          msg: fieldName,
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordsDoNotMatch",
+          msg,
           msgType,
-          messageKey: "mustBeValidUserObject",
-          params: { fieldName },
-          
         }),
+        path: ["confirmPassword"],
+      },
+    )
+    .refine(
+      (data) => data.currentPassword !== data.newPassword,
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordMustBeDifferent",
+          msg,
+          msgType,
+        }),
+        path: ["newPassword"],
       },
     );
 
-/**
- * Required user profile schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a required user profile.
- * 
- * @example
- * const userSchema = zUserRequired("User Profile");
- * const result = userSchema.parse({
- *   id: "123",
- *   username: "johndoe",
- *   email: "john@example.com",
- *   role: "user",
- *   status: "active"
- * });
- */
-export const zUserRequired = (
-  fieldName = "User",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    id: zStringRequired(
-      msgType === MsgType.Message ? "User ID is required" : "User ID",
-      msgType,
-    ),
-    username: zUsername(
-      msgType === MsgType.Message ? "Username is required" : "Username",
-      msgType,
-    ),
-    email: zEmailRequired(
-      msgType === MsgType.Message ? "Email is required" : "Email",
-      msgType,
-    ),
-    displayName: zDisplayName(
-      msgType === MsgType.Message ? "Display name is optional" : "Display Name",
-      msgType,
-    ),
-    firstName: zStringOptional(
-      msgType === MsgType.Message ? "First name is optional" : "First Name",
-      msgType,
-    ),
-    lastName: zStringOptional(
-      msgType === MsgType.Message ? "Last name is optional" : "Last Name",
-      msgType,
-    ),
-    role: zEnumRequired(
-      [...USER_ROLES],
-      msgType === MsgType.Message ? "Role is required" : "Role",
-      msgType,
-    ),
-    status: zEnumRequired(
-      [...USER_STATUS],
-      msgType === MsgType.Message ? "Status is required" : "Status",
-      msgType,
-    ),
-    accountType: zEnumOptional(
-      [...ACCOUNT_TYPES],
-      msgType === MsgType.Message ? "Account type is optional" : "Account Type",
-      msgType,
-    ),
-    avatar: zStringOptional(
-      msgType === MsgType.Message ? "Avatar URL is optional" : "Avatar",
-      msgType,
-    ),
-    bio: zStringOptional(
-      msgType === MsgType.Message ? "Bio is optional" : "Bio",
-      msgType,
-    ),
-    createdAt: z.date().optional(),
-    updatedAt: z.date().optional(),
-    lastLoginAt: z.date().optional(),
-    emailVerified: z.boolean().optional(),
-    phoneVerified: z.boolean().optional(),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "user.required",
-      params: { fieldName },
-      
-    }),
-  });
-
-/**
- * User profile update schema (allows partial updates).
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for user profile updates.
- * 
- * @example
- * const updateSchema = zUserUpdate("Profile Update");
- * const result = updateSchema.parse({
- *   displayName: "John Doe",
- *   bio: "Software developer"
- * });
- */
-export const zUserUpdate = (
-  fieldName = "User Update",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    displayName: zDisplayName(
-      msgType === MsgType.Message ? "Display name is optional" : "Display Name",
-      msgType,
-    ),
-    firstName: zStringOptional(
-      msgType === MsgType.Message ? "First name is optional" : "First Name",
-      msgType,
-    ),
-    lastName: zStringOptional(
-      msgType === MsgType.Message ? "Last name is optional" : "Last Name",
-      msgType,
-    ),
-    avatar: zStringOptional(
-      msgType === MsgType.Message ? "Avatar URL is optional" : "Avatar",
-      msgType,
-    ),
-    bio: zStringOptional(
-      msgType === MsgType.Message ? "Bio is optional" : "Bio",
-      msgType,
-    ),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "mustBeValidUpdateObject",
-      params: { fieldName },
-      
-    }),
-  });
-
-/**
- * Password change schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for password changes.
- * 
- * @example
- * const passwordChangeSchema = zPasswordChange("Password Change");
- * const result = passwordChangeSchema.parse({
- *   currentPassword: "OldPass123!",
- *   newPassword: "NewPass123!",
- *   confirmPassword: "NewPass123!"
- * });
- */
-export const zPasswordChange = (
-  fieldName = "Password Change",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    currentPassword: zStringRequired(
-      msgType === MsgType.Message ? "Current password is required" : "Current Password",
-      msgType,
-    ),
-    newPassword: zPassword(
-      msgType === MsgType.Message ? "New password is required" : "New Password",
-      msgType,
-    ),
-    confirmPassword: zStringRequired(
-      msgType === MsgType.Message ? "Password confirmation is required" : "Confirm Password",
-      msgType,
-    ),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "user.required",
-      params: { fieldName },
-      
-    }),
-  })
-  .refine(
-    (data) => data.newPassword === data.confirmPassword,
-    {
-      message: formatErrorMessage({
-        msg: fieldName,
+  /**
+   * Password reset request schema.
+   */
+  const zPasswordReset = (
+    msg = "Password Reset",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      email: emailSchemas.zEmailRequired("Email", msgType),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
         msgType,
-        messageKey: "user.passwordsDoNotMatch",
-        params: { fieldName },
-        
       }),
-      path: ["confirmPassword"],
-    },
-  )
-  .refine(
-    (data) => data.currentPassword !== data.newPassword,
-    {
-      message: formatErrorMessage({
-        msg: fieldName,
+    });
+
+  /**
+   * Admin user management schema.
+   */
+  const zAdminUserManagement = (
+    msg = "Admin User Management",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object({
+      userId: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
+      role: enumSchemas.zEnumOptional([...USER_ROLES], { msg: "Role", msgType }),
+      status: enumSchemas.zEnumOptional([...USER_STATUS], { msg: "Status", msgType }),
+      reason: stringSchemas.zStringOptional({ msg: "Reason", msgType }),
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "user",
+        messageKey: "required",
+        msg,
         msgType,
-        messageKey: "passwordMustBeDifferent",
-        params: { fieldName },
-        
       }),
-      path: ["newPassword"],
-    },
-  );
+    });
 
-/**
- * Password reset request schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for password reset requests.
- */
-export const zPasswordReset = (
-  fieldName = "Password Reset",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    email: zEmailRequired(
-      msgType === MsgType.Message ? "Email is required" : "Email",
-      msgType,
-    ),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "user.required",
-      params: { fieldName },
-      
-    }),
-  });
-
-/**
- * Admin user management schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for admin user management.
- */
-export const zAdminUserManagement = (
-  fieldName = "Admin User Management",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    userId: zStringRequired(
-      msgType === MsgType.Message ? "User ID is required" : "User ID",
-      msgType,
-    ),
-    role: zEnumOptional(
-      [...USER_ROLES],
-      msgType === MsgType.Message ? "Role is optional" : "Role",
-      msgType,
-    ),
-    status: zEnumOptional(
-      [...USER_STATUS],
-      msgType === MsgType.Message ? "Status is optional" : "Status",
-      msgType,
-    ),
-    reason: zStringOptional(
-      msgType === MsgType.Message ? "Reason is optional" : "Reason",
-      msgType,
-    ),
-  }, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType,
-      messageKey: "user.required",
-      params: { fieldName },
-      
-    }),
-  });
+  return {
+    zPassword,
+    zUsername,
+    zDisplayName,
+    zUserRegistration,
+    zUserLogin,
+    zUserOptional,
+    zUserRequired,
+    zUserUpdate,
+    zPasswordChange,
+    zPasswordReset,
+    zAdminUserManagement,
+    USER_ROLES,
+    USER_STATUS,
+    ACCOUNT_TYPES,
+  };
+};

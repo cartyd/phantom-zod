@@ -1,11 +1,18 @@
 import { 
-  zPhoneOptional, 
-  zPhoneRequired, 
+  createPhoneSchemas, 
   PhoneFormat
 } from '../src/schemas/phone-schemas';
 import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from '../src/common/utils/phone-utils';
-import { MsgType } from '../src/schemas/msg-type';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 import { runTableTests } from './setup';
+
+// Create schemas using the factory with test message handler
+const mockMessageHandler = createTestMessageHandler();
+const {
+  zPhoneOptional,
+  zPhoneRequired,
+} = createPhoneSchemas(mockMessageHandler);
 
 describe('Phone Schemas', () => {
   describe('zPhoneOptional', () => {
@@ -76,7 +83,7 @@ describe('Phone Schemas', () => {
     });
 
     describe('National format', () => {
-      const schema = zPhoneOptional('Phone', PhoneFormat.National);
+      const schema = zPhoneOptional({ msg: 'Phone', format: PhoneFormat.National });
       
       runTableTests([
         {
@@ -104,12 +111,12 @@ describe('Phone Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zPhoneOptional('Mobile Number');
+        const schema = zPhoneOptional({ msg: 'Mobile Number' });
         expect(() => schema.parse('invalid')).toThrow('Mobile Number is invalid');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zPhoneOptional('Invalid phone format', PhoneFormat.E164, MsgType.Message);
+        const schema = zPhoneOptional({ msg: 'Invalid phone format', format: PhoneFormat.E164, msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid phone format');
       });
     });
@@ -157,7 +164,7 @@ describe('Phone Schemas', () => {
     });
 
     describe('National format', () => {
-      const schema = zPhoneRequired('Phone', PhoneFormat.National);
+      const schema = zPhoneRequired({ msg: 'Phone', format: PhoneFormat.National });
       
       runTableTests([
         {
@@ -175,17 +182,17 @@ describe('Phone Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in required error message', () => {
-        const schema = zPhoneRequired('Mobile Number');
+        const schema = zPhoneRequired({ msg: 'Mobile Number' });
         expect(() => schema.parse('')).toThrow('Mobile Number is required');
       });
 
       it('should use custom field name in validation error message', () => {
-        const schema = zPhoneRequired('Mobile Number');
+        const schema = zPhoneRequired({ msg: 'Mobile Number' });
         expect(() => schema.parse('invalid')).toThrow('Mobile Number is invalid');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zPhoneRequired('Phone is required', PhoneFormat.E164, MsgType.Message);
+        const schema = zPhoneRequired({ msg: 'Phone is required', format: PhoneFormat.E164, msgType: MsgType.Message });
         expect(() => schema.parse('')).toThrow('Phone is required');
       });
     });

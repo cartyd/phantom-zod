@@ -26,10 +26,15 @@ describe('US_STATE_CODES', () => {
     expect(US_STATE_CODES).not.toContain('USA');
   });
 });
-import { zAddressOptional, zAddressRequired, zAddressSimple, zAddressUS } from '../src/schemas/address-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { createAddressSchemas } from '../src/schemas/address-schemas';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 
 describe('Address Schemas', () => {
+  const messageHandler = createTestMessageHandler();
+  const schemas = createAddressSchemas(messageHandler);
+  const { zAddressOptional, zAddressRequired, zAddressSimple, zAddressUS } = schemas;
+
   describe('zAddressOptional', () => {
     const schema = zAddressOptional();
 
@@ -91,7 +96,7 @@ describe('Address Schemas', () => {
 
     it('should use custom field name in error messages', () => {
       const customSchema = zAddressOptional('Shipping Address');
-      expect(() => customSchema.parse('invalid')).toThrow('Shipping Address must be a valid address object');
+      expect(() => customSchema.parse('invalid')).toThrow('Shipping Address is invalid');
     });
 
     it('should use custom message when msgType is Message', () => {
@@ -290,7 +295,7 @@ describe('Address Schemas', () => {
         postalCode: '100011', // too many digits
         country: 'US',
       };
-      expect(() => schema.parse(invalidAddress)).toThrow('Postal code must be a valid US ZIP code');
+      expect(() => schema.parse(invalidAddress)).toThrow('Postal Code is invalid');
     });
 
     it('should reject non-US country', () => {

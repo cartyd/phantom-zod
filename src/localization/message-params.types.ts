@@ -58,6 +58,7 @@ export type StringMessageParams = {
   empty: {};
   mustBeString: {};
   trimmed: {};
+  cannotBeEmpty: {};
 };
 
 export type NumberMessageParams = {
@@ -203,6 +204,7 @@ export type AddressMessageParams = {
   countryRequired: {};
   postalCodeRequired: {};
   invalidState: { state: string };
+  invalidUSState: {};
   invalidCountry: { country: string };
 };
 
@@ -221,7 +223,7 @@ export type NetworkMessageParams = {
 export type UserMessageParams = {
   required: {};
   invalid: {};
-  usernameInvalid: { username: string };
+  usernameInvalid: {};
   passwordWeak: {};
   passwordTooShort: { min: number };
   passwordMissingUppercase: {};
@@ -229,9 +231,13 @@ export type UserMessageParams = {
   passwordMissingNumbers: {};
   passwordMissingSpecialChars: {};
   passwordsDoNotMatch: {};
+  passwordMustBeDifferent: {};
   emailAlreadyExists: { email: string };
   usernameAlreadyExists: { username: string };
   invalidRole: { role: string };
   invalidAccountType: { type: string };
   termsNotAccepted: {};
+  invalidUnderscorePosition: {};
+  invalidHyphenPosition: {};
+  mustBeValidUserObject: {};
 };

@@ -1,22 +1,27 @@
 import {
-  zDateOptional,
-  zDateRequired,
-  zDateStringOptional,
-  zDateStringRequired,
-  zDateTimeOptional,
-  zDateTimeRequired,
-  zDateTimeStringOptional,
-  zDateTimeStringRequired,
-  zDateCustom,
-  zDateSchema,
+  createDateSchemas,
   DateFormat,
   FieldRequirement,
   ReturnType
 } from '../src/schemas/date-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 import { runTableTests } from './setup';
 
 describe('Date Schemas', () => {
+  const messageHandler = createTestMessageHandler();
+  const {
+    zDateOptional,
+    zDateRequired,
+    zDateStringOptional,
+    zDateStringRequired,
+    zDateTimeOptional,
+    zDateTimeRequired,
+    zDateTimeStringOptional,
+    zDateTimeStringRequired,
+    zDateCustom,
+    zDateSchema,
+  } = createDateSchemas(messageHandler);
   describe('zDateOptional', () => {
     const schema = zDateOptional();
 

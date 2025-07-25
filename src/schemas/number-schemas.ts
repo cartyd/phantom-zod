@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { MsgType } from "./msg-type";
-import type { ErrorMessageFormatter } from "../common/message-handler";
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
 import { INTEGER_PATTERN, FLOAT_PATTERN } from "../common/regex-patterns";
+import type { NumberSchemaOptions } from "../common/types/schema-options.types";
 /**
  * Enum to specify if the output should be a string or a number.
  */
@@ -23,6 +24,13 @@ export enum NumberFieldType {
   Integer = "integer",
   Float = "float",
 }
+
+// --- Types ---
+// Note: These types are simplified since they rely on the factory functions
+export type NumberOptional = number | undefined;
+export type NumberRequired = number;
+export type NumberStringOptional = string | undefined;
+export type NumberStringRequired = string;
 
 /**
  * Creates a factory function for number schemas with injected message handler
@@ -78,14 +86,15 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       },
       {
         message: messageHandler.formatErrorMessage({
-          msg,
-          msgType,
-          messageKey: "number.invalid",
+          group: "number",
+          messageKey: "invalid",
           params: {
             type: type === NumberFieldType.Integer ? "integer" : "number",
-            ...(typeof min === "number" && { min: String(min) }),
-            ...(typeof max === "number" && { max: String(max) })
+            ...(typeof min === "number" && { min }),
+            ...(typeof max === "number" && { max })
           },
+          msg,
+          msgType,
         }),
       },
     );
@@ -94,16 +103,26 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
   }
 
   /**
-   * Zod schema for an optional number field.
+   * Creates a Zod schema for an optional number field.
+   * 
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+   * @param options.type - The type of number validation (integer or float). Defaults to `NumberFieldType.Integer`.
+   * @param options.min - Optional minimum value constraint.
+   * @param options.max - Optional maximum value constraint.
+   * @returns A Zod schema that validates an optional number.
+   *
+   * @example
+   * const { zNumberOptional } = createNumberSchemas(messageHandler);
+   * const schema = zNumberOptional({ msg: "Age", type: NumberFieldType.Integer, min: 0, max: 150 });
+   * schema.parse(25); // 25
+   * schema.parse(undefined); // undefined
+   * schema.parse("30"); // 30
    */
-  const zNumberOptional = (
-    msg = "Value",
-    type: NumberFieldType = NumberFieldType.Integer,
-    min?: number,
-    max?: number,
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    makeNumberSchema({
+  const zNumberOptional = (options: NumberSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName, type = NumberFieldType.Integer, min, max } = options;
+    return makeNumberSchema({
       msg,
       msgType,
       type,
@@ -112,18 +131,28 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       min,
       max,
     });
+  };
 
   /**
-   * Zod schema for a required number field.
+   * Creates a Zod schema for a required number field.
+   * 
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+   * @param options.type - The type of number validation (integer or float). Defaults to `NumberFieldType.Integer`.
+   * @param options.min - Optional minimum value constraint.
+   * @param options.max - Optional maximum value constraint.
+   * @returns A Zod schema that validates a required number.
+   *
+   * @example
+   * const { zNumberRequired } = createNumberSchemas(messageHandler);
+   * const schema = zNumberRequired({ msg: "Price", type: NumberFieldType.Float, min: 0.01 });
+   * schema.parse(9.99); // 9.99
+   * schema.parse("5.50"); // 5.5
    */
-  const zNumberRequired = (
-    msg = "Value",
-    type: NumberFieldType = NumberFieldType.Integer,
-    min?: number,
-    max?: number,
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    makeNumberSchema({
+  const zNumberRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName, type = NumberFieldType.Integer, min, max } = options;
+    return makeNumberSchema({
       msg,
       msgType,
       type,
@@ -132,18 +161,28 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       min,
       max,
     });
+  };
 
   /**
-   * Zod schema for an optional number field, output as string.
+   * Creates a Zod schema for an optional number field that outputs as string.
+   * 
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+   * @param options.type - The type of number validation (integer or float). Defaults to `NumberFieldType.Integer`.
+   * @param options.min - Optional minimum value constraint.
+   * @param options.max - Optional maximum value constraint.
+   * @returns A Zod schema that validates an optional number and returns it as a string.
+   *
+   * @example
+   * const { zNumberStringOptional } = createNumberSchemas(messageHandler);
+   * const schema = zNumberStringOptional({ msg: "ID", type: NumberFieldType.Integer });
+   * schema.parse(123); // "123"
+   * schema.parse(undefined); // undefined
    */
-  const zNumberStringOptional = (
-    msg = "Value",
-    type: NumberFieldType = NumberFieldType.Integer,
-    min?: number,
-    max?: number,
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    makeNumberSchema({
+  const zNumberStringOptional = (options: NumberSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName, type = NumberFieldType.Integer, min, max } = options;
+    return makeNumberSchema({
       msg,
       msgType,
       type,
@@ -152,18 +191,28 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       min,
       max,
     });
+  };
 
   /**
-   * Zod schema for a required number field, output as string.
+   * Creates a Zod schema for a required number field that outputs as string.
+   * 
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+   * @param options.type - The type of number validation (integer or float). Defaults to `NumberFieldType.Integer`.
+   * @param options.min - Optional minimum value constraint.
+   * @param options.max - Optional maximum value constraint.
+   * @returns A Zod schema that validates a required number and returns it as a string.
+   *
+   * @example
+   * const { zNumberStringRequired } = createNumberSchemas(messageHandler);
+   * const schema = zNumberStringRequired({ msg: "Amount", type: NumberFieldType.Float, min: 0 });
+   * schema.parse(99.99); // "99.99"
+   * schema.parse("50"); // "50"
    */
-  const zNumberStringRequired = (
-    msg = "Value",
-    type: NumberFieldType = NumberFieldType.Integer,
-    min?: number,
-    max?: number,
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    makeNumberSchema({
+  const zNumberStringRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName, type = NumberFieldType.Integer, min, max } = options;
+    return makeNumberSchema({
       msg,
       msgType,
       type,
@@ -172,60 +221,12 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       min,
       max,
     });
+  };
 
   return {
-    makeNumberSchema,
     zNumberOptional,
     zNumberRequired,
     zNumberStringOptional,
     zNumberStringRequired,
   };
-};
-
-/**
- * Individual schema creation functions that accept messageHandler as first parameter
- */
-
-export const zNumberOptional = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createNumberSchemas(messageHandler).zNumberOptional(msg, type, min, max, msgType);
-};
-
-export const zNumberRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createNumberSchemas(messageHandler).zNumberRequired(msg, type, min, max, msgType);
-};
-
-export const zNumberStringOptional = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createNumberSchemas(messageHandler).zNumberStringOptional(msg, type, min, max, msgType);
-};
-
-export const zNumberStringRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createNumberSchemas(messageHandler).zNumberStringRequired(msg, type, min, max, msgType);
 };

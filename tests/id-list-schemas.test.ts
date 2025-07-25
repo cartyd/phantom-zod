@@ -1,7 +1,21 @@
-import { zIdListOptional, zIdListRequired, zId, zUniqueIdList, zPaginatedIdList, zBatchOperationResponse, zCustomId, zMongoId, zMongoIdList, zFlexibleId } from "../src/schemas/id-list-schemas";
-import { MsgType } from "../src/schemas/msg-type";
+import { createIdListSchemas } from "../src/schemas/id-list-schemas";
+import { MsgType } from "../src/common/types/msg-type";
+import { createTestMessageHandler } from "../src/localization/message-handler.types";
 
 describe("ID List Schemas", () => {
+    const messageHandler = createTestMessageHandler();
+    const {
+        zIdListOptional,
+        zIdListRequired,
+        zId,
+        zUniqueIdList,
+        zPaginatedIdList,
+        zBatchOperationResponse,
+        zCustomId,
+        zMongoId,
+        zMongoIdList,
+        zFlexibleId,
+    } = createIdListSchemas(messageHandler);
     const validUuid = "123e4567-e89b-12d3-a456-426614174000";
     const validUuid2 = "987fcdeb-51a2-4321-9876-543210987654";
     const invalidUuid = "invalid-uuid";

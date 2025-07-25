@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { MsgType } from "./msg-type";
-import type { ErrorMessageFormatter } from "../common/message-handler";
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
 import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
 
 
@@ -22,7 +22,7 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
       .string()
       .optional()
       .refine((val) => val === undefined || val === "" || UUID_PATTERN.test(val), {
-          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuid"}),
+          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuid"}),
       });
 
   /**
@@ -36,10 +36,10 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
     z
       .string()
       .nonempty({
-        message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "uuid.required"}),
+        message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "required"}),
       })
       .refine((val) => UUID_PATTERN.test(val), {
-          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuid"}),
+          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuid"}),
       });
 
   /**
@@ -56,7 +56,7 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
       .refine(
         (val) => val === undefined || val === "" || UUID_V4_PATTERN.test(val),
         {
-          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuidV4"}),
+          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuidV4"}),
         },
       );
 
@@ -71,10 +71,10 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
     z
       .string()
       .nonempty({
-          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "uuid.required"}),
+          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "required"}),
       })
       .refine((val) => UUID_V4_PATTERN.test(val), {
-        message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "uuid.mustBeValidUuidV4"}),
+        message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuidV4"}),
       });
 
   return {
@@ -85,38 +85,3 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-/**
- * Individual schema creation functions that accept messageHandler as first parameter
- */
-
-export const zUuidOptional = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "ID",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createUuidSchemas(messageHandler).zUuidOptional(msg, msgType);
-};
-
-export const zUuidRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "ID",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createUuidSchemas(messageHandler).zUuidRequired(msg, msgType);
-};
-
-export const zUuidV4Optional = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "ID",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createUuidSchemas(messageHandler).zUuidV4Optional(msg, msgType);
-};
-
-export const zUuidV4Required = (
-  messageHandler: ErrorMessageFormatter,
-  msg = "ID",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createUuidSchemas(messageHandler).zUuidV4Required(msg, msgType);
-};

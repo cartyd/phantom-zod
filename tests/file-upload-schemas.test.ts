@@ -1,7 +1,19 @@
-import { IMAGE_MIME_TYPES, DOCUMENT_MIME_TYPES, VIDEO_MIME_TYPES, AUDIO_MIME_TYPES, ARCHIVE_MIME_TYPES, ALL_MIME_TYPES, zFileUploadOptional, zFileUploadRequired, zImageUpload, zDocumentUpload, zMultipleFileUpload, zFileSize, zMimeType, zFilename, formatBytes, getFileExtension, isExtensionMatchingMimeType } from "../src/schemas/file-upload-schemas";
-import { MsgType } from "../src/schemas/msg-type";
+import { IMAGE_MIME_TYPES, DOCUMENT_MIME_TYPES, VIDEO_MIME_TYPES, AUDIO_MIME_TYPES, ARCHIVE_MIME_TYPES, ALL_MIME_TYPES, createFileUploadSchemas, formatBytes, getFileExtension, isExtensionMatchingMimeType } from "../src/schemas/file-upload-schemas";
+import { MsgType } from "../src/common/types/msg-type";
+import { createTestMessageHandler } from "../src/localization/message-handler.types";
 
 describe("File Upload Schemas", () => {
+    const messageHandler = createTestMessageHandler();
+    const {
+        zFileSize,
+        zMimeType,
+        zFilename,
+        zFileUploadOptional,
+        zFileUploadRequired,
+        zImageUpload,
+        zDocumentUpload,
+        zMultipleFileUpload,
+    } = createFileUploadSchemas(messageHandler);
     describe("zFileUploadOptional", () => {
         const schema = zFileUploadOptional();
 

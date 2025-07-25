@@ -1,33 +1,17 @@
-import { Logger } from "./logger.types";
-import { LocalizationManager } from "../localization/manager";
-import { MessageGroupMap, formatMessage } from '../localization/message-params.types';
-
-/**
- * Type-safe error message handler using the unified formatMessage function.
- * Enforces correct params for each message group and key at compile time.
- */
-export type FormatErrorOptions<G extends keyof MessageGroupMap, K extends keyof MessageGroupMap[G]> = {
-  group: G;
-  messageKey: K;
-  params: MessageGroupMap[G][K];
-  msg: string;
-  msgType: string;
-};
-
-export interface ErrorMessageFormatter {
-  formatErrorMessage<G extends keyof MessageGroupMap, K extends keyof MessageGroupMap[G]>(opts: FormatErrorOptions<G, K>): string;
-}
+import { Logger } from "../common/logger.types";
+import { LocalizationManager } from "./manager";
+import { MessageGroupMap, formatMessage } from './message-params.types';
+import type { ErrorMessageFormatter, FormatErrorOptions } from "./message-handler.types";
 
 /**
  * Message handler class that uses dependency injection for Logger and LocalizationManager
- * Implements IMessageHandler interface for consistent API contract
+ * Implements ErrorMessageFormatter interface for consistent API contract
  */
 export class MessageHandler implements ErrorMessageFormatter {
   constructor(
     private readonly logger: Logger,
     private readonly localizationManager: LocalizationManager
   ) {}
-
 
   /**
    * Formats an error message using the provided options, ensuring type safety based on the message group and key.
@@ -43,9 +27,9 @@ export class MessageHandler implements ErrorMessageFormatter {
    * // Example usage:
    * const handler = createMessageHandler(logger, localizationManager);
    * const errorMsg = handler.formatErrorMessage({
-   *   group: "validation",
+   *   group: "string",
    *   messageKey: "required",
-   *   params: { field: "email" },
+   *   params: {},
    *   msg: "email",
    *   msgType: "FieldName"
    * });
@@ -53,7 +37,14 @@ export class MessageHandler implements ErrorMessageFormatter {
    */
   formatErrorMessage<TGroup extends keyof MessageGroupMap, TKey extends keyof MessageGroupMap[TGroup]>(options: FormatErrorOptions<TGroup, TKey>): string {
     // Directly use the unified formatMessage function for type-safe formatting
-    const formatted = formatMessage(options);
+    const formatted = formatMessage({
+      group: options.group,
+      messageKey: options.messageKey,
+      params: options.params || {} as MessageGroupMap[TGroup][TKey],
+      msg: options.msg,
+      msgType: options.msgType,
+    });
+    
     // Optionally log debug info
     this.logger.debug?.("Error message formatted", {
       group: options.group,

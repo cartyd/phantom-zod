@@ -1,5 +1,27 @@
-import { zNumberOptional, zNumberRequired, zNumberStringOptional, zNumberStringRequired } from "../src/schemas/number-schemas";
-import { NumberFieldType, NumberFieldRequirement } from "../src/schemas/number-schemas";
+import { createNumberSchemas, NumberFieldType, NumberFieldRequirement } from "../src/schemas/number-schemas";
+import { MsgType } from '../src/schemas/msg-type';
+import { createTestMessageHandler } from '../src/common/message-handler.types';
+
+// Create a type-safe mock using the test helper
+const mockMessageHandler = createTestMessageHandler(
+  // Custom mock implementation (optional)
+  (options) => {
+    if (options.msgType === MsgType.Message) {
+      return options.msg;
+    }
+    
+    // Simple mock implementation for field name formatting
+    switch (options.messageKey) {
+      case "invalid":
+        return `${options.msg} is invalid`;
+      default:
+        return `${options.msg} is invalid`;
+    }
+  }
+);
+
+// Create schema functions with injected message handler
+const { zNumberOptional, zNumberRequired, zNumberStringOptional, zNumberStringRequired } = createNumberSchemas(mockMessageHandler);
 
 describe("Number Schemas", () => {
   // Tests for zNumberOptional
@@ -12,7 +34,7 @@ describe("Number Schemas", () => {
     });
 
     it("should parse valid optional float", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Float);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse("78.9")).toEqual(78.9);
       expect(schema.parse(123.45)).toEqual(123.45);
     });
@@ -24,20 +46,20 @@ describe("Number Schemas", () => {
     });
 
     it("should validate with min/max constraints", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Integer, 10, 100);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Integer, min: 10, max: 100 });
       expect(schema.parse(50)).toEqual(50);
       expect(() => schema.parse(5)).toThrow();
       expect(() => schema.parse(150)).toThrow();
     });
 
     it("should validate with only min constraint", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Integer, 10);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Integer, min: 10 });
       expect(schema.parse(15)).toEqual(15);
       expect(() => schema.parse(5)).toThrow();
     });
 
     it("should validate with only max constraint", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Integer, undefined, 100);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Integer, max: 100 });
       expect(schema.parse(50)).toEqual(50);
       expect(() => schema.parse(150)).toThrow();
     });
@@ -52,7 +74,7 @@ describe("Number Schemas", () => {
     });
 
     it("should parse valid required float", () => {
-      const schema = zNumberRequired("Value", NumberFieldType.Float);
+      const schema = zNumberRequired({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse("78.9")).toEqual(78.9);
       expect(schema.parse(123.45)).toEqual(123.45);
     });
@@ -65,14 +87,14 @@ describe("Number Schemas", () => {
     });
 
     it("should validate with min/max constraints", () => {
-      const schema = zNumberRequired("Value", NumberFieldType.Integer, 10, 100);
+      const schema = zNumberRequired({ msg: "Value", type: NumberFieldType.Integer, min: 10, max: 100 });
       expect(schema.parse(50)).toEqual(50);
       expect(() => schema.parse(5)).toThrow();
       expect(() => schema.parse(150)).toThrow();
     });
 
     it("should throw error for non-integer when integer required", () => {
-      const schema = zNumberRequired("Value", NumberFieldType.Integer);
+      const schema = zNumberRequired({ msg: "Value", type: NumberFieldType.Integer });
       expect(() => schema.parse(123.45)).toThrow();
       expect(() => schema.parse("123.45")).toThrow();
     });
@@ -88,7 +110,7 @@ describe("Number Schemas", () => {
     });
 
     it("should parse valid optional float as string", () => {
-      const schema = zNumberStringOptional("Value", NumberFieldType.Float);
+      const schema = zNumberStringOptional({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse("78.9")).toEqual("78.9");
       expect(schema.parse(123.45)).toEqual("123.45");
     });
@@ -100,7 +122,7 @@ describe("Number Schemas", () => {
     });
 
     it("should validate with min/max constraints as string", () => {
-      const schema = zNumberStringOptional("Value", NumberFieldType.Integer, 10, 100);
+      const schema = zNumberStringOptional({ msg: "Value", type: NumberFieldType.Integer, min: 10, max: 100 });
       expect(schema.parse(50)).toEqual("50");
       expect(() => schema.parse(5)).toThrow();
       expect(() => schema.parse(150)).toThrow();
@@ -116,7 +138,7 @@ describe("Number Schemas", () => {
     });
 
     it("should parse valid required float as string", () => {
-      const schema = zNumberStringRequired("Value", NumberFieldType.Float);
+      const schema = zNumberStringRequired({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse("78.9")).toEqual("78.9");
       expect(schema.parse(123.45)).toEqual("123.45");
     });
@@ -129,14 +151,14 @@ describe("Number Schemas", () => {
     });
 
     it("should validate with min/max constraints as string", () => {
-      const schema = zNumberStringRequired("Value", NumberFieldType.Integer, 10, 100);
+      const schema = zNumberStringRequired({ msg: "Value", type: NumberFieldType.Integer, min: 10, max: 100 });
       expect(schema.parse(50)).toEqual("50");
       expect(() => schema.parse(5)).toThrow();
       expect(() => schema.parse(150)).toThrow();
     });
 
     it("should throw error for non-integer when integer required as string", () => {
-      const schema = zNumberStringRequired("Value", NumberFieldType.Integer);
+      const schema = zNumberStringRequired({ msg: "Value", type: NumberFieldType.Integer });
       expect(() => schema.parse(123.45)).toThrow();
       expect(() => schema.parse("123.45")).toThrow();
     });
@@ -167,25 +189,25 @@ describe("Number Schemas", () => {
     });
 
     it("should handle scientific notation for float", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Float);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse(1.23e-4)).toEqual(1.23e-4);
       expect(schema.parse(123.45)).toEqual(123.45);
     });
 
     it("should handle very large numbers", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Float);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse(Number.MAX_SAFE_INTEGER)).toEqual(Number.MAX_SAFE_INTEGER);
       expect(schema.parse(String(Number.MAX_SAFE_INTEGER))).toEqual(Number.MAX_SAFE_INTEGER);
     });
 
     it("should handle decimal strings for float", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Float);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Float });
       expect(schema.parse("123.456")).toEqual(123.456);
       expect(schema.parse("0.1")).toEqual(0.1);
     });
 
     it("should throw error for invalid decimal format", () => {
-      const schema = zNumberOptional("Value", NumberFieldType.Float);
+      const schema = zNumberOptional({ msg: "Value", type: NumberFieldType.Float });
       expect(() => schema.parse("123.456.789")).toThrow();
       expect(() => schema.parse("123.")).toThrow();
     });
@@ -194,7 +216,7 @@ describe("Number Schemas", () => {
   // Tests for error messages
   describe("Error Messages", () => {
     it("should provide custom error message for integer constraint", () => {
-      const schema = zNumberRequired("Age", NumberFieldType.Integer, 0, 150);
+      const schema = zNumberRequired({ msg: "Age", type: NumberFieldType.Integer, min: 0, max: 150 });
       try {
         schema.parse(200);
         fail("Should have thrown an error");
@@ -204,7 +226,7 @@ describe("Number Schemas", () => {
     });
 
     it("should provide custom error message for float constraint", () => {
-      const schema = zNumberRequired("Price", NumberFieldType.Float, 0.01);
+      const schema = zNumberRequired({ msg: "Price", type: NumberFieldType.Float, min: 0.01 });
       try {
         schema.parse(0);
         fail("Should have thrown an error");
@@ -214,7 +236,7 @@ describe("Number Schemas", () => {
     });
 
     it("should provide custom error message for max constraint only", () => {
-      const schema = zNumberRequired("Discount", NumberFieldType.Float, undefined, 100);
+      const schema = zNumberRequired({ msg: "Discount", type: NumberFieldType.Float, max: 100 });
       try {
         schema.parse(150);
         fail("Should have thrown an error");

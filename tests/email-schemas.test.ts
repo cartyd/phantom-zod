@@ -1,8 +1,11 @@
-import { zEmailOptional, zEmailRequired, isEmail } from '../src/schemas/email-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { createEmailSchemas, isEmail } from '../src/schemas/email-schemas';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 import { runTableTests, generateTestData } from './setup';
 
 describe('Email Schemas', () => {
+  const messageHandler = createTestMessageHandler();
+  const { zEmailOptional, zEmailRequired } = createEmailSchemas(messageHandler);
   describe('zEmailOptional', () => {
     const schema = zEmailOptional();
 

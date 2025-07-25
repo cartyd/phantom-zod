@@ -1,5 +1,27 @@
-import { zEnumOptional, zEnumRequired } from '../src/schemas/enum-schemas';
+import { createEnumSchemas } from '../src/schemas/enum-schemas';
 import { MsgType } from '../src/schemas/msg-type';
+import { createTestMessageHandler } from '../src/common/message-handler.types';
+
+// Create a type-safe mock using the test helper
+const mockMessageHandler = createTestMessageHandler(
+  // Custom mock implementation (optional)
+  (options) => {
+    if (options.msgType === MsgType.Message) {
+      return options.msg;
+    }
+    
+    // Simple mock implementation for field name formatting
+    switch (options.messageKey) {
+      case "mustBeOneOf":
+        return `${options.msg} must be one of: ${options.params?.options?.join(', ')}`;
+      default:
+        return `${options.msg} is invalid`;
+    }
+  }
+);
+
+// Create schema functions with injected message handler
+const { zEnumOptional, zEnumRequired } = createEnumSchemas(mockMessageHandler);
 
 describe('Enum Schemas', () => {
   describe('zEnumOptional', () => {
@@ -36,12 +58,12 @@ describe('Enum Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zEnumOptional(statusValues, 'Status');
+      const customSchema = zEnumOptional(statusValues, { msg: 'Status' });
       expect(() => customSchema.parse('invalid')).toThrow('Status must be one of: active, inactive, pending');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zEnumOptional(statusValues, 'Invalid status value', MsgType.Message);
+      const customSchema = zEnumOptional(statusValues, { msg: 'Invalid status value', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid status value');
     });
 
@@ -93,12 +115,12 @@ describe('Enum Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zEnumRequired(statusValues, 'Status');
+      const customSchema = zEnumRequired(statusValues, { msg: 'Status' });
       expect(() => customSchema.parse('invalid')).toThrow('Status must be one of: active, inactive, pending');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zEnumRequired(statusValues, 'Invalid status value', MsgType.Message);
+      const customSchema = zEnumRequired(statusValues, { msg: 'Invalid status value', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid status value');
     });
 
@@ -120,7 +142,7 @@ describe('Enum Schemas', () => {
   describe('Common enum use cases', () => {
     it('should work with priority levels', () => {
       const priorityValues = ['low', 'medium', 'high', 'urgent'] as const;
-      const schema = zEnumRequired(priorityValues, 'Priority');
+      const schema = zEnumRequired(priorityValues, { msg: 'Priority' });
       
       expect(schema.parse('low')).toBe('low');
       expect(schema.parse('urgent')).toBe('urgent');
@@ -129,7 +151,7 @@ describe('Enum Schemas', () => {
 
     it('should work with user roles', () => {
       const roleValues = ['admin', 'user', 'guest'] as const;
-      const schema = zEnumOptional(roleValues, 'Role');
+      const schema = zEnumOptional(roleValues, { msg: 'Role' });
       
       expect(schema.parse('admin')).toBe('admin');
       expect(schema.parse(undefined)).toBeUndefined();
@@ -138,7 +160,7 @@ describe('Enum Schemas', () => {
 
     it('should work with color schemes', () => {
       const colorValues = ['light', 'dark', 'auto'] as const;
-      const schema = zEnumRequired(colorValues, 'Theme');
+      const schema = zEnumRequired(colorValues, { msg: 'Theme' });
       
       expect(schema.parse('light')).toBe('light');
       expect(schema.parse('dark')).toBe('dark');
@@ -148,7 +170,7 @@ describe('Enum Schemas', () => {
 
     it('should work with HTTP methods', () => {
       const methodValues = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
-      const schema = zEnumRequired(methodValues, 'HTTP Method');
+      const schema = zEnumRequired(methodValues, { msg: 'HTTP Method' });
       
       expect(schema.parse('GET')).toBe('GET');
       expect(schema.parse('POST')).toBe('POST');
@@ -158,7 +180,7 @@ describe('Enum Schemas', () => {
 
     it('should work with file formats', () => {
       const formatValues = ['json', 'xml', 'csv', 'txt'] as const;
-      const schema = zEnumOptional(formatValues, 'File Format');
+      const schema = zEnumOptional(formatValues, { msg: 'File Format' });
       
       expect(schema.parse('json')).toBe('json');
       expect(schema.parse('csv')).toBe('csv');
@@ -186,7 +208,7 @@ describe('Enum Schemas', () => {
 
     it('should handle unicode characters in enum values', () => {
       const unicodeValues = ['🚀', '💯', '🎉'] as const;
-      const schema = zEnumRequired(unicodeValues, 'Emoji');
+      const schema = zEnumRequired(unicodeValues, { msg: 'Emoji' });
       
       expect(schema.parse('🚀')).toBe('🚀');
       expect(schema.parse('💯')).toBe('💯');

@@ -1,6 +1,34 @@
-import { zStringArrayOptional, zStringArrayRequired } from '../src/schemas/array-schemas';
+import { createArraySchemas } from '../src/schemas/array-schemas';
 import { MsgType } from '../src/schemas/msg-type';
 import { runTableTests } from './setup';
+import { createTestMessageHandler } from '../src/common/message-handler.types';
+
+// Create a type-safe mock using the test helper
+const mockMessageHandler = createTestMessageHandler(
+  // Custom mock implementation (optional)
+  (options) => {
+    if (options.msgType === MsgType.Message) {
+      return options.msg;
+    }
+    
+    // Simple mock implementation for field name formatting
+    switch (options.messageKey) {
+      case "mustBeStringArray":
+        return `${options.msg} must be an array of strings`;
+      case "mustNotBeEmpty":
+        return `${options.msg} must be an array of strings with at least one item`;
+      case "mustHaveMinItems":
+        return `${options.msg} must have at least ${options.params?.min} items`;
+      case "mustHaveMaxItems":
+        return `${options.msg} must have at most ${options.params?.max} items`;
+      default:
+        return `${options.msg} is invalid`;
+    }
+  }
+);
+
+// Create schema functions with injected message handler
+const { zStringArrayOptional, zStringArrayRequired } = createArraySchemas(mockMessageHandler);
 
 describe('Array Schemas', () => {
   describe('zStringArrayOptional', () => {
@@ -101,13 +129,38 @@ describe('Array Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zStringArrayOptional('Tags');
+        const schema = zStringArrayOptional({ msg: 'Tags' });
         expect(() => schema.parse(['valid', 123])).toThrow('Tags must be an array of strings');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zStringArrayOptional('Invalid array format', MsgType.Message);
+        const schema = zStringArrayOptional({ msg: 'Invalid array format', msgType: MsgType.Message });
         expect(() => schema.parse(['valid', 123])).toThrow('Invalid array format');
+      });
+    });
+
+    describe('Array constraints', () => {
+      it('should enforce minimum items constraint', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags', minItems: 2 });
+        expect(schema.parse(['item1', 'item2'])).toEqual(['item1', 'item2']);
+        expect(schema.parse(['item1', 'item2', 'item3'])).toEqual(['item1', 'item2', 'item3']);
+        expect(() => schema.parse(['item1'])).toThrow('Tags must have at least 2 items');
+        expect(schema.parse(undefined)).toBeUndefined(); // undefined should still be allowed for optional
+      });
+
+      it('should enforce maximum items constraint', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags', maxItems: 3 });
+        expect(schema.parse(['item1'])).toEqual(['item1']);
+        expect(schema.parse(['item1', 'item2', 'item3'])).toEqual(['item1', 'item2', 'item3']);
+        expect(() => schema.parse(['item1', 'item2', 'item3', 'item4'])).toThrow('Tags must have at most 3 items');
+      });
+
+      it('should enforce both min and max items constraints', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags', minItems: 2, maxItems: 4 });
+        expect(schema.parse(['item1', 'item2'])).toEqual(['item1', 'item2']);
+        expect(schema.parse(['item1', 'item2', 'item3', 'item4'])).toEqual(['item1', 'item2', 'item3', 'item4']);
+        expect(() => schema.parse(['item1'])).toThrow('Tags must have at least 2 items');
+        expect(() => schema.parse(['item1', 'item2', 'item3', 'item4', 'item5'])).toThrow('Tags must have at most 4 items');
       });
     });
   });
@@ -177,12 +230,12 @@ describe('Array Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zStringArrayRequired('Tags');
+        const schema = zStringArrayRequired({ msg: 'Tags' });
         expect(() => schema.parse([])).toThrow('Tags must be an array of strings with at least one item');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zStringArrayRequired('At least one item required', MsgType.Message);
+        const schema = zStringArrayRequired({ msg: 'At least one item required', msgType: MsgType.Message });
         expect(() => schema.parse([])).toThrow('At least one item required');
       });
     });

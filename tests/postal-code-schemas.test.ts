@@ -1,5 +1,13 @@
-import { zPostalCodeOptional, zPostalCodeRequired } from '../src/schemas/postal-code-schemas';
+import { createPostalCodeSchemas } from '../src/schemas/postal-code-schemas';
 import { MsgType } from '../src/schemas/msg-type';
+import { createTestMessageHandler } from '../src/common/message-handler.types';
+
+// Create schemas using the factory with test message handler
+const mockMessageHandler = createTestMessageHandler();
+const {
+  zPostalCodeOptional,
+  zPostalCodeRequired,
+} = createPostalCodeSchemas(mockMessageHandler);
 
 describe('Postal Code Schemas', () => {
   describe('zPostalCodeOptional', () => {
@@ -32,12 +40,12 @@ describe('Postal Code Schemas', () => {
     });
 
     it('should reject the invalid 00000 ZIP code', () => {
-      expect(() => schema.parse('00000')).toThrow('Postal Code must be a valid US ZIP code');
+      expect(() => schema.parse('00000')).toThrow('Postal Code is invalid');
     });
 
     it('should reject 00000-XXXX ZIP codes', () => {
-      expect(() => schema.parse('00000-1234')).toThrow('Postal Code must be a valid US ZIP code');
-      expect(() => schema.parse('00000-0000')).toThrow('Postal Code must be a valid US ZIP code');
+      expect(() => schema.parse('00000-1234')).toThrow('Postal Code is invalid');
+      expect(() => schema.parse('00000-0000')).toThrow('Postal Code is invalid');
     });
 
     it('should reject non-string values', () => {
@@ -66,12 +74,12 @@ describe('Postal Code Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zPostalCodeOptional('ZIP Code');
-      expect(() => customSchema.parse('invalid')).toThrow('ZIP Code must be a valid US ZIP code');
+      const customSchema = zPostalCodeOptional({ msg: 'ZIP Code' });
+      expect(() => customSchema.parse('invalid')).toThrow('ZIP Code is invalid');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zPostalCodeOptional('Invalid ZIP format', MsgType.Message);
+      const customSchema = zPostalCodeOptional({ msg: 'Invalid ZIP format', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid ZIP format');
     });
   });
@@ -109,12 +117,12 @@ describe('Postal Code Schemas', () => {
     });
 
     it('should reject the invalid 00000 ZIP code', () => {
-      expect(() => schema.parse('00000')).toThrow('Postal Code must be a valid US ZIP code');
+      expect(() => schema.parse('00000')).toThrow('Postal Code is invalid');
     });
 
     it('should reject 00000-XXXX ZIP codes', () => {
-      expect(() => schema.parse('00000-1234')).toThrow('Postal Code must be a valid US ZIP code');
-      expect(() => schema.parse('00000-0000')).toThrow('Postal Code must be a valid US ZIP code');
+      expect(() => schema.parse('00000-1234')).toThrow('Postal Code is invalid');
+      expect(() => schema.parse('00000-0000')).toThrow('Postal Code is invalid');
     });
 
     it('should reject non-string values', () => {
@@ -139,13 +147,13 @@ describe('Postal Code Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zPostalCodeRequired('ZIP Code');
+      const customSchema = zPostalCodeRequired({ msg: 'ZIP Code' });
       expect(() => customSchema.parse('')).toThrow('ZIP Code is required');
-      expect(() => customSchema.parse('invalid')).toThrow('ZIP Code must be a valid US ZIP code');
+      expect(() => customSchema.parse('invalid')).toThrow('ZIP Code is invalid');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zPostalCodeRequired('ZIP code is mandatory', MsgType.Message);
+      const customSchema = zPostalCodeRequired({ msg: 'ZIP code is mandatory', msgType: MsgType.Message });
       expect(() => customSchema.parse('')).toThrow('ZIP code is mandatory');
       expect(() => customSchema.parse('invalid')).toThrow('ZIP code is mandatory');
     });

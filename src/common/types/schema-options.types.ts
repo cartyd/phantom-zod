@@ -33,15 +33,15 @@ export interface EmailSchemaOptions extends BaseSchemaOptions {
  */
 export interface NumberSchemaOptions extends BaseSchemaOptions {
   /** The type of number validation (integer or float). */
-  type?: import("./number-schemas").NumberFieldType;
+  type?: import("../../schemas/number-schemas").NumberFieldType;
   /** Optional minimum value constraint. */
   min?: number;
   /** Optional maximum value constraint. */
   max?: number;
   /** Whether the field is required or optional. */
-  requirement?: import("./number-schemas").NumberFieldRequirement;
+  requirement?: import("../../schemas/number-schemas").NumberFieldRequirement;
   /** Whether to output as number or string. */
-  output?: import("./number-schemas").NumberFieldOutput;
+  output?: import("../../schemas/number-schemas").NumberFieldOutput;
 }
 
 /**
@@ -49,11 +49,11 @@ export interface NumberSchemaOptions extends BaseSchemaOptions {
  */
 export interface DateSchemaOptions extends BaseSchemaOptions {
   /** The expected date format. */
-  format?: import("./date-schemas").DateFormat;
+  format?: import("../../schemas/date-schemas").DateFormat;
   /** Whether the field is required or optional. */
-  requirement?: import("./date-schemas").FieldRequirement;
+  requirement?: import("../../schemas/date-schemas").FieldRequirement;
   /** Whether to return Date object or string. */
-  returnType?: import("./date-schemas").ReturnType;
+  returnType?: import("../../schemas/date-schemas").ReturnType;
   /** Custom format validation (regex or function). */
   customFormat?: RegExp | ((str: string) => boolean);
   /** Custom date parsing function. */
@@ -66,6 +66,31 @@ export interface DateSchemaOptions extends BaseSchemaOptions {
 export interface MoneySchemaOptions extends BaseSchemaOptions {
   /** Maximum number of decimal places allowed. */
   maxDecimals?: number;
+}
+
+/**
+ * Options for array schema creation functions.
+ */
+export interface ArraySchemaOptions extends BaseSchemaOptions {
+  /** Optional minimum number of items constraint for the array. */
+  minItems?: number;
+  /** Optional maximum number of items constraint for the array. */
+  maxItems?: number;
+}
+
+/**
+ * Options for phone schema creation functions.
+ */
+export interface PhoneSchemaOptions extends BaseSchemaOptions {
+  /** The desired phone format (E.164 or National). */
+  format?: import("../../schemas/phone-schemas").PhoneFormat;
+}
+
+/**
+ * Options for postal code schema creation functions.
+ */
+export interface PostalCodeSchemaOptions extends BaseSchemaOptions {
+  // Postal code schemas only need the base options
 }
 
 /**

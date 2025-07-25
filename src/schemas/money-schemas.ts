@@ -1,20 +1,16 @@
 import { z } from "zod";
 
-import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "../common/message-handler";
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
 import { MONEY_DECIMAL_PATTERN } from "../common/regex-patterns";
+import type { MoneySchemaOptions } from "../common/types/schema-options.types";
 
 // --- Money Schema Types ---
-
-/**
- * Type for an optional money value.
- */
-export type MoneyOptional = z.infer<ReturnType<typeof zMoneyOptional>>;
-
-/**
- * Type for a required money value.
- */
-export type MoneyRequired = z.infer<ReturnType<typeof zMoneyRequired>>;
+// Note: These types are simplified since they rely on the factory functions
+export type MoneyOptional = { amount: number; currency: string } | undefined;
+export type MoneyRequired = { amount: number; currency: string };
+export type PriceOptional = { amount: number; currency: string } | undefined;
+export type PriceRequired = { amount: number; currency: string };
 
 // --- ISO 4217 Currency Codes ---
 
@@ -45,311 +41,266 @@ export type CurrencyCode = typeof ISO_4217_CURRENCIES[number];
 // --- Money Schemas ---
 
 /**
- * Currency code schema that validates against ISO 4217 currency codes.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a currency code.
+ * Creates a factory function for money schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing money schema creation functions
  */
-export const zCurrencyCode = (
-  fieldName = "Currency",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.enum(ISO_4217_CURRENCIES, {
-    message: formatErrorMessage({
-      msg: fieldName,
-      msgType: msgType,
-      messageKey: "invalidCurrencyCode",
-      params: { fieldName },
-      
-    }),
-  });
+export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
 
-/**
- * Money amount schema that validates positive decimal values.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for a money amount.
- */
-export const zMoneyAmount = (
-  fieldName = "Amount",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  z
-    .number({
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType: msgType,
-        messageKey: "numberRequired",
-        params: { fieldName },
-        
+  /**
+   * Currency code schema that validates against ISO 4217 currency codes.
+   * @param options - Options to configure field name and message type
+   */
+  const zCurrencyCode = (options: MoneySchemaOptions = {}) => {
+    const { msg = "Currency", msgType = MsgType.FieldName } = options;
+    return z.enum(ISO_4217_CURRENCIES, {
+      message: messageHandler.formatErrorMessage({
+        group: "money",
+        messageKey: "mustBeValidCurrency",
+        params: {},
+        msg,
+        msgType,
+      }),
+    });
+  };
+
+  /**
+   * Money amount schema that validates positive decimal values.
+   * @param options - Options to configure field name, message type, and max decimals
+   */
+  const zMoneyAmount = (options: MoneySchemaOptions = {}) => {
+    const { msg = "Amount", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return z.number({
+      message: messageHandler.formatErrorMessage({
+        group: "number",
+        messageKey: "mustBeNumber",
+        params: {},
+        msg,
+        msgType,
       }),
     })
-    .positive({
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType: msgType,
-        messageKey: "mustBePositive",
-        params: { fieldName },
-        
-      }),
-    })
-    .refine(
-      (val) => {
-        const decimals = val.toString().split('.')[1]?.length || 0;
+      .positive({
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "mustBePositiveAmount",
+          params: {},
+          msg,
+          msgType,
+        }),
+      })
+      .refine(value => {
+        const decimals = value.toString().split('.')[1]?.length || 0;
         return decimals <= maxDecimals;
-      },
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType: msgType,
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
           messageKey: "invalidDecimalPlaces",
-          params: { fieldName, max: maxDecimals },
-          
+          params: { max: maxDecimals },
+          msg,
+          msgType,
         }),
-      },
-    );
+      });
+  };
 
-/**
- * Money amount schema that accepts string input and converts to number.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for a money amount from string.
- */
-export const zMoneyAmountFromString = (
-  fieldName = "Amount",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  z
-    .string({
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType: msgType,
-        messageKey: "stringRequired",
-        params: { fieldName },
-        
+  /**
+   * Money amount schema that accepts string input and converts to number.
+   * @param options - Options to configure field name, message type, and max decimals
+   */
+  const zMoneyAmountFromString = (options: MoneySchemaOptions = {}) => {
+    const { msg = "Amount", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return z.string({
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "mustBeString",
+        params: {},
+        msg,
+        msgType,
       }),
     })
-    .regex(MONEY_DECIMAL_PATTERN, {
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType: msgType,
-        messageKey: "invalidFormat",
-        params: { fieldName },
-        
-      }),
-    })
-    .transform((val) => parseFloat(val))
-    .refine(
-      (val) => val > 0,
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType: msgType,
-          messageKey: "mustBePositive",
-          params: { fieldName },
-          
+      .regex(MONEY_DECIMAL_PATTERN, {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "mustBeValidAmount",
+          params: {},
+          msg,
+          msgType,
         }),
-      },
-    )
-    .refine(
-      (val) => {
-        const decimals = val.toString().split('.')[1]?.length || 0;
+      })
+      .transform(val => parseFloat(val))
+      .refine(value => value > 0, {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "mustBePositiveAmount",
+          params: {},
+          msg,
+          msgType,
+        }),
+      })
+      .refine(value => {
+        const decimals = value.toString().split('.')[1]?.length || 0;
         return decimals <= maxDecimals;
-      },
-      {
-        message: formatErrorMessage({
-          msg: fieldName,
-          msgType: msgType,
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
           messageKey: "invalidDecimalPlaces",
-          params: { fieldName, max: maxDecimals },
-          
+          params: { max: maxDecimals },
+          msg,
+          msgType,
         }),
-      },
-    );
+      });
+  };
 
-/**
- * Optional money schema with currency and amount validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for an optional money object.
- * 
- * @example
- * const moneySchema = zMoneyOptional("Price");
- * const result = moneySchema.parse({
- *   amount: 99.99,
- *   currency: "USD"
- * });
- */
-export const zMoneyOptional = (
-  fieldName = "Money",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  z
-    .object({
-      amount: zMoneyAmount(
-        msgType === MsgType.Message ? "Amount is required" : "Amount",
+  /**
+   * Optional money schema with currency and amount validation.
+   * @param options - Options to configure field name, message type, and max decimals
+   */
+  const zMoneyOptional = (options: MoneySchemaOptions = {}) => {
+    const { msg = "Money", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return z
+      .object({
+        amount: zMoneyAmount({
+          msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
+          msgType,
+          maxDecimals,
+        }),
+        currency: zCurrencyCode({
+          msg: msgType === MsgType.Message ? "Currency is required" : "Currency",
+          msgType,
+        }),
+      })
+      .optional()
+      .refine(
+        (val) => val === undefined || (typeof val === "object" && val !== null),
+        {
+          message:
+            msgType === MsgType.Message
+              ? String(msg)
+              : `${msg} must be a valid money object`,
+        },
+      );
+  };
+
+  /**
+   * Required money schema with currency and amount validation.
+   * @param options - Options to configure field name, message type, and max decimals
+   */
+  const zMoneyRequired = (options: MoneySchemaOptions = {}) => {
+    const { msg = "Money", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return z.object({
+      amount: zMoneyAmount({
+        msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
         msgType,
         maxDecimals,
-      ),
-      currency: zCurrencyCode(
-        msgType === MsgType.Message ? "Currency is required" : "Currency",
-        msgType,
-      ),
-    })
-    .optional()
-    .refine(
-      (val) => val === undefined || (typeof val === "object" && val !== null),
-      {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must be a valid money object`,
-      },
-    );
-
-/**
- * Required money schema with currency and amount validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for a required money object.
- * 
- * @example
- * const moneySchema = zMoneyRequired("Price");
- * const result = moneySchema.parse({
- *   amount: 99.99,
- *   currency: "USD"
- * });
- */
-export const zMoneyRequired = (
-  fieldName = "Money",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  z.object({
-    amount: zMoneyAmount(
-      msgType === MsgType.Message ? "Amount is required" : "Amount",
-      msgType,
-      maxDecimals,
-    ),
-    currency: zCurrencyCode(
-      msgType === MsgType.Message ? "Currency is required" : "Currency",
-      msgType,
-    ),
-  }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
-  });
-
-/**
- * Money schema with string amount input (useful for form data).
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for a money object with string amount.
- * 
- * @example
- * const moneySchema = zMoneyFromString("Price");
- * const result = moneySchema.parse({
- *   amount: "99.99",
- *   currency: "USD"
- * });
- */
-export const zMoneyFromString = (
-  fieldName = "Money",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  z.object({
-    amount: zMoneyAmountFromString(
-      msgType === MsgType.Message ? "Amount is required" : "Amount",
-      msgType,
-      maxDecimals,
-    ),
-    currency: zCurrencyCode(
-      msgType === MsgType.Message ? "Currency is required" : "Currency",
-      msgType,
-    ),
-  }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
-  });
-
-/**
- * Simple price schema for single currency applications.
- * @param currency - The fixed currency code to use.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for a price with fixed currency.
- * 
- * @example
- * const priceSchema = zPrice("USD", "Price");
- * const result = priceSchema.parse(99.99);
- */
-export const zPrice = (
-  currency: CurrencyCode,
-  fieldName = "Price",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  zMoneyAmount(fieldName, msgType, maxDecimals)
-    .transform((amount) => ({ amount, currency }));
-
-/**
- * Price range schema for validating min/max price ranges.
- * @param currency - The fixed currency code to use.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param maxDecimals - Maximum number of decimal places allowed (default: 2).
- * @returns Zod schema for a price range.
- * 
- * @example
- * const priceRangeSchema = zPriceRange("USD", "Price Range");
- * const result = priceRangeSchema.parse({ min: 10.00, max: 100.00 });
- */
-export const zPriceRange = (
-  currency: CurrencyCode,
-  fieldName = "Price Range",
-  msgType: MsgType = MsgType.FieldName,
-  maxDecimals: number = 2,
-) =>
-  z.object({
-    min: zMoneyAmount(
-      msgType === MsgType.Message ? "Minimum price is required" : "Minimum Price",
-      msgType,
-      maxDecimals,
-    ),
-    max: zMoneyAmount(
-      msgType === MsgType.Message ? "Maximum price is required" : "Maximum Price",
-      msgType,
-      maxDecimals,
-    ),
-  })
-  .refine(
-    (data) => data.min <= data.max,
-    {
-      message: formatErrorMessage({
-        msg: fieldName,
-        msgType: msgType,
-        messageKey: "rangeMinMax",
-        params: { fieldName },
-        
       }),
-      path: ["min"],
-    },
-  )
-  .transform((data) => ({
-    min: { amount: data.min, currency },
-    max: { amount: data.max, currency },
-  }));
+      currency: zCurrencyCode({
+        msg: msgType === MsgType.Message ? "Currency is required" : "Currency",
+        msgType,
+      }),
+    }, {
+      message:
+        msgType === MsgType.Message
+          ? String(msg)
+          : `${msg} is required`,
+    });
+  };
+
+  /**
+   * Money schema with string amount input (useful for form data).
+   * @param options - Options to configure field name, message type, and max decimals
+   */
+  const zMoneyFromString = (options: MoneySchemaOptions = {}) => {
+    const { msg = "Money", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return z.object({
+      amount: zMoneyAmountFromString({
+        msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
+        msgType,
+        maxDecimals,
+      }),
+      currency: zCurrencyCode({
+        msg: msgType === MsgType.Message ? "Currency is required" : "Currency",
+        msgType,
+      }),
+    }, {
+      message:
+        msgType === MsgType.Message
+          ? String(msg)
+          : `${msg} is required`,
+    });
+  };
+
+  /**
+   * Simple price schema for single currency applications.
+   * @param currency - The fixed currency code to use.
+   * @param options - Options to configure field name, message type, and max decimals
+   * @returns Zod schema for a price with fixed currency.
+   * 
+   * @example
+   * const priceSchema = zPrice("USD", { msg: "Price" });
+   * const result = priceSchema.parse(99.99);
+   */
+  const zPrice = (
+    currency: CurrencyCode,
+    options: MoneySchemaOptions = {},
+  ) => {
+    const { msg = "Price", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return zMoneyAmount({ msg, msgType, maxDecimals }).transform((amount) => ({ amount, currency }));
+  };
+
+  /**
+   * Price range schema for validating min/max price ranges.
+   * @param currency - The fixed currency code to use.
+   * @param options - Options to configure field name, message type, and max decimals
+   * @returns Zod schema for a price range.
+   * 
+   * @example
+   * const priceRangeSchema = zPriceRange("USD", { msg: "Price Range" });
+   * const result = priceRangeSchema.parse({ min: 10.00, max: 100.00 });
+   */
+  const zPriceRange = (
+    currency: CurrencyCode,
+    options: MoneySchemaOptions = {},
+  ) => {
+    const { msg = "Price Range", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    return z
+      .object({
+        min: zMoneyAmount({
+          msg: msgType === MsgType.Message ? "Minimum price is required" : "Minimum Price",
+          msgType,
+          maxDecimals,
+        }),
+        max: zMoneyAmount({
+          msg: msgType === MsgType.Message ? "Maximum price is required" : "Maximum Price",
+          msgType,
+          maxDecimals,
+        }),
+      })
+      .refine(
+        (data) => data.min <= data.max,
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "money",
+            messageKey: "invalid",
+            params: {},
+            msg,
+            msgType,
+          }),
+          path: ["min"],
+        },
+      )
+      .transform((data) => ({
+        min: { amount: data.min, currency },
+        max: { amount: data.max, currency },
+      }));
+  };
+
+  return {
+    zCurrencyCode,
+    zMoneyAmount,
+    zMoneyAmountFromString,
+    zMoneyOptional,
+    zMoneyRequired,
+    zMoneyFromString,
+    zPrice,
+    zPriceRange,
+  };
+};

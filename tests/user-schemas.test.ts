@@ -1,4 +1,12 @@
-import {
+import { createUserSchemas, USER_ROLES, USER_STATUS, ACCOUNT_TYPES } from '../src/schemas/user-schemas';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
+
+// Create mock message handler instance
+const messageHandler = createTestMessageHandler();
+
+// Create schema instances using factory
+const {
   zPassword,
   zUsername,
   zDisplayName,
@@ -10,11 +18,7 @@ import {
   zPasswordChange,
   zPasswordReset,
   zAdminUserManagement,
-  USER_ROLES,
-  USER_STATUS,
-  ACCOUNT_TYPES
-} from '../src/schemas/user-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+} = createUserSchemas(messageHandler);
 import { runTableTests } from './setup';
 
 describe('User Schemas', () => {
@@ -187,7 +191,7 @@ describe('User Schemas', () => {
 
       it('should reject username below custom minimum length', () => {
         const customSchema = zUsername('Username', MsgType.FieldName, 5);
-        expect(() => customSchema.parse('user')).toThrow('Username is invalid');
+        expect(() => customSchema.parse('user')).toThrow('Username is too short (minimum: 5 characters)');
       });
 
       it('should accept username with custom maximum length', () => {
@@ -197,7 +201,7 @@ describe('User Schemas', () => {
 
       it('should reject username above custom maximum length', () => {
         const customSchema = zUsername('Username', MsgType.FieldName, 3, 10);
-        expect(() => customSchema.parse('verylongusername')).toThrow('Username is invalid');
+        expect(() => customSchema.parse('verylongusername')).toThrow('Username is too long (maximum: 10 characters)');
       });
     });
   });

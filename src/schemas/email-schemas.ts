@@ -1,7 +1,7 @@
-import { MsgType } from "./msg-type";
+import { MsgType } from "../common/types/msg-type";
 import { z } from "zod";
 import { trimOrUndefined } from "../common/utils/string-utils";
-import type { ErrorMessageFormatter } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
 import { EMAIL_PATTERN } from "../common/regex-patterns";
 
 /**
@@ -34,7 +34,7 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
       .optional()
       .transform(trimOrUndefined)
       .refine(isEmail, {
-          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "email.mustBeValidEmail"}),
+          message: messageHandler.formatErrorMessage({ group: "email", msg, msgType, messageKey: "mustBeValidEmail"}),
       });
 
   /**
@@ -51,10 +51,10 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
       .string()
       .trim()
       .nonempty({
-        message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "email.required"}),
+        message: messageHandler.formatErrorMessage({ group: "email", msg, msgType, messageKey: "required"}),
       })
       .email({
-          message: messageHandler.formatErrorMessage({ msg, msgType, messageKey: "email.mustBeValidEmail"}),
+          message: messageHandler.formatErrorMessage({ group: "email", msg, msgType, messageKey: "mustBeValidEmail"}),
       });
 
   return {
@@ -63,38 +63,8 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-/**
- * Individual schema creation functions that accept messageHandler as first parameter
- */
-
-/**
- * Creates a Zod schema for an optional email address.
- * @param messageHandler - The message handler to use for error messages
- * @param msg - The field name or custom message for error output
- * @param msgType - Determines if 'msg' is a field name or a custom message
- */
-export const zEmailOptional = (
-  messageHandler: ErrorMessageFormatter,
-  msg: string = "Email Address",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createEmailSchemas(messageHandler).zEmailOptional(msg, msgType);
-};
-
-/**
- * Creates a Zod string schema for validating required email addresses.
- * @param messageHandler - The message handler to use for error messages
- * @param msg - The field name or custom message to use in error messages
- * @param msgType - The type of message formatting to use
- */
-export const zEmailRequired = (
-  messageHandler: ErrorMessageFormatter,
-  msg: string = "Email Address",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return createEmailSchemas(messageHandler).zEmailRequired(msg, msgType);
-};
-
 // --- Types ---
-export type EmailOptional = z.infer<ReturnType<typeof zEmailOptional>>;
-export type EmailRequired = z.infer<ReturnType<typeof zEmailRequired>>;
+// Note: These types reference the factory functions, so they need to be created from the factory
+type EmailSchemasFactory = ReturnType<typeof createEmailSchemas>;
+export type EmailOptional = z.infer<ReturnType<EmailSchemasFactory['zEmailOptional']>>;
+export type EmailRequired = z.infer<ReturnType<EmailSchemasFactory['zEmailRequired']>>;

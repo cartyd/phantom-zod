@@ -1,9 +1,71 @@
 import { z } from "zod";
 
+import type { ErrorMessageFormatter } from "../localization/message-handler.types";
 import { trimOrEmpty } from "../common/utils/string-utils";
-import { MsgType } from "./msg-type";
-import type { ErrorMessageFormatter } from "../common/message-handler.types";
-import type { StringSchemaOptions } from "./schema-options";
+import { MsgType } from "../common/types/msg-type";
+import type { StringSchemaOptions } from "../common/types/schema-options.types";
+
+// --- Types ---
+// Note: These types reference the factory functions, so they need to be created from the factory
+type StringSchemasFactory = ReturnType<typeof createStringSchemas>;
+export type StringOptional = z.infer<ReturnType<StringSchemasFactory['zStringOptional']>>;
+export type StringRequired = z.infer<ReturnType<StringSchemasFactory['zStringRequired']>>;
+
+/**
+ * Adds minimum and/or maximum length constraints to a Zod schema for strings.
+ *
+ * This function refines the provided schema by enforcing the specified `minLength` and/or `maxLength`
+ * constraints. If a constraint is violated, a formatted error message is generated using the provided
+ * `messageHandler`. If the value is not a string or is falsy, the constraint is not enforced.
+ *
+ * @template TSchema - A Zod schema type.
+ * @param schema - The Zod schema to which length constraints will be added.
+ * @param messageHandler - An error message formatter used to generate error messages.
+ * @param msg - A custom message to include in the error.
+ * @param msgType - The type of message (used for formatting).
+ * @param minLength - The minimum allowed string length (optional).
+ * @param maxLength - The maximum allowed string length (optional).
+ * @returns The refined schema with length constraints applied.
+ */
+function addLengthConstraints<TSchema extends z.ZodTypeAny>(
+  schema: TSchema,
+  messageHandler: ErrorMessageFormatter,
+  msg: string,
+  msgType: MsgType,
+  minLength?: number,
+  maxLength?: number
+): TSchema {
+  let result = schema;
+  if (minLength !== undefined) {
+    result = result.refine((val: unknown) => {
+      if (!val || typeof val !== 'string') return true;
+      return val.length >= minLength;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "tooShort",
+        params: { min: minLength },
+        msg,
+        msgType,
+      }),
+    }) as TSchema;
+  }
+  if (maxLength !== undefined) {
+    result = result.refine((val: unknown) => {
+      if (!val || typeof val !== 'string') return true;
+      return val.length <= maxLength;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "string",
+        messageKey: "tooLong",
+        params: { max: maxLength },
+        msg,
+        msgType,
+      }),
+    }) as TSchema;
+  }
+  return result;
+}
 
 /**
  * Creates a factory function for string schemas with injected message handler
@@ -104,60 +166,3 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
     zStringRequired,
   };
 };
-
-
-/**
- * Adds minimum and/or maximum length constraints to a Zod schema for strings.
- *
- * This function refines the provided schema by enforcing the specified `minLength` and/or `maxLength`
- * constraints. If a constraint is violated, a formatted error message is generated using the provided
- * `messageHandler`. If the value is not a string or is falsy, the constraint is not enforced.
- *
- * @template T - A Zod schema type.
- * @param schema - The Zod schema to which length constraints will be added.
- * @param messageHandler - An error message formatter used to generate error messages.
- * @param msg - A custom message to include in the error.
- * @param msgType - The type of message (used for formatting).
- * @param minLength - The minimum allowed string length (optional).
- * @param maxLength - The maximum allowed string length (optional).
- * @returns The refined schema with length constraints applied.
- */
-function addLengthConstraints<T extends z.ZodTypeAny>(
-  schema: T,
-  messageHandler: ErrorMessageFormatter,
-  msg: string,
-  msgType: MsgType,
-  minLength?: number,
-  maxLength?: number
-): T {
-  let result = schema;
-  if (minLength !== undefined) {
-    result = result.refine((val: unknown) => {
-      if (!val || typeof val !== 'string') return true;
-      return val.length >= minLength;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "tooShort",
-        params: { min: minLength },
-        msg,
-        msgType,
-      }),
-    }) as T;
-  }
-  if (maxLength !== undefined) {
-    result = result.refine((val: unknown) => {
-      if (!val || typeof val !== 'string') return true;
-      return val.length <= maxLength;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "tooLong",
-        params: { max: maxLength },
-        msg,
-        msgType,
-      }),
-    }) as T;
-  }
-  return result;
-}
