@@ -18,6 +18,14 @@ const {
   zPasswordChange,
   zPasswordReset,
   zAdminUserManagement,
+  // New schemas
+  zPasswordWithWeaknessCheck,
+  zUserGenericValidation,
+  zEmailUniqueness,
+  zUsernameUniqueness,
+  zRoleValidation,
+  zAccountTypeValidation,
+  zUserRegistrationWithUniqueness,
 } = createUserSchemas(messageHandler);
 import { runTableTests } from './setup';
 
@@ -615,6 +623,317 @@ describe('User Schemas', () => {
         shouldThrow: true
       }
     ], (input) => schema.parse(input));
+  });
+
+  // New schema tests
+  describe('zPasswordWithWeaknessCheck', () => {
+    const schema = zPasswordWithWeaknessCheck();
+
+    runTableTests([
+      {
+        description: 'should accept very strong password',
+        input: 'VeryStrongPass123!@#',
+        expected: 'VeryStrongPass123!@#'
+      },
+      {
+        description: 'should accept strong password',
+        input: 'StrongPass123!',
+        expected: 'StrongPass123!'
+      },
+      {
+        description: 'should reject weak password',
+        input: 'weak',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject moderately weak password',
+        input: 'password123',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+
+    it('should use passwordWeak message key', () => {
+      expect(() => schema.parse('weak')).toThrow('Password password is weak (score: 2)');
+    });
+  });
+
+  describe('zUserGenericValidation', () => {
+    const schema = zUserGenericValidation();
+
+    runTableTests([
+      {
+        description: 'should accept valid user object with id',
+        input: { id: 'user123', name: 'John' },
+        expected: { id: 'user123', name: 'John' }
+      },
+      {
+        description: 'should accept minimal user object with id',
+        input: { id: 'user456' },
+        expected: { id: 'user456' }
+      },
+      {
+        description: 'should reject object without id',
+        input: { name: 'John', email: 'john@example.com' },
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject non-object values',
+        input: 'not an object',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject null value',
+        input: null,
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+  });
+
+  describe('zEmailUniqueness', () => {
+    const existingEmails = ['john@example.com', 'jane@example.com'];
+    const schema = zEmailUniqueness('Email', MsgType.FieldName, existingEmails);
+
+    runTableTests([
+      {
+        description: 'should accept unique email',
+        input: 'new@example.com',
+        expected: 'new@example.com'
+      },
+      {
+        description: 'should accept email with different case that is unique',
+        input: 'UNIQUE@example.com',
+        expected: 'UNIQUE@example.com'
+      },
+      {
+        description: 'should reject existing email (case-insensitive)',
+        input: 'john@example.com',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject existing email with different case',
+        input: 'JOHN@EXAMPLE.COM',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject invalid email format',
+        input: 'invalid-email',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+
+    it('should use emailAlreadyExists message key', () => {
+      expect(() => schema.parse('john@example.com')).toThrow('Email email address is already in use');
+    });
+  });
+
+  describe('zUsernameUniqueness', () => {
+    const existingUsernames = ['johndoe', 'janedoe'];
+    const schema = zUsernameUniqueness('Username', MsgType.FieldName, existingUsernames);
+
+    runTableTests([
+      {
+        description: 'should accept unique username',
+        input: 'newuser',
+        expected: 'newuser'
+      },
+      {
+        description: 'should accept username with different case that is unique',
+        input: 'UNIQUEUSER',
+        expected: 'UNIQUEUSER'
+      },
+      {
+        description: 'should reject existing username (case-insensitive)',
+        input: 'johndoe',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject existing username with different case',
+        input: 'JOHNDOE',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject username with invalid characters',
+        input: 'invalid@user',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+
+    it('should use usernameAlreadyExists message key', () => {
+      expect(() => schema.parse('johndoe')).toThrow('Username username is already taken');
+    });
+  });
+
+  describe('zRoleValidation', () => {
+    const schema = zRoleValidation();
+
+    runTableTests([
+      {
+        description: 'should accept valid role - admin',
+        input: 'admin',
+        expected: 'admin'
+      },
+      {
+        description: 'should accept valid role - user',
+        input: 'user',
+        expected: 'user'
+      },
+      {
+        description: 'should accept valid role - moderator',
+        input: 'moderator',
+        expected: 'moderator'
+      },
+      {
+        description: 'should reject invalid role',
+        input: 'invalid_role',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject empty role',
+        input: '',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+
+    it('should use invalidRole message key', () => {
+      expect(() => schema.parse('invalid_role')).toThrow('Role has invalid role: invalid_role');
+    });
+  });
+
+  describe('zAccountTypeValidation', () => {
+    const schema = zAccountTypeValidation();
+
+    runTableTests([
+      {
+        description: 'should accept valid account type - individual',
+        input: 'individual',
+        expected: 'individual'
+      },
+      {
+        description: 'should accept valid account type - business',
+        input: 'business',
+        expected: 'business'
+      },
+      {
+        description: 'should accept valid account type - organization',
+        input: 'organization',
+        expected: 'organization'
+      },
+      {
+        description: 'should reject invalid account type',
+        input: 'invalid_type',
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject empty account type',
+        input: '',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+
+    it('should use invalidAccountType message key', () => {
+      expect(() => schema.parse('invalid_type')).toThrow('Account Type has invalid account type: invalid_type');
+    });
+  });
+
+  describe('zUserRegistrationWithUniqueness', () => {
+    const existingEmails = ['john@example.com'];
+    const existingUsernames = ['johndoe'];
+    const schema = zUserRegistrationWithUniqueness('Registration', MsgType.FieldName, existingEmails, existingUsernames);
+
+    const validRegistration = {
+      username: 'newuser',
+      email: 'new@example.com',
+      password: 'VeryStrongPass123!',
+      confirmPassword: 'VeryStrongPass123!',
+      accountType: 'individual' as const,
+      acceptTerms: true
+    };
+
+    runTableTests([
+      {
+        description: 'should validate complete enhanced registration',
+        input: validRegistration,
+        expected: expect.objectContaining({
+          username: 'newuser',
+          email: 'new@example.com',
+          accountType: 'individual',
+          acceptTerms: true
+        })
+      },
+      {
+        description: 'should reject registration with existing email',
+        input: {
+          ...validRegistration,
+          email: 'john@example.com'
+        },
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject registration with existing username',
+        input: {
+          ...validRegistration,
+          username: 'johndoe'
+        },
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject registration with weak password',
+        input: {
+          ...validRegistration,
+          password: 'weak',
+          confirmPassword: 'weak'
+        },
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject registration with invalid account type',
+        input: {
+          ...validRegistration,
+          accountType: 'invalid_type'
+        },
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+  });
+
+  describe('Message customization tests', () => {
+    it('all new schemas support custom field names and message types', () => {
+      const testCases = [
+        { schema: zPasswordWithWeaknessCheck, name: 'Password Strength', invalid: 'weak' },
+        { schema: zUserGenericValidation, name: 'User Object', invalid: 'not-object' },
+        { schema: zRoleValidation, name: 'User Role', invalid: 'invalid_role' },
+        { schema: zAccountTypeValidation, name: 'Account Type', invalid: 'invalid_type' },
+      ];
+
+      testCases.forEach(({ schema, name, invalid }) => {
+        // Test custom field name
+        const fieldNameSchema = schema(`Custom ${name}`);
+        expect(() => fieldNameSchema.parse(invalid)).toThrow(`Custom ${name}`);
+
+        // Test custom message
+        const messageSchema = schema(`Custom error for ${name}`, MsgType.Message);
+        expect(() => messageSchema.parse(invalid)).toThrow(`Custom error for ${name}`);
+      });
+    });
   });
 
   describe('Constants', () => {

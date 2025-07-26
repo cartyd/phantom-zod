@@ -171,6 +171,24 @@ export function createTestMessageHandler(
         return `${options.msg} must be a valid user object`;
       case "cannotBeEmpty":
         return `${options.msg} cannot be empty`;
+      // Network-specific error messages
+      case "mustBeValidIPv4":
+        return `${options.msg} must be a valid IPv4 address`;
+      case "mustBeValidIPv6":
+        return `${options.msg} must be a valid IPv6 address`;
+      case "mustBeValidMacAddress":
+        return `${options.msg} must be a valid MAC address`;
+      // Additional user-specific error messages
+      case "passwordWeak":
+        return `${options.msg} password is weak (score: ${options.params?.score || 0})`;
+      case "emailAlreadyExists":
+        return `${options.msg} email address is already in use`;
+      case "usernameAlreadyExists":
+        return `${options.msg} username is already taken`;
+      case "invalidRole":
+        return `${options.msg} has invalid role: ${options.params?.role || 'unknown'}`;
+      case "invalidAccountType":
+        return `${options.msg} has invalid account type: ${options.params?.type || 'unknown'}`;
       default:
         return `${options.msg} is invalid`;
     }

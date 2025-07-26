@@ -117,6 +117,88 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
         message: messageHandler.formatErrorMessage({ group: "network", messageKey: "invalidMacFormat", msg, msgType }),
       });
 
+  /**
+   * Generic network address validator that accepts IPv4, IPv6, or MAC addresses.
+   * Uses the generic "invalid" message key for validation errors.
+   */
+  const zNetworkAddressGeneric = (
+    msg = "Network address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .string({
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "required", msg, msgType }),
+      })
+      .refine(
+        (val) => IPV4_PATTERN.test(val) || IPV6_PATTERN.test(val) || MAC_ADDRESS_PATTERN.test(val),
+        {
+          message: messageHandler.formatErrorMessage({ group: "network", messageKey: "invalid", msg, msgType }),
+        }
+      );
+
+  /**
+   * Strict IPv4 validator using the specific "mustBeValidIPv4" message key.
+   */
+  const zIPv4Strict = (
+    msg = "IPv4 address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .string({
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "required", msg, msgType }),
+      })
+      .refine((val) => IPV4_PATTERN.test(val), {
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "mustBeValidIPv4", msg, msgType }),
+      });
+
+  /**
+   * Strict IPv6 validator using the specific "mustBeValidIPv6" message key.
+   */
+  const zIPv6Strict = (
+    msg = "IPv6 address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .string({
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "required", msg, msgType }),
+      })
+      .refine((val) => IPV6_PATTERN.test(val), {
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "mustBeValidIPv6", msg, msgType }),
+      });
+
+  /**
+   * Strict MAC address validator using the specific "mustBeValidMacAddress" message key.
+   */
+  const zMacAddressStrict = (
+    msg = "MAC address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .string({
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "required", msg, msgType }),
+      })
+      .refine((val) => MAC_ADDRESS_PATTERN.test(val), {
+        message: messageHandler.formatErrorMessage({ group: "network", messageKey: "mustBeValidMacAddress", msg, msgType }),
+      });
+
+  /**
+   * Returns example network address formats for user guidance.
+   * Uses the "examples" message key parameters.
+   */
+  const getNetworkAddressExamples = () => {
+    return messageHandler.formatErrorMessage({
+      group: "network",
+      messageKey: "examples",
+      msg: "Network address examples",
+      msgType: MsgType.Message,
+      params: {
+        ipv4: "192.168.1.1",
+        ipv6: "2001:db8::1",
+        mac: "00:1A:2B:3C:4D:5E"
+      }
+    });
+  };
+
   return {
     zIPv4Optional,
     zIPv4Required,
@@ -124,5 +206,10 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
     zIPv6Required,
     zMacAddressOptional,
     zMacAddressRequired,
+    zNetworkAddressGeneric,
+    zIPv4Strict,
+    zIPv6Strict,
+    zMacAddressStrict,
+    getNetworkAddressExamples,
   };
 };
