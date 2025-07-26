@@ -1,6 +1,6 @@
 import { createMoneySchemas, ISO_4217_CURRENCIES } from "../src/schemas/money-schemas";
-import { MsgType } from "../src/schemas/msg-type";
-import { createTestMessageHandler } from "../src/common/message-handler.types";
+import { MsgType } from "../src/common/types/msg-type";
+import { createTestMessageHandler } from "../src/localization/message-handler.types";
 
 // Create schemas using the factory with test message handler
 const mockMessageHandler = createTestMessageHandler();

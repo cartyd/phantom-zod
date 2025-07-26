@@ -50,8 +50,9 @@ export const createPostalCodeSchemas = (messageHandler: ErrorMessageFormatter) =
   const createBasePostalCodeSchema = (msg: string, msgType: MsgType) => {
     return z.string({
       message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "mustBeString",
+        group: "postalCode",
+        messageKey: "invalid",
+        params: {},
         msg,
         msgType,
       }),

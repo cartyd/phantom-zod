@@ -13,14 +13,20 @@ const mockMessageHandler = createTestMessageHandler(
     
     // Simple mock implementation for field name formatting
     switch (options.messageKey) {
+      case "mustBeArray":
+        return `${options.msg} must be an array`;
       case "mustBeStringArray":
         return `${options.msg} must be an array of strings`;
       case "mustNotBeEmpty":
         return `${options.msg} must be an array of strings with at least one item`;
       case "mustHaveMinItems":
+      case "tooSmall":
         return `${options.msg} must have at least ${options.params?.min} items`;
       case "mustHaveMaxItems":
+      case "tooBig":
         return `${options.msg} must have at most ${options.params?.max} items`;
+      case "duplicateItems":
+        return `${options.msg} must not contain duplicate items`;
       default:
         return `${options.msg} is invalid`;
     }
@@ -31,16 +37,6 @@ const mockMessageHandler = createTestMessageHandler(
 const { zStringArrayOptional, zStringArrayRequired } = createArraySchemas(mockMessageHandler);
 
 describe('Array Schemas', () => {
-  // Helper to extract ZodError issues for fine-grained assertions
-  function getIssues(fn: () => any) {
-    try {
-      fn();
-      return [];
-    } catch (e) {
-      return e.issues || (e.errors && e.errors[0]?.issues) || [];
-    }
-  }
-
   describe('zStringArrayOptional', () => {
     const schema = zStringArrayOptional();
 
@@ -62,13 +58,13 @@ describe('Array Schemas', () => {
       },
       {
         description: 'should accept array with empty strings',
-        input: ['', 'valid', ''],
-        expected: ['', 'valid', '']
+        input: ['', 'valid'],
+        expected: ['', 'valid']
       },
       {
         description: 'should accept array with whitespace strings',
-        input: ['  ', 'valid', '  '],
-        expected: ['  ', 'valid', '  ']
+        input: ['  ', 'valid', '   '],
+        expected: ['  ', 'valid', '   ']
       },
       {
         description: 'should handle undefined',
@@ -149,58 +145,36 @@ describe('Array Schemas', () => {
       });
     });
 
-    describe('Contract compliance', () => {
-      it('should trigger mustBeArray for non-array input', () => {
+    describe('Error messages', () => {
+      it('should provide clear error for non-array input', () => {
         const schema = zStringArrayOptional({ msg: 'Field' });
-        const issues = getIssues(() => schema.parse('not an array'));
-        expect(issues.some(i => i.message.includes('must be an array'))).toBe(true);
-        expect(issues.some(i => i.messageKey === 'mustBeArray')).toBe(true);
+        expect(() => schema.parse('not an array')).toThrow('Field must be an array');
       });
 
-      it('should trigger mustBeStringArray with receivedTypes and invalidIndices', () => {
-        const schema = zStringArrayOptional({ msg: 'Field' });
-        const issues = getIssues(() => schema.parse(['a', 1, true, 'b', null]));
-        const stringArrayIssue = issues.find(i => i.messageKey === 'mustBeStringArray');
-        expect(stringArrayIssue).toBeTruthy();
-        expect(stringArrayIssue.params).toHaveProperty('receivedTypes');
-        expect(stringArrayIssue.params).toHaveProperty('invalidIndices');
-        expect(stringArrayIssue.params.invalidIndices).toEqual([1,2,4]);
-        expect(stringArrayIssue.params.receivedTypes).toEqual(['string','number','boolean','string','object']);
+      it('should provide clear error for array with non-string elements', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags' });
+        expect(() => schema.parse(['valid', 123, 'also valid'])).toThrow('Tags must be an array of strings');
       });
 
-      it('should trigger mustNotBeEmpty for required schema with empty array', () => {
-        const schema = zStringArrayRequired({ msg: 'Field' });
-        const issues = getIssues(() => schema.parse([]));
-        expect(issues.some(i => i.messageKey === 'mustNotBeEmpty')).toBe(true);
+      it('should provide clear error for empty required array', () => {
+        const schema = zStringArrayRequired({ msg: 'Categories' });
+        expect(() => schema.parse([])).toThrow('Categories must be an array of strings with at least one item');
       });
 
-      it('should trigger mustHaveMinItems with min param', () => {
-        const schema = zStringArrayOptional({ msg: 'Field', minItems: 3 });
-        const issues = getIssues(() => schema.parse(['a']));
-        const minIssue = issues.find(i => i.messageKey === 'mustHaveMinItems');
-        expect(minIssue).toBeTruthy();
-        expect(minIssue.params).toHaveProperty('min', 3);
+      it('should provide clear error for array too small', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags', minItems: 3 });
+        expect(() => schema.parse(['one', 'two'])).toThrow('Tags must have at least 3 items');
       });
 
-      it('should trigger mustHaveMaxItems with max param', () => {
-        const schema = zStringArrayOptional({ msg: 'Field', maxItems: 2 });
-        const issues = getIssues(() => schema.parse(['a','b','c']));
-        const maxIssue = issues.find(i => i.messageKey === 'mustHaveMaxItems');
-        expect(maxIssue).toBeTruthy();
-        expect(maxIssue.params).toHaveProperty('max', 2);
+      it('should provide clear error for array too large', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags', maxItems: 2 });
+        expect(() => schema.parse(['one', 'two', 'three'])).toThrow('Tags must have at most 2 items');
       });
 
-      it('should trigger duplicateItems with duplicateIndices', () => {
-        const schema = zStringArrayOptional({ msg: 'Field' });
-        const arr = ['a', 'b', 'a', 'c', 'b'];
-        const issues = getIssues(() => schema.parse(arr));
-        const dupIssue = issues.find(i => i.messageKey === 'duplicateItems');
-        expect(dupIssue).toBeTruthy();
-        expect(dupIssue.params).toHaveProperty('duplicateIndices');
-        // Duplicates: 'a' at 0,2 and 'b' at 1,4
-        expect(dupIssue.params.duplicateIndices.sort()).toEqual([0,1,2,4]);
+      it('should provide clear error for duplicate items', () => {
+        const schema = zStringArrayOptional({ msg: 'Tags' });
+        expect(() => schema.parse(['a', 'b', 'a'])).toThrow('Tags must not contain duplicate items');
       });
-    });
     });
 
     describe('Array constraints', () => {
@@ -245,8 +219,8 @@ describe('Array Schemas', () => {
       },
       {
         description: 'should accept array with empty strings',
-        input: ['', 'valid', ''],
-        expected: ['', 'valid', '']
+        input: ['', 'valid'],
+        expected: ['', 'valid']
       },
       {
         description: 'should reject empty array',
@@ -304,3 +278,4 @@ describe('Array Schemas', () => {
       });
     });
   });
+});

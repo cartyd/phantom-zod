@@ -53,15 +53,24 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zCurrencyCode = (options: MoneySchemaOptions = {}) => {
     const { msg = "Currency", msgType = MsgType.FieldName } = options;
-    return z.enum(ISO_4217_CURRENCIES, {
+    return z.string({
       message: messageHandler.formatErrorMessage({
         group: "money",
-        messageKey: "mustBeValidCurrency",
+        messageKey: "required",
         params: {},
         msg,
         msgType,
       }),
-    });
+    })
+      .refine((val) => ISO_4217_CURRENCIES.includes(val as any), {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "invalidCurrencyCode",
+          params: { code: "{value}" },
+          msg,
+          msgType,
+        }),
+      });
   };
 
   /**
@@ -72,14 +81,23 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
     const { msg = "Amount", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
     return z.number({
       message: messageHandler.formatErrorMessage({
-        group: "number",
-        messageKey: "mustBeNumber",
+        group: "money",
+        messageKey: "required",
         params: {},
         msg,
         msgType,
       }),
     })
-      .positive({
+      .refine((value) => typeof value === "number" && !isNaN(value), {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "mustBeValidAmount",
+          params: {},
+          msg,
+          msgType,
+        }),
+      })
+      .refine(value => value > 0, {
         message: messageHandler.formatErrorMessage({
           group: "money",
           messageKey: "mustBePositiveAmount",
@@ -110,8 +128,8 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
     const { msg = "Amount", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
     return z.string({
       message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "mustBeString",
+        group: "money",
+        messageKey: "required",
         params: {},
         msg,
         msgType,
@@ -172,10 +190,13 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
       .refine(
         (val) => val === undefined || (typeof val === "object" && val !== null),
         {
-          message:
-            msgType === MsgType.Message
-              ? String(msg)
-              : `${msg} must be a valid money object`,
+          message: messageHandler.formatErrorMessage({
+            group: "money",
+            messageKey: "mustBeMoneyObject",
+            params: {},
+            msg,
+            msgType,
+          }),
         },
       );
   };
@@ -197,10 +218,13 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
         msgType,
       }),
     }, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} is required`,
+      message: messageHandler.formatErrorMessage({
+        group: "money",
+        messageKey: "required",
+        params: {},
+        msg,
+        msgType,
+      }),
     });
   };
 
@@ -221,10 +245,13 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
         msgType,
       }),
     }, {
-      message:
-        msgType === MsgType.Message
-          ? String(msg)
-          : `${msg} is required`,
+      message: messageHandler.formatErrorMessage({
+        group: "money",
+        messageKey: "required",
+        params: {},
+        msg,
+        msgType,
+      }),
     });
   };
 
