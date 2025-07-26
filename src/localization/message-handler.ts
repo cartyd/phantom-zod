@@ -57,10 +57,11 @@ export class MessageHandler implements ErrorMessageFormatter {
 }
 
 /**
- * Create a new MessageHandler instance with custom dependencies
- * @param logger - Logger instance to use
- * @param localizationManager - LocalizationManager instance to use
- * @returns New MessageHandler instance implementing IMessageHandler interface
+ * Creates a new instance of `MessageHandler` to handle error message formatting with localization support.
+ *
+ * @param logger - An instance of `Logger` used for logging messages.
+ * @param localizationManager - An instance of `LocalizationManager` to provide localized messages.
+ * @returns An `ErrorMessageFormatter` that formats error messages using the provided logger and localization manager.
  */
 export function createMessageHandler(logger: Logger, localizationManager: LocalizationManager): ErrorMessageFormatter {
   return new MessageHandler(logger, localizationManager);
