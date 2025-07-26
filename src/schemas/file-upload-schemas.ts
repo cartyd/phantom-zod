@@ -102,17 +102,17 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.number({
-      message: messageHandler.formatErrorMessage({ group: "number", msg, msgType, messageKey: "mustBeNumber" }),
+      message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalid" }),
     })
     .positive({
-      message: messageHandler.formatErrorMessage({ group: "number", msg, msgType, messageKey: "mustBePositive" }),
+      message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalid" }),
     })
     .max(maxSize, {
       message: messageHandler.formatErrorMessage({ 
         msg, 
         msgType, 
         group: "fileUpload",
-        messageKey: "tooBig",
+        messageKey: "fileSizeExceeded",
         params: { maxSize: maxSize }
       }),
     });
@@ -131,8 +131,8 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
         msg, 
         msgType, 
         group: "fileUpload",
-        messageKey: "invalidFileType",
-        params: { type: allowedTypes.join(", ") }
+        messageKey: "invalidMimeType",
+        params: { mime: allowedTypes.join(", ") }
       }),
     });
 
@@ -193,7 +193,7 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
       .refine(
         (val) => val === undefined || (typeof val === "object" && val !== null),
         {
-          message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "mustBeValidFile" }),
+          message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalid" }),
         },
       );
   };

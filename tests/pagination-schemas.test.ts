@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { zPagination, zPaginationQuery, zCursorPagination, zOffsetPagination, zPaginationResponse, zPaginatedData } from '../src/schemas/pagination-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { MsgType } from '../src/common/types/msg-type';
 
 // Tests for Pagination Schemas
 describe('Pagination Schemas', () => {
