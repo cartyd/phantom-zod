@@ -1,7 +1,7 @@
-import { MsgType } from "../src/schemas/msg-type";
+import { MsgType } from "../src/common/types/msg-type";
 import { createStringSchemas } from "../src/schemas/string-schemas";
 import { generateTestData, runTableTests } from "./setup";
-import { createTestMessageHandler } from "../src/common/message-handler.types";
+import { createTestMessageHandler } from "../src/localization/message-handler.types";
 
 // Create a type-safe mock using the test helper
 const mockMessageHandler = createTestMessageHandler(
@@ -29,6 +29,26 @@ const mockMessageHandler = createTestMessageHandler(
 
 // Create schema functions with injected message handler
 const { zStringOptional, zStringRequired } = createStringSchemas(mockMessageHandler);
+
+describe('Type enforcement (mustBeString)', () => {
+  const nonStringValues = [5, true, null, undefined, {}, [], Symbol('s')];
+
+  nonStringValues.forEach((value) => {
+    it(`zStringOptional should throw mustBeString for value: ${String(value)}`, () => {
+      if (value === undefined) {
+        // zStringOptional allows undefined, returns ""
+        expect(zStringOptional().parse(undefined)).toBe("");
+      } else {
+        expect(() => zStringOptional().parse(value)).toThrow(/must be a string|is invalid/);
+      }
+    });
+
+    it(`zStringRequired should throw mustBeString for value: ${String(value)}`, () => {
+      expect(() => zStringRequired().parse(value)).toThrow(/must be a string|is invalid/);
+    });
+  });
+});
+
 
 describe('String Schemas', () => {
   describe('zStringOptional', () => {

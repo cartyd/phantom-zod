@@ -101,14 +101,35 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Helper for consistent error message formatting
    */
-  const createDateErrorMessage = (msg: string, msgType: MsgType, format: DateFormat) =>
+
+  // Contract-compliant error message helpers
+  const createRequiredError = (msg: string, msgType: MsgType) =>
+    messageHandler.formatErrorMessage({
+      group: "date",
+      messageKey: "required",
+      msg,
+      msgType,
+      params: {},
+    });
+
+  const createInvalidFormatError = (msg: string, msgType: MsgType, format: DateFormat) =>
     messageHandler.formatErrorMessage({
       group: "date",
       messageKey: "invalidFormat",
       msg,
       msgType,
-      params: { format: getExampleFormat(format) }
+      params: { format: getExampleFormat(format) },
     });
+
+  const createInvalidDateStringError = (msg: string, msgType: MsgType) =>
+    messageHandler.formatErrorMessage({
+      group: "date",
+      messageKey: "invalidDateString",
+      msg,
+      msgType,
+      params: {},
+    });
+
 
   /**
    * Creates a base date/datetime schema with consistent error handling.
@@ -122,27 +143,54 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     customFormat?: RegExp | ((str: string) => boolean),
     customParse?: (str: string) => Date | null,
   ) => {
-    const errorMessage = createDateErrorMessage(msg, msgType, format);
+    // Error messages for each contract key
+    const requiredError = createRequiredError(msg, msgType);
+    const invalidFormatError = createInvalidFormatError(msg, msgType, format);
+    const invalidDateStringError = createInvalidDateStringError(msg, msgType);
+
+    // Special case: custom validation function with ReturnType.String and no customParse
+    const isCustomValidationFunction = format === DateFormat.Custom && typeof customFormat === 'function' && !customParse;
+    if (isCustomValidationFunction) {
+      const baseSchema = requirement === FieldRequirement.Required
+        ? z.string().refine((val) => val !== undefined && val !== null && val.trim() !== '', { message: requiredError })
+        : z.string().optional().refine((val) => val === undefined || val === null || val.trim() !== '', { message: requiredError });
+      return baseSchema.refine((val) => {
+        if (val === undefined || val === null) return requirement === FieldRequirement.Optional;
+        return (customFormat as (str: string) => boolean)(val);
+      }, { message: invalidFormatError });
+    }
 
     if (requirement === FieldRequirement.Required) {
       const requiredSchema = z
         .union([z.string(), z.date()])
         .transform((val) => dateBaseTransform(val, format))
+        // Reject undefined/null
+        .refine(
+          (val) => val !== undefined && val !== null,
+          { message: requiredError },
+        )
         // Reject empty strings (after trimming)
         .refine(
           (val) => {
             if (typeof val === "string" && val.trim() === "") return false;
             return true;
           },
-          {
-            message: errorMessage,
-          },
+          { message: requiredError },
         )
+        // Reject invalid format
         .refine(
           (val) => isValidDateString(val, format, customFormat, customParse),
-          {
-            message: errorMessage,
+          { message: invalidFormatError },
+        )
+        // Reject if parseDate fails (invalid date string)
+        .refine(
+          (val) => {
+            if (typeof val === "string" && isValidDateString(val, format, customFormat, customParse)) {
+              return parseDate(val, format, customParse) !== null;
+            }
+            return true;
           },
+          { message: invalidDateStringError },
         );
 
       return returnType === ReturnType.String
@@ -158,14 +206,33 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
         if (val === undefined || val === null) return undefined;
         return dateBaseTransform(val, format);
       })
+      // Reject empty strings (after trimming)
+      .refine(
+        (val) => {
+          if (val === undefined || val === null) return true;
+          if (typeof val === "string" && val.trim() === "") return false;
+          return true;
+        },
+        { message: requiredError },
+      )
+      // Reject invalid format
       .refine(
         (val) =>
           val === undefined ||
           val === null ||
           isValidDateString(val, format, customFormat, customParse),
-        {
-          message: errorMessage,
+        { message: invalidFormatError },
+      )
+      // Reject if parseDate fails (invalid date string)
+      .refine(
+        (val) => {
+          if (val === undefined || val === null) return true;
+          if (typeof val === "string" && isValidDateString(val, format, customFormat, customParse)) {
+            return parseDate(val, format, customParse) !== null;
+          }
+          return true;
         },
+        { message: invalidDateStringError },
       );
 
     return returnType === ReturnType.String

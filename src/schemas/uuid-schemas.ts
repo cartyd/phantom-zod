@@ -17,13 +17,35 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zUuidOptional = (
     msg = "ID",
     msgType: MsgType = MsgType.FieldName,
-  ) => 
-    z
-      .string()
-      .optional()
-      .refine((val) => val === undefined || val === "" || UUID_PATTERN.test(val), {
-          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuid"}),
-      });
+  ) =>
+    z.string().optional().superRefine((val, ctx) => {
+      if (val === undefined || val === "") return;
+      if (typeof val !== "string") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "uuid",
+            msg,
+            msgType,
+            messageKey: "invalid",
+            params: { receivedValue: val, reason: "Not a string" },
+          }),
+        });
+        return;
+      }
+      if (!UUID_PATTERN.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "uuid",
+            msg,
+            msgType,
+            messageKey: "mustBeValidUuid",
+            params: { receivedValue: val },
+          }),
+        });
+      }
+    });
 
   /**
    * Required UUID schema.
@@ -32,14 +54,37 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zUuidRequired = (
     msg = "ID",
     msgType: MsgType = MsgType.FieldName,
-  ) => 
-    z
-      .string()
+  ) =>
+    z.string()
       .nonempty({
         message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "required"}),
       })
-      .refine((val) => UUID_PATTERN.test(val), {
-          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuid"}),
+      .superRefine((val, ctx) => {
+        if (typeof val !== "string") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messageHandler.formatErrorMessage({
+              group: "uuid",
+              msg,
+              msgType,
+              messageKey: "invalid",
+              params: { receivedValue: val, reason: "Not a string" },
+            }),
+          });
+          return;
+        }
+        if (!UUID_PATTERN.test(val)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messageHandler.formatErrorMessage({
+              group: "uuid",
+              msg,
+              msgType,
+              messageKey: "mustBeValidUuid",
+              params: { receivedValue: val },
+            }),
+          });
+        }
       });
 
   /**
@@ -49,16 +94,49 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zUuidV4Optional = (
     msg = "ID",
     msgType: MsgType = MsgType.FieldName,
-  ) => 
-    z
-      .string()
-      .optional()
-      .refine(
-        (val) => val === undefined || val === "" || UUID_V4_PATTERN.test(val),
-        {
-          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuidV4"}),
-        },
-      );
+  ) =>
+    z.string().optional().superRefine((val, ctx) => {
+      if (val === undefined || val === "") return;
+      if (typeof val !== "string") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "uuid",
+            msg,
+            msgType,
+            messageKey: "invalid",
+            params: { receivedValue: val, reason: "Not a string" },
+          }),
+        });
+        return;
+      }
+      if (!UUID_V4_PATTERN.test(val)) {
+        if (UUID_PATTERN.test(val)) {
+          const version = val.split('-')[2]?.charAt(0);
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messageHandler.formatErrorMessage({
+              group: "uuid",
+              msg,
+              msgType,
+              messageKey: "mustBeValidUuidV4",
+              params: { receivedVersion: version },
+            }),
+          });
+        } else {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messageHandler.formatErrorMessage({
+              group: "uuid",
+              msg,
+              msgType,
+              messageKey: "mustBeValidUuidV4",
+              params: { receivedVersion: undefined },
+            }),
+          });
+        }
+      }
+    });
 
   /**
    * Required UUIDv4 schema.
@@ -67,14 +145,51 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zUuidV4Required = (
     msg = "ID",
     msgType: MsgType = MsgType.FieldName,
-  ) => 
-    z
-      .string()
+  ) =>
+    z.string()
       .nonempty({
-          message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "required"}),
+        message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "required"}),
       })
-      .refine((val) => UUID_V4_PATTERN.test(val), {
-        message: messageHandler.formatErrorMessage({ group: "uuid", msg, msgType, messageKey: "mustBeValidUuidV4"}),
+      .superRefine((val, ctx) => {
+        if (typeof val !== "string") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messageHandler.formatErrorMessage({
+              group: "uuid",
+              msg,
+              msgType,
+              messageKey: "invalid",
+              params: { receivedValue: val, reason: "Not a string" },
+            }),
+          });
+          return;
+        }
+        if (!UUID_V4_PATTERN.test(val)) {
+          if (UUID_PATTERN.test(val)) {
+            const version = val.split('-')[2]?.charAt(0);
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: messageHandler.formatErrorMessage({
+                group: "uuid",
+                msg,
+                msgType,
+                messageKey: "mustBeValidUuidV4",
+                params: { receivedVersion: version },
+              }),
+            });
+          } else {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: messageHandler.formatErrorMessage({
+                group: "uuid",
+                msg,
+                msgType,
+                messageKey: "mustBeValidUuidV4",
+                params: { receivedVersion: undefined },
+              }),
+            });
+          }
+        }
       });
 
   return {

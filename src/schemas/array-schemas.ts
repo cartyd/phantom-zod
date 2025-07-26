@@ -14,49 +14,22 @@ export type StringArrayRequired = string[];
  * @returns An object containing array schema creation functions
  */
 export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
-  /**
-   * Helper function to add item constraints to an array schema
-   */
-  function addItemConstraints<TSchema extends z.ZodTypeAny>(
-    schema: TSchema,
-    msg: string,
-    msgType: MsgType,
-    minItems?: number,
-    maxItems?: number
-  ): TSchema {
-    let result = schema;
-    
-    if (minItems !== undefined) {
-      result = result.refine((val: unknown) => {
-        if (!Array.isArray(val)) return true;
-        return val.length >= minItems;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustHaveMinItems",
-          params: { min: minItems },
-          msg,
-          msgType,
-        }),
-      }) as TSchema;
+  // Helper: check for duplicates and return their values/indices
+  function findDuplicates(arr: any[]): { values: any[]; indices: number[] } {
+    const seen = new Map<any, number[]>();
+    arr.forEach((v, i) => {
+      if (!seen.has(v)) seen.set(v, []);
+      seen.get(v)!.push(i);
+    });
+    const values: any[] = [];
+    const indices: number[] = [];
+    for (const [val, idxs] of seen.entries()) {
+      if (idxs.length > 1) {
+        values.push(val);
+        indices.push(...idxs);
+      }
     }
-    
-    if (maxItems !== undefined) {
-      result = result.refine((val: unknown) => {
-        if (!Array.isArray(val)) return true;
-        return val.length <= maxItems;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustHaveMaxItems",
-          params: { max: maxItems },
-          msg,
-          msgType,
-        }),
-      }) as TSchema;
-    }
-    
-    return result;
+    return { values, indices };
   }
 
   /**
@@ -78,20 +51,97 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zStringArrayOptional = (options: ArraySchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName, minItems, maxItems } = options;
-    
-    let schema = z
-      .array(z.string({
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustBeStringArray",
-          params: {},
-          msg,
-          msgType,
-        }),
-      }))
-      .optional();
-      
-    schema = addItemConstraints(schema, msg, msgType, minItems, maxItems);
+    // Start with a custom Zod type to allow for full contract coverage
+    const schema = z.custom<any[]>((val) => {
+      if (val === undefined) return true;
+      if (!Array.isArray(val)) return false;
+      return true;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "mustBeArray",
+        params: { receivedType: undefined },
+        msg,
+        msgType,
+      }),
+    }).optional().superRefine((val, ctx) => {
+      if (val === undefined) return;
+      if (!Array.isArray(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustBeArray",
+            params: { receivedType: typeof val },
+            msg,
+            msgType,
+          }),
+        });
+        return;
+      }
+      // Required (empty array is allowed for optional)
+      // Type check for string elements
+      const receivedTypes: string[] = [];
+      const invalidIndices: number[] = [];
+      val.forEach((v, i) => {
+        if (typeof v !== 'string') {
+          receivedTypes.push(typeof v);
+          invalidIndices.push(i);
+        }
+      });
+      if (invalidIndices.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustBeStringArray",
+            params: { receivedTypes, invalidIndices },
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // minItems/tooSmall
+      if (minItems !== undefined && val.length < minItems) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooSmall",
+            params: { min: minItems },
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // maxItems/tooBig
+      if (maxItems !== undefined && val.length > maxItems) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooBig",
+            params: { max: maxItems },
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // duplicateItems
+      const { values: duplicateValues, indices } = findDuplicates(val);
+      if (duplicateValues.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "duplicateItems",
+            params: { duplicateValues, indices },
+            msg,
+            msgType,
+          }),
+        });
+      }
+    });
     return schema;
   };
 
@@ -115,28 +165,105 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zStringArrayRequired = (options: ArraySchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName, minItems = 1, maxItems } = options;
-    
-    let schema = z
-      .array(z.string({
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustBeStringArray",
-          params: {},
-          msg,
-          msgType,
-        }),
-      }))
-      .nonempty({
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustNotBeEmpty",
-          params: {},
-          msg,
-          msgType,
-        }),
+    const schema = z.custom<any[]>((val) => {
+      return Array.isArray(val);
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "mustBeArray",
+        params: { receivedType: undefined },
+        msg,
+        msgType,
+      }),
+    }).superRefine((val, ctx) => {
+      if (!Array.isArray(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustBeArray",
+            params: { receivedType: typeof val },
+            msg,
+            msgType,
+          }),
+        });
+        return;
+      }
+      // Required
+      if (val.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustNotBeEmpty",
+            params: {},
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // Type check for string elements
+      const receivedTypes: string[] = [];
+      const invalidIndices: number[] = [];
+      val.forEach((v, i) => {
+        if (typeof v !== 'string') {
+          receivedTypes.push(typeof v);
+          invalidIndices.push(i);
+        }
       });
-      
-    schema = addItemConstraints(schema, msg, msgType, minItems, maxItems);
+      if (invalidIndices.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustBeStringArray",
+            params: { receivedTypes, invalidIndices },
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // minItems/tooSmall
+      if (minItems !== undefined && val.length < minItems) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooSmall",
+            params: { min: minItems },
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // maxItems/tooBig
+      if (maxItems !== undefined && val.length > maxItems) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooBig",
+            params: { max: maxItems },
+            msg,
+            msgType,
+          }),
+        });
+      }
+      // duplicateItems
+      const { values: duplicateValues, indices } = findDuplicates(val);
+      if (duplicateValues.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "duplicateItems",
+            params: { duplicateValues, indices },
+            msg,
+            msgType,
+          }),
+        });
+      }
+    });
     return schema;
   };
 

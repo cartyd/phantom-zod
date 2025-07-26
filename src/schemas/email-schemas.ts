@@ -4,6 +4,7 @@ import { trimOrUndefined } from "../common/utils/string-utils";
 import type { ErrorMessageFormatter } from "../localization/message-handler.types";
 import { EMAIL_PATTERN } from "../common/regex-patterns";
 
+
 /**
  * Validates email format.
  * Returns true if the value is undefined or matches a basic email regex.
@@ -12,6 +13,23 @@ import { EMAIL_PATTERN } from "../common/regex-patterns";
  */
 export const isEmail = (val: string | undefined): boolean =>
   val === undefined || EMAIL_PATTERN.test(val);
+
+/**
+ * Checks if the email has a valid format (basic regex).
+ */
+const isValidFormat = (val: string | undefined): boolean =>
+  val === undefined || EMAIL_PATTERN.test(val);
+
+/**
+ * Checks if the email domain is valid (simple example: must contain a dot).
+ */
+const isValidDomain = (val: string | undefined): boolean => {
+  if (!val) return true;
+  const parts = val.split("@");
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  return domain.includes(".");
+};
 
 /**
  * Creates a factory function for email schemas with injected message handler
@@ -33,8 +51,35 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
       .string()
       .optional()
       .transform(trimOrUndefined)
+      // Format check
+      .refine(isValidFormat, {
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "invalidFormat",
+          params: { expectedFormat: "user@example.com" },
+        }),
+      })
+      // Domain check
+      .refine(isValidDomain, {
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "domainInvalid",
+          params: { domain: "missing or invalid" },
+        }),
+      })
+      // Must be valid email (final catch-all)
       .refine(isEmail, {
-          message: messageHandler.formatErrorMessage({ group: "email", msg, msgType, messageKey: "mustBeValidEmail"}),
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "mustBeValidEmail",
+          params: {},
+        }),
       });
 
   /**
@@ -51,10 +96,43 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
       .string()
       .trim()
       .nonempty({
-        message: messageHandler.formatErrorMessage({ group: "email", msg, msgType, messageKey: "required"}),
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "required",
+          params: {},
+        }),
       })
-      .email({
-          message: messageHandler.formatErrorMessage({ group: "email", msg, msgType, messageKey: "mustBeValidEmail"}),
+      // Format check
+      .refine(isValidFormat, {
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "invalidFormat",
+          params: { expectedFormat: "user@example.com" },
+        }),
+      })
+      // Domain check
+      .refine(isValidDomain, {
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "domainInvalid",
+          params: { domain: "missing or invalid" },
+        }),
+      })
+      // Must be valid email (final catch-all)
+      .refine(isEmail, {
+        message: messageHandler.formatErrorMessage({
+          group: "email",
+          msg,
+          msgType,
+          messageKey: "mustBeValidEmail",
+          params: {},
+        }),
       });
 
   return {

@@ -80,14 +80,16 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns Base Zod string schema with error message
    */
   const createBaseStringSchema = (msg: string, msgType: MsgType) => {
-    return z.string({
+    // Custom refinement to provide receivedType for mustBeString
+    return z.custom((val) => typeof val === "string", {
       message: messageHandler.formatErrorMessage({
         group: "string",
         messageKey: "mustBeString",
+        params: { receivedType: undefined }, // fallback, see below
         msg,
         msgType,
       }),
-    });
+    }) as z.ZodType<string, any, any>;
   };
 
   /**
@@ -116,6 +118,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zStringOptional = (options: StringSchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName, minLength, maxLength } = options;
+
     let schema = createBaseStringSchema(msg, msgType)
       .optional()
       .transform(trimOrEmpty);
@@ -148,13 +151,26 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
     const { msg = "Value", msgType = MsgType.FieldName, minLength = 1, maxLength } = options;
     let schema = createBaseStringSchema(msg, msgType)
       .transform(trimOrEmpty)
+      // 'required' error if empty after trim
       .refine((trimmed: string) => trimmed.length > 0, {
         message: messageHandler.formatErrorMessage({
           group: "string",
           messageKey: "required",
+          params: {},
           msg,
           msgType,
         }),
+      })
+      // 'cannotBeEmpty' error if value is empty string (before trim, using .refine for Zod v4+)
+      .refine((val) => val !== "", {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "cannotBeEmpty",
+          params: {},
+          msg,
+          msgType,
+        }),
+        path: [],
       });
 
     schema = addLengthConstraints(schema, messageHandler, msg, msgType, minLength, maxLength);

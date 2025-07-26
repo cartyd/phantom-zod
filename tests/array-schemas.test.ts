@@ -1,7 +1,7 @@
 import { createArraySchemas } from '../src/schemas/array-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests } from './setup';
-import { createTestMessageHandler } from '../src/common/message-handler.types';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 
 // Create a type-safe mock using the test helper
 const mockMessageHandler = createTestMessageHandler(
@@ -31,6 +31,16 @@ const mockMessageHandler = createTestMessageHandler(
 const { zStringArrayOptional, zStringArrayRequired } = createArraySchemas(mockMessageHandler);
 
 describe('Array Schemas', () => {
+  // Helper to extract ZodError issues for fine-grained assertions
+  function getIssues(fn: () => any) {
+    try {
+      fn();
+      return [];
+    } catch (e) {
+      return e.issues || (e.errors && e.errors[0]?.issues) || [];
+    }
+  }
+
   describe('zStringArrayOptional', () => {
     const schema = zStringArrayOptional();
 
@@ -139,6 +149,60 @@ describe('Array Schemas', () => {
       });
     });
 
+    describe('Contract compliance', () => {
+      it('should trigger mustBeArray for non-array input', () => {
+        const schema = zStringArrayOptional({ msg: 'Field' });
+        const issues = getIssues(() => schema.parse('not an array'));
+        expect(issues.some(i => i.message.includes('must be an array'))).toBe(true);
+        expect(issues.some(i => i.messageKey === 'mustBeArray')).toBe(true);
+      });
+
+      it('should trigger mustBeStringArray with receivedTypes and invalidIndices', () => {
+        const schema = zStringArrayOptional({ msg: 'Field' });
+        const issues = getIssues(() => schema.parse(['a', 1, true, 'b', null]));
+        const stringArrayIssue = issues.find(i => i.messageKey === 'mustBeStringArray');
+        expect(stringArrayIssue).toBeTruthy();
+        expect(stringArrayIssue.params).toHaveProperty('receivedTypes');
+        expect(stringArrayIssue.params).toHaveProperty('invalidIndices');
+        expect(stringArrayIssue.params.invalidIndices).toEqual([1,2,4]);
+        expect(stringArrayIssue.params.receivedTypes).toEqual(['string','number','boolean','string','object']);
+      });
+
+      it('should trigger mustNotBeEmpty for required schema with empty array', () => {
+        const schema = zStringArrayRequired({ msg: 'Field' });
+        const issues = getIssues(() => schema.parse([]));
+        expect(issues.some(i => i.messageKey === 'mustNotBeEmpty')).toBe(true);
+      });
+
+      it('should trigger mustHaveMinItems with min param', () => {
+        const schema = zStringArrayOptional({ msg: 'Field', minItems: 3 });
+        const issues = getIssues(() => schema.parse(['a']));
+        const minIssue = issues.find(i => i.messageKey === 'mustHaveMinItems');
+        expect(minIssue).toBeTruthy();
+        expect(minIssue.params).toHaveProperty('min', 3);
+      });
+
+      it('should trigger mustHaveMaxItems with max param', () => {
+        const schema = zStringArrayOptional({ msg: 'Field', maxItems: 2 });
+        const issues = getIssues(() => schema.parse(['a','b','c']));
+        const maxIssue = issues.find(i => i.messageKey === 'mustHaveMaxItems');
+        expect(maxIssue).toBeTruthy();
+        expect(maxIssue.params).toHaveProperty('max', 2);
+      });
+
+      it('should trigger duplicateItems with duplicateIndices', () => {
+        const schema = zStringArrayOptional({ msg: 'Field' });
+        const arr = ['a', 'b', 'a', 'c', 'b'];
+        const issues = getIssues(() => schema.parse(arr));
+        const dupIssue = issues.find(i => i.messageKey === 'duplicateItems');
+        expect(dupIssue).toBeTruthy();
+        expect(dupIssue.params).toHaveProperty('duplicateIndices');
+        // Duplicates: 'a' at 0,2 and 'b' at 1,4
+        expect(dupIssue.params.duplicateIndices.sort()).toEqual([0,1,2,4]);
+      });
+    });
+    });
+
     describe('Array constraints', () => {
       it('should enforce minimum items constraint', () => {
         const schema = zStringArrayOptional({ msg: 'Tags', minItems: 2 });
@@ -240,4 +304,3 @@ describe('Array Schemas', () => {
       });
     });
   });
-});

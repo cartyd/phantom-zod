@@ -1,5 +1,5 @@
 import { zUrlOptional, zUrlRequired } from '../src/schemas/url-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests } from './setup';
 
 describe('URL Schemas', () => {
@@ -163,7 +163,7 @@ describe('URL Schemas', () => {
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
         const schema = zUrlOptional('Website');
-        expect(() => schema.parse('invalid')).toThrow('Website must be a valid URL');
+        expect(() => schema.parse('invalid')).toThrow('Website is missing protocol');
       });
 
       it('should use custom message when msgType is Message', () => {
@@ -222,7 +222,7 @@ describe('URL Schemas', () => {
 
       it('should use custom field name in validation error message', () => {
         const schema = zUrlRequired('Website');
-        expect(() => schema.parse('invalid')).toThrow('Website must be a valid URL');
+        expect(() => schema.parse('invalid')).toThrow('Website is missing protocol');
       });
 
       it('should use custom message when msgType is Message', () => {

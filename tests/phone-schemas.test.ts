@@ -7,8 +7,33 @@ import { MsgType } from '../src/common/types/msg-type';
 import { createTestMessageHandler } from '../src/localization/message-handler.types';
 import { runTableTests } from './setup';
 
-// Create schemas using the factory with test message handler
-const mockMessageHandler = createTestMessageHandler();
+// Custom test message handler to include exampleParams and supportedFormats in error messages
+const mockMessageHandler = createTestMessageHandler((options) => {
+  // Only for phone group
+  if (options.group === 'phone') {
+    let base = options.msgType === MsgType.Message ? options.msg : `${options.msg} is invalid`;
+    if (options.messageKey === 'required') {
+      base = `${options.msg} is required`;
+    }
+    if (options.params) {
+      if (options.params.supportedFormats) {
+        base += ` (supported: ${options.params.supportedFormats.join(', ')})`;
+      }
+      if (options.params.e164) {
+        base += ` [e164: ${options.params.e164}]`;
+      }
+      if (options.params.national) {
+        base += ` [national: ${options.params.national}]`;
+      }
+    }
+    return base;
+  }
+  // fallback to default
+  if (options.msgType === MsgType.Message) {
+    return options.msg;
+  }
+  return `${options.msg} is invalid`;
+});
 const {
   zPhoneOptional,
   zPhoneRequired,
@@ -110,14 +135,34 @@ describe('Phone Schemas', () => {
     });
 
     describe('Custom error messages', () => {
-      it('should use custom field name in error message', () => {
+      it('should use custom field name in error message and include examples', () => {
         const schema = zPhoneOptional({ msg: 'Mobile Number' });
-        expect(() => schema.parse('invalid')).toThrow('Mobile Number is invalid');
+        try {
+          schema.parse('invalid');
+        } catch (e) {
+          const message = (e as { issues?: Array<{ message: string }> }).issues?.[0]?.message 
+            || (e as Error).message 
+            || String(e);
+          expect(message).toContain('Mobile Number is invalid');
+          expect(message).toContain('+11234567890');
+          expect(message).toContain('1234567890');
+          expect(message).toContain('supported');
+        }
       });
 
-      it('should use custom message when msgType is Message', () => {
+      it('should use custom message when msgType is Message and include examples', () => {
         const schema = zPhoneOptional({ msg: 'Invalid phone format', format: PhoneFormat.E164, msgType: MsgType.Message });
-        expect(() => schema.parse('invalid')).toThrow('Invalid phone format');
+        try {
+          schema.parse('invalid');
+        } catch (e) {
+          const message = (e as { issues?: Array<{ message: string }> }).issues?.[0]?.message 
+            || (e as Error).message 
+            || String(e);
+          expect(message).toContain('Invalid phone format');
+          expect(message).toContain('+11234567890');
+          expect(message).toContain('1234567890');
+          expect(message).toContain('supported');
+        }
       });
     });
   });
@@ -186,14 +231,34 @@ describe('Phone Schemas', () => {
         expect(() => schema.parse('')).toThrow('Mobile Number is required');
       });
 
-      it('should use custom field name in validation error message', () => {
+      it('should use custom field name in validation error message and include examples', () => {
         const schema = zPhoneRequired({ msg: 'Mobile Number' });
-        expect(() => schema.parse('invalid')).toThrow('Mobile Number is invalid');
+        try {
+          schema.parse('invalid');
+        } catch (e) {
+          const message = (e as { issues?: Array<{ message: string }> }).issues?.[0]?.message 
+            || (e as Error).message 
+            || String(e);
+          expect(message).toContain('Mobile Number is invalid');
+          expect(message).toContain('+11234567890');
+          expect(message).toContain('1234567890');
+          expect(message).toContain('supported');
+        }
       });
 
-      it('should use custom message when msgType is Message', () => {
+      it('should use custom message when msgType is Message and include examples', () => {
         const schema = zPhoneRequired({ msg: 'Phone is required', format: PhoneFormat.E164, msgType: MsgType.Message });
-        expect(() => schema.parse('')).toThrow('Phone is required');
+        try {
+          schema.parse('invalid');
+        } catch (e) {
+          const message = (e as { issues?: Array<{ message: string }> }).issues?.[0]?.message 
+            || (e as Error).message 
+            || String(e);
+          expect(message).toContain('Phone is required');
+          expect(message).toContain('+11234567890');
+          expect(message).toContain('1234567890');
+          expect(message).toContain('supported');
+        }
       });
     });
   });

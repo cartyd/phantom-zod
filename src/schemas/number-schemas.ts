@@ -67,37 +67,108 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       base = z.union([z.number(), z.string().regex(regex)]);
     }
 
-    let schema = base.transform((val) => {
+    // All validation is performed on the number value (not string)
+    let schema = base
+      .refine(
+        (val) => {
+          // Required check
+          if (requirement === NumberFieldRequirement.Required) {
+            if (val === undefined || val === "") return false;
+          }
+          return true;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "number",
+            messageKey: "required",
+            params: {},
+            msg,
+            msgType,
+          }),
+        }
+      )
+      .refine(
+        (val) => {
+          // Accept undefined for optional
+          if (val === undefined || val === "") return true;
+          // Accept number or string that can be converted to number
+          if (typeof val === "number" && !isNaN(val)) return true;
+          if (typeof val === "string" && !isNaN(Number(val))) return true;
+          return false;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "number",
+            messageKey: "mustBeNumber",
+            params: { receivedType: "string" },
+            msg,
+            msgType,
+          }),
+        }
+      )
+      .refine(
+        (val) => {
+          if (val === undefined || val === "") return true;
+          const num = typeof val === "number" ? val : Number(val);
+          if (type === NumberFieldType.Integer) {
+            return Number.isInteger(num);
+          }
+          return true;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "number",
+            messageKey: "mustBeInteger",
+            params: { receivedValue: "float" },
+            msg,
+            msgType,
+          }),
+        }
+      );
+
+    if (typeof min === "number") {
+      schema = schema.refine(
+        (val) => {
+          if (val === undefined || val === "") return true;
+          const num = typeof val === "number" ? val : Number(val);
+          return num >= min;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "number",
+            messageKey: "tooSmall",
+            params: { min },
+            msg,
+            msgType,
+          }),
+        }
+      );
+    }
+    if (typeof max === "number") {
+      schema = schema.refine(
+        (val) => {
+          if (val === undefined || val === "") return true;
+          const num = typeof val === "number" ? val : Number(val);
+          return num <= max;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "number",
+            messageKey: "tooBig",
+            params: { max },
+            msg,
+            msgType,
+          }),
+        }
+      );
+    }
+
+    // Only after all validation, transform to output type
+    schema = schema.transform((val) => {
       if (val === undefined || val === "") return undefined;
       const num = typeof val === "number" ? val : Number(val);
       return output === NumberFieldOutput.AsString ? String(num) : num;
     });
-
-    schema = schema.refine(
-      (val) => {
-        if (val === undefined) return true;
-        const num = Number(val);
-        if (isNaN(num)) return false;
-        if (type === NumberFieldType.Integer && !Number.isInteger(num))
-          return false;
-        if (typeof min === "number" && num < min) return false;
-        if (typeof max === "number" && num > max) return false;
-        return true;
-      },
-      {
-        message: messageHandler.formatErrorMessage({
-          group: "number",
-          messageKey: "invalid",
-          params: {
-            type: type === NumberFieldType.Integer ? "integer" : "number",
-            ...(typeof min === "number" && { min }),
-            ...(typeof max === "number" && { max })
-          },
-          msg,
-          msgType,
-        }),
-      },
-    );
 
     return schema;
   }
@@ -115,10 +186,9 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
    *
    * @example
    * const { zNumberOptional } = createNumberSchemas(messageHandler);
-   * const schema = zNumberOptional({ msg: "Age", type: NumberFieldType.Integer, min: 0, max: 150 });
+   * const schema = zNumberOptional({ msg: "Age", type: NumberFieldType.Integer, min: 0 });
    * schema.parse(25); // 25
    * schema.parse(undefined); // undefined
-   * schema.parse("30"); // 30
    */
   const zNumberOptional = (options: NumberSchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName, type = NumberFieldType.Integer, min, max } = options;
@@ -223,10 +293,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     });
   };
 
+
   return {
     zNumberOptional,
     zNumberRequired,
     zNumberStringOptional,
     zNumberStringRequired,
   };
-};
+}

@@ -1,5 +1,6 @@
 import { LocalizationManager } from '../src/localization/manager';
-import type { LocaleCode, LocalizationMessages, MessageParams } from '../src/localization/types';
+import type { LocaleCode } from '../src/localization/locale.types';
+import type { LocalizationMessages, MessageParams } from '../src/localization/message.types';
 
 // Create minimal complete message structures for testing
 const createMinimalMessages = (locale: LocaleCode, overrides: any = {}): LocalizationMessages => ({
@@ -176,6 +177,18 @@ const createMinimalMessages = (locale: LocaleCode, overrides: any = {}): Localiz
     invalidState: 'has invalid state code',
     invalidCountry: 'has invalid country code',
     ...overrides.address
+  },
+  network: {
+    required: 'is required',
+    invalid: 'is invalid',
+    mustBeValidIPv4: 'must be a valid IPv4 address',
+    mustBeValidIPv6: 'must be a valid IPv6 address',
+    mustBeValidMacAddress: 'must be a valid MAC address',
+    invalidIPv4Format: 'has invalid IPv4 format',
+    invalidIPv6Format: 'has invalid IPv6 format',
+    invalidMacFormat: 'has invalid MAC format',
+    examples: { ipv4: '192.168.1.1', ipv6: '::1', mac: '00:11:22:33:44:55' },
+    ...overrides.network
   },
   user: {
     required: 'is required',

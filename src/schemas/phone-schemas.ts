@@ -79,7 +79,10 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zPhoneOptional = (options: PhoneSchemaOptions = {}) => {
     const { msg = "Phone", msgType = MsgType.FieldName, format = PhoneFormat.E164 } = options;
-    
+
+    const supportedFormats = ["+11234567890", "1234567890"];
+    const exampleParams = { e164: "+11234567890", national: "1234567890" };
+
     return createBasePhoneSchema(msg, msgType)
       .optional()
       .transform((val) => {
@@ -90,18 +93,55 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
         // If normalization fails (returns null), keep the original value to trigger validation error
         return normalized === null ? trimmed : normalized;
       })
+      // Must be valid phone (catch-all, e.g. not just format)
       .refine(
-        (val) =>
-          val === undefined ||
-          val === "" ||
-          (format === PhoneFormat.E164
-            ? US_PHONE_E164_PATTERN.test(val)
-            : US_PHONE_NATIONAL_PATTERN.test(val)),
+        (val) => val === undefined || val === "" || (typeof val === "string" && (US_PHONE_E164_PATTERN.test(val) || US_PHONE_NATIONAL_PATTERN.test(val))),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: "mustBeValidPhone",
+            params: { supportedFormats, ...exampleParams },
+            msg,
+            msgType,
+          }),
+        },
+      )
+      // Format-specific error
+      .refine(
+        (val) => val === undefined || val === "" || (format === PhoneFormat.E164
+          ? US_PHONE_E164_PATTERN.test(val)
+          : US_PHONE_NATIONAL_PATTERN.test(val)),
         {
           message: messageHandler.formatErrorMessage({
             group: "phone",
             messageKey: format === PhoneFormat.E164 ? "invalidE164Format" : "invalidNationalFormat",
-            params: { e164: "+11234567890", national: "1234567890" },
+            params: format === PhoneFormat.E164 ? { receivedFormat: "not-e164", ...exampleParams } : { country: "US", expectedFormat: "1234567890", ...exampleParams },
+            msg,
+            msgType,
+          }),
+        },
+      )
+      // Generic invalid
+      .refine(
+        (val) => val === undefined || val === "" || (typeof val === "string" && (US_PHONE_E164_PATTERN.test(val) || US_PHONE_NATIONAL_PATTERN.test(val))),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: "invalid",
+            params: {},
+            msg,
+            msgType,
+          }),
+        },
+      )
+      // Invalid format (not matching any known pattern)
+      .refine(
+        (val) => val === undefined || val === "" || (typeof val === "string" && (US_PHONE_E164_PATTERN.test(val) || US_PHONE_NATIONAL_PATTERN.test(val))),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: "invalidFormat",
+            params: { receivedFormat: "unknown", supportedFormats, ...exampleParams },
             msg,
             msgType,
           }),
@@ -131,7 +171,10 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zPhoneRequired = (options: PhoneSchemaOptions = {}) => {
     const { msg = "Phone", msgType = MsgType.FieldName, format = PhoneFormat.E164 } = options;
-    
+
+    const supportedFormats = ["+11234567890", "1234567890"];
+    const exampleParams = { e164: "+11234567890", national: "1234567890" };
+
     return createBasePhoneSchema(msg, msgType)
       .refine((val) => {
         const trimmed = trimOrEmpty(val);
@@ -151,17 +194,55 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
         // If normalization fails (returns null), keep the original value to trigger validation error
         return normalized === null ? trimmed : normalized;
       })
+      // Must be valid phone (catch-all, e.g. not just format)
       .refine(
-        (val) =>
-          typeof val === "string" &&
-          (format === PhoneFormat.E164
-            ? US_PHONE_E164_PATTERN.test(val)
-            : US_PHONE_NATIONAL_PATTERN.test(val)),
+        (val) => typeof val === "string" && (US_PHONE_E164_PATTERN.test(val) || US_PHONE_NATIONAL_PATTERN.test(val)),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: "mustBeValidPhone",
+            params: { supportedFormats, ...exampleParams },
+            msg,
+            msgType,
+          }),
+        },
+      )
+      // Format-specific error
+      .refine(
+        (val) => typeof val === "string" && (format === PhoneFormat.E164
+          ? US_PHONE_E164_PATTERN.test(val)
+          : US_PHONE_NATIONAL_PATTERN.test(val)),
         {
           message: messageHandler.formatErrorMessage({
             group: "phone",
             messageKey: format === PhoneFormat.E164 ? "invalidE164Format" : "invalidNationalFormat",
-            params: { e164: "+11234567890", national: "1234567890" },
+            params: format === PhoneFormat.E164 ? { receivedFormat: "not-e164", ...exampleParams } : { country: "US", expectedFormat: "1234567890", ...exampleParams },
+            msg,
+            msgType,
+          }),
+        },
+      )
+      // Generic invalid
+      .refine(
+        (val) => typeof val === "string" && (US_PHONE_E164_PATTERN.test(val) || US_PHONE_NATIONAL_PATTERN.test(val)),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: "invalid",
+            params: {},
+            msg,
+            msgType,
+          }),
+        },
+      )
+      // Invalid format (not matching any known pattern)
+      .refine(
+        (val) => typeof val === "string" && (US_PHONE_E164_PATTERN.test(val) || US_PHONE_NATIONAL_PATTERN.test(val)),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "phone",
+            messageKey: "invalidFormat",
+            params: { receivedFormat: "unknown", supportedFormats, ...exampleParams },
             msg,
             msgType,
           }),
