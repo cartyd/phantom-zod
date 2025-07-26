@@ -103,6 +103,26 @@ describe('Address Schemas', () => {
       const customSchema = zAddressOptional('Invalid address format', MsgType.Message);
       expect(() => customSchema.parse('invalid')).toThrow('Invalid address format');
     });
+
+    it('should remove empty string street2 field', () => {
+      const addressWithEmptyStreet2 = {
+        street: '123 Main St',
+        street2: '',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'US',
+      };
+      const result = schema.parse(addressWithEmptyStreet2);
+      expect(result).not.toHaveProperty('street2');
+      expect(result).toEqual({
+        street: '123 Main St',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'US',
+      });
+    });
   });
 
   describe('zAddressRequired', () => {
@@ -165,6 +185,26 @@ describe('Address Schemas', () => {
     it('should use custom message when msgType is Message', () => {
       const customSchema = zAddressRequired('Address is mandatory', MsgType.Message);
       expect(() => customSchema.parse(undefined)).toThrow('Address is mandatory');
+    });
+
+    it('should remove empty string street2 field', () => {
+      const addressWithEmptyStreet2 = {
+        street: '123 Main St',
+        street2: '',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'US',
+      };
+      const result = schema.parse(addressWithEmptyStreet2);
+      expect(result).not.toHaveProperty('street2');
+      expect(result).toEqual({
+        street: '123 Main St',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'US',
+      });
     });
   });
 
@@ -321,6 +361,26 @@ describe('Address Schemas', () => {
     it('should use custom field name in error messages', () => {
       const customSchema = zAddressUS('US Address');
       expect(() => customSchema.parse(undefined)).toThrow('US Address is required');
+    });
+
+    it('should remove empty string street2 field', () => {
+      const addressWithEmptyStreet2 = {
+        street: '123 Main St',
+        street2: '',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'US',
+      };
+      const result = schema.parse(addressWithEmptyStreet2);
+      expect(result).not.toHaveProperty('street2');
+      expect(result).toEqual({
+        street: '123 Main St',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'US',
+      });
     });
   });
 
