@@ -1,3 +1,7 @@
+import type { LocaleCode } from './locale.types';
+import type { MessageParams, LocalizationMessages } from './message.types';
+import type { MessageKeyPath } from './message-key-path.types';
+
 /**
  * Retrieves a localized message string based on a key and optional parameters.
  *
@@ -11,8 +15,8 @@
  * @returns The localized message string corresponding to the provided key and parameters.
  */
 export interface MessageRetriever {
-  <T extends import('./message-key-path.types').MessageKeyPath>(key: T, params?: import('./message.types').MessageParams): string;
-  (key: string, params?: import('./message.types').MessageParams): string;
+  <T extends MessageKeyPath>(key: T, params?: MessageParams): string;
+  (key: string, params?: MessageParams): string;
 }
 
 /**
@@ -43,25 +47,25 @@ export interface MessageRetriever {
  */
 export interface LocalizationService {
   // Locale Management
-  setLocale(locale: import('./locale.types').LocaleCode): void;
-  getLocale(): import('./locale.types').LocaleCode;
-  setFallbackLocale(locale: import('./locale.types').LocaleCode): void;
-  getFallbackLocale(): import('./locale.types').LocaleCode;
-  getSupportedLocales(): import('./locale.types').LocaleCode[];
-  getAvailableLocales(): import('./locale.types').LocaleCode[];
-  hasLocale(locale: import('./locale.types').LocaleCode): boolean;
+  setLocale(locale: LocaleCode): void;
+  getLocale(): LocaleCode;
+  setFallbackLocale(locale: LocaleCode): void;
+  getFallbackLocale(): LocaleCode;
+  getSupportedLocales(): LocaleCode[];
+  getAvailableLocales(): LocaleCode[];
+  hasLocale(locale: LocaleCode): boolean;
 
   // Dynamic Loading
-  loadLocale(locale: import('./locale.types').LocaleCode): Promise<void>;
-  loadLocales(locales: import('./locale.types').LocaleCode[]): Promise<void>;
-  ensureLocaleLoaded(locale: import('./locale.types').LocaleCode): Promise<void>;
+  loadLocale(locale: LocaleCode): Promise<void>;
+  loadLocales(locales: LocaleCode[]): Promise<void>;
+  ensureLocaleLoaded(locale: LocaleCode): Promise<void>;
 
   // Message Operations
-  getMessage(key: string, params?: import('./message.types').MessageParams, locale?: import('./locale.types').LocaleCode): string;
-  getErrorMessage(fieldName: string, messageKey: import('./message-key-path.types').MessageKeyPath, params?: import('./message.types').MessageParams, locale?: import('./locale.types').LocaleCode): string;
-  registerMessages(messages: import('./message.types').LocalizationMessages): void;
+  getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string;
+  getErrorMessage(fieldName: string, messageKey: MessageKeyPath, params?: MessageParams, locale?: LocaleCode): string;
+  registerMessages(messages: LocalizationMessages): void;
 
   // Introspection
-  getMessageKeys(locale?: import('./locale.types').LocaleCode): string[];
-  isMessageDefined(key: string, locale?: import('./locale.types').LocaleCode): boolean;
+  getMessageKeys(locale?: LocaleCode): string[];
+  isMessageDefined(key: string, locale?: LocaleCode): boolean;
 }
