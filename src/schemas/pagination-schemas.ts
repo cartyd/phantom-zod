@@ -254,6 +254,15 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
             params: { page: 0 },
           }),
         })
+        .nonnegative({
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "invalidPageNumber",
+            msg,
+            msgType,
+            params: { page: 0 },
+          }),
+        })
         .default(0),
       limit: z.number({
         message: messageHandler.formatErrorMessage({
