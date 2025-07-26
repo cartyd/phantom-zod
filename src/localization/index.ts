@@ -1,20 +1,19 @@
 // Import types used in this file
-import type { 
-  LocaleCode, 
-  LocalizationMessages, 
-  MessageParams
-} from './types';
+import type { LocaleCode, LocaleConfig } from './locale.types';
+import type { LocalizationMessages, MessageParams } from './message.types';
+import type { MessageKeyPath } from './message-key-path.types';
+import type { MessageRetriever, LocalizationService } from './localization-manager.types';
 
 // Export all types for consumers
 export type { 
   LocaleCode, 
+  LocaleConfig,
   LocalizationMessages, 
   MessageParams, 
   MessageKeyPath,
   MessageRetriever,
-  LocaleConfig,
-  LocalizationManagerInterface 
-} from './types';
+  LocalizationService 
+};
 
 // Export manager
 export { LocalizationManager, localizationManager } from './manager';
@@ -50,7 +49,7 @@ export function initializeLocalization(): void {
   if (!isValidLocalizationMessages(enMessages)) {
     throw new Error('Invalid localization messages format in en.json');
   }
-  localizationManager.registerMessages(enMessages);
+  localizationManager.registerMessages(enMessages as LocalizationMessages);
   localizationManager.setFallbackLocale('en');
 }
 
