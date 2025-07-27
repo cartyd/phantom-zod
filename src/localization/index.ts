@@ -1,8 +1,8 @@
 // Import types used in this file
-import type { LocaleCode, LocaleConfig } from './locale.types';
-import type { LocalizationMessages, MessageParams } from './message.types';
-import type { MessageKeyPath } from './message-key-path.types';
-import type { MessageRetriever, LocalizationService } from './localization-manager.types';
+import type { LocaleCode, LocaleConfig } from './types/locale.types';
+import type { LocalizationMessages, MessageParams } from './types/message.types';
+import type { MessageKeyPath } from './types/message-key-path.types';
+import type { MessageRetriever, LocalizationService } from './types/localization-manager.types';
 
 // Export all types for consumers
 export type { 

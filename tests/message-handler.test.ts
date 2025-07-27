@@ -1,5 +1,5 @@
 import { MessageHandler, createMessageHandler } from '../src/localization/message-handler';
-import type { ErrorMessageFormatter } from '../src/localization/message-handler.types';
+import type { ErrorMessageFormatter } from '../src/localization/types/message-handler.types';
 import type { Logger } from '../src/common/types/logger.types';
 import { LocalizationManager } from '../src/localization/manager';
 
@@ -7,6 +7,8 @@ import { LocalizationManager } from '../src/localization/manager';
 const createMockLogger = (): Logger => ({
   warn: jest.fn(),
   debug: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn(),
 });
 
 // Mock LocalizationManager implementation

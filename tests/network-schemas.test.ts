@@ -1,7 +1,7 @@
 import { createNetworkSchemas } from "../src/schemas/network-schemas";
 import { INVALID_HEX_CHAR_PATTERN, IPV4_INVALID_OCTETS, LETTER_CASE_PATTERN, IPV4_INVALID_CHAR_PATTERN, IPV6_MULTIPLE_DOUBLE_COLON_PATTERN, MAC_SEPARATOR_PATTERN, VALID_MAC_FORMAT_PATTERN } from "../src/common/regex-patterns";
 import { MsgType } from "../src/common/types/msg-type";
-import { createTestMessageHandler } from '../src/localization/message-handler.types';
+import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 // Test Data Constants
 const TEST_DATA = {
   // MAC Address Test Data

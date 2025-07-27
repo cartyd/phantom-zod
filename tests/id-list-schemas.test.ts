@@ -1,6 +1,6 @@
 import { createIdListSchemas } from "../src/schemas/id-list-schemas";
 import { MsgType } from "../src/common/types/msg-type";
-import { createTestMessageHandler } from "../src/localization/message-handler.types";
+import { createTestMessageHandler } from "../src/localization/types/message-handler.types";
 
 describe("ID List Schemas", () => {
     const messageHandler = createTestMessageHandler();

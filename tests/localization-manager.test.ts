@@ -1,6 +1,6 @@
 import { LocalizationManager } from '../src/localization/manager';
-import type { LocaleCode } from '../src/localization/locale.types';
-import type { LocalizationMessages, MessageParams } from '../src/localization/message.types';
+import type { LocaleCode } from '../src/localization/types/locale.types';
+import type { LocalizationMessages, MessageParams } from '../src/localization/types/message.types';
 
 // Create minimal complete message structures for testing
 const createMinimalMessages = (locale: LocaleCode, overrides: any = {}): LocalizationMessages => ({

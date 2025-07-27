@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createStringSchemas } from "./string-schemas";
 
 // Provide a default message handler for test and direct import usage
-import { createTestMessageHandler } from "../localization/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 
 
 

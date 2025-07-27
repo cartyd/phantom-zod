@@ -1,6 +1,6 @@
 import { createUserSchemas, USER_ROLES, USER_STATUS, ACCOUNT_TYPES } from '../src/schemas/user-schemas';
 import { MsgType } from '../src/common/types/msg-type';
-import { createTestMessageHandler } from '../src/localization/message-handler.types';
+import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 
 // Create mock message handler instance
 const messageHandler = createTestMessageHandler();

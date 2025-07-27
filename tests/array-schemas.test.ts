@@ -1,7 +1,7 @@
 import { createArraySchemas } from '../src/schemas/array-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests } from './setup';
-import { createTestMessageHandler } from '../src/localization/message-handler.types';
+import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 
 // Create a type-safe mock using the test helper
 const mockMessageHandler = createTestMessageHandler(

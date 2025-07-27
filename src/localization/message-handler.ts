@@ -1,7 +1,7 @@
 import { Logger } from "../common/types/logger.types";
 import { LocalizationManager } from "./manager";
-import { MessageGroupMap, formatMessage } from './message-params.types';
-import type { ErrorMessageFormatter, FormatErrorOptions } from "./message-handler.types";
+import { MessageGroupMap, formatMessage } from './types/message-params.types';
+import type { ErrorMessageFormatter, FormatErrorOptions } from "./types/message-handler.types";
 
 /**
  * Message handler class that uses dependency injection for Logger and LocalizationManager

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { IPV4_PATTERN, IPV6_PATTERN, MAC_ADDRESS_PATTERN } from "../common/regex-patterns";
 import { MsgType } from "../common/types/msg-type";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 
 /**
  * Creates a factory function for network schemas with injected message handler

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { IPV4_PATTERN } from "../common/regex-patterns";
 
 
@@ -71,7 +71,7 @@ function getUrlValidationError(url: string):
  */
 
 // Default message handler for direct use (for tests and convenience)
-import { createTestMessageHandler } from "../localization/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 
 /**
  * Creates a Zod schema for an optional URL string with customizable error messages.

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createStringSchemas } from "./string-schemas";
 import { createEmailSchemas } from "./email-schemas";
 import { createEnumSchemas } from "./enum-schemas";

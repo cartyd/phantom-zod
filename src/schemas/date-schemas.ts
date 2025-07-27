@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { MsgType } from "../common/types/msg-type";
 
 export enum DateFormat {

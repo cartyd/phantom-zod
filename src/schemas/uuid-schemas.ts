@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
 

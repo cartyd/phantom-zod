@@ -4,7 +4,7 @@ import {
 } from '../src/schemas/phone-schemas';
 import { normalizeUSPhone, phoneTransformAndValidate, phoneRefine } from '../src/common/utils/phone-utils';
 import { MsgType } from '../src/common/types/msg-type';
-import { createTestMessageHandler } from '../src/localization/message-handler.types';
+import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 import { runTableTests } from './setup';
 
 // Custom test message handler to include exampleParams and supportedFormats in error messages

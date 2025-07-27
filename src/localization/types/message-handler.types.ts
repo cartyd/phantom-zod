@@ -1,5 +1,5 @@
 import type { MessageGroupMap } from "./message-params.types";
-import { MsgType } from "../common/types/msg-type";
+import { MsgType } from "../../common/types/msg-type";
 
 /**
  * Options for formatting an error message, parameterized by message group and key.

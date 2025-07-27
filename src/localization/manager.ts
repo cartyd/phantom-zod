@@ -1,9 +1,9 @@
 
 import type { Logger } from '../common/types/logger.types';
-import { LocaleCode } from './locale.types';
-import { LocalizationService } from './localization-manager.types';
-import { MessageKeyPath } from './message-key-path.types';
-import { LocalizationMessages, MessageParams } from './message.types';
+import { LocaleCode } from './types/locale.types';
+import { LocalizationService } from './types/localization-manager.types';
+import { MessageKeyPath } from './types/message-key-path.types';
+import { LocalizationMessages, MessageParams } from './types/message.types';
 
 
 /**

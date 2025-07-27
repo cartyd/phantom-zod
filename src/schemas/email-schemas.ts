@@ -1,7 +1,7 @@
 import { MsgType } from "../common/types/msg-type";
 import { z } from "zod";
 import { trimOrUndefined } from "../common/utils/string-utils";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { EMAIL_PATTERN } from "../common/regex-patterns";
 
 

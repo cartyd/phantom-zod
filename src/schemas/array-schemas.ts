@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
-import type { ErrorMessageFormatter } from "../localization/message-handler.types";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import type { ArraySchemaOptions } from "../common/types/schema-options.types";
 
 // --- Types ---

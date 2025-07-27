@@ -1,6 +1,6 @@
 import { createPostalCodeSchemas } from '../src/schemas/postal-code-schemas';
 import { MsgType } from '../src/common/types/msg-type';
-import { createTestMessageHandler } from '../src/localization/message-handler.types';
+import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 
 // Create schemas using the factory with test message handler
 const mockMessageHandler = createTestMessageHandler();
