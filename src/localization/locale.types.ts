@@ -2,26 +2,16 @@
  * Supported locale codes following BCP 47 standard
  */
 export type LocaleCode = 
-  | 'en'     // English
-  | 'en-US'  // English (United States)
-  | 'en-GB'  // English (United Kingdom)
-  | 'es'     // Spanish
-  | 'es-ES'  // Spanish (Spain)
-  | 'es-MX'  // Spanish (Mexico)
-  | 'fr'     // French
-  | 'fr-FR'  // French (France)
-  | 'fr-CA'  // French (Canada)
-  | 'de'     // German
-  | 'de-DE'  // German (Germany)
-  | 'it'     // Italian
-  | 'pt'     // Portuguese
-  | 'pt-BR'  // Portuguese (Brazil)
-  | 'ru'     // Russian
-  | 'zh'     // Chinese
-  | 'zh-CN'  // Chinese (Simplified)
-  | 'zh-TW'  // Chinese (Traditional)
-  | 'ja'     // Japanese
-  | 'ko';    // Korean
+  | 'en'   // English
+  | 'es'   // Spanish
+  | 'fr'   // French
+  | 'de'   // German
+  | 'it'   // Italian
+  | 'pt'   // Portuguese
+  | 'ru'   // Russian
+  | 'zh'   // Chinese
+  | 'ja'   // Japanese
+  | 'ko';  // Korean
 
 /**
  * Locale configuration

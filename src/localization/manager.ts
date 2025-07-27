@@ -1,29 +1,68 @@
-import type { LocalizationService } from './localization-manager.types';
-import type { LocaleCode } from './locale.types';
-import type { LocalizationMessages } from './message.types';
-import type { MessageParams } from './message.types';
-import type { MessageKeyPath } from './message-key-path.types';
 
-/**
- * Logger interface for configurable logging
- */
-interface Logger {
-  warn(message: string, ...args: any[]): void;
-}
+import type { Logger } from '../common/types/logger.types';
+import { LocaleCode } from './locale.types';
+import { LocalizationService } from './localization-manager.types';
+import { MessageKeyPath } from './message-key-path.types';
+import { LocalizationMessages, MessageParams } from './message.types';
+
 
 /**
  * Default logger that uses console
  */
-const defaultLogger: Logger = {
-  warn: (message: string, ...args: any[]) => console.warn(message, ...args)
+export const defaultLogger: Logger = {
+  info: (message: string, ...args: any[]) => console.info(message, ...args),
+  warn: (message: string, ...args: any[]) => console.warn(message, ...args),
+  error: (message: string, ...args: any[]) => console.error(message, ...args),
+  debug: (message: string, ...args: any[]) => console.debug(message, ...args),
 };
 
 /**
  * Localization manager for handling message retrieval and interpolation
  */
+/**
+ * Manages localization messages for multiple locales, providing message retrieval,
+ * parameter interpolation, and locale management for internationalization support.
+ *
+ * The `LocalizationManager` loads, validates, and registers localization message files,
+ * supports dynamic locale switching, and provides methods to retrieve and format messages
+ * with parameter interpolation. It also supports fallback locales and custom logging.
+ *
+ * Features:
+ * - Dynamic loading of locale JSON files via static imports.
+ * - Validation of localization message structure.
+ * - Retrieval of messages by key (dot notation supported).
+ * - Parameter interpolation in messages.
+ * - Fallback to a default locale if a message or locale is missing.
+ * - Customizable logger for warnings and errors.
+ * - Methods to check, register, and list available and supported locales.
+ *
+ * @example
+ * ```typescript
+ * const manager = new LocalizationManager();
+ * await manager.loadLocale('en');
+ * manager.setLocale('en');
+ * const message = manager.getMessage('string.required', { field: 'Email' });
+ * ```
+ *
+ * @implements {LocalizationService}
+ */
 export class LocalizationManager implements LocalizationService {
   /**
-   * Get all message keys for a given locale (or current locale if not provided)
+   * Create a new LocalizationManager
+   * @param logger Optional custom logger. If not provided, uses defaultLogger.
+   */
+  constructor(logger?: Logger) {
+    this.logger = logger ?? defaultLogger;
+  }
+  /**
+   * Retrieves all message keys for a given locale in dot notation.
+   *
+   * If no locale is provided, the current locale is used. The keys are collected
+   * recursively from the messages object, with nested keys represented in dot notation
+   * (e.g., "greeting.hello").
+   *
+   * @param locale - (Optional) The locale code to retrieve message keys for.
+   * @returns An array of message keys in dot notation for the specified locale.
    */
   getMessageKeys(locale?: LocaleCode): string[] {
     const targetLocale = locale ?? this.currentLocale;
@@ -42,7 +81,11 @@ export class LocalizationManager implements LocalizationService {
   }
 
   /**
-   * Check if a message key is defined for a given locale (or current locale if not provided)
+   * Checks whether a message with the specified key is defined for a given locale.
+   *
+   * @param key - The key of the message to check, which may represent a nested path (e.g., "errors.required").
+   * @param locale - (Optional) The locale code to check for the message. If not provided, the current locale is used.
+   * @returns `true` if the message exists and is a string in the specified locale; otherwise, `false`.
    */
   isMessageDefined(key: string, locale?: LocaleCode): boolean {
     const targetLocale = locale ?? this.currentLocale;
@@ -53,10 +96,23 @@ export class LocalizationManager implements LocalizationService {
   private messages = new Map<LocaleCode, LocalizationMessages>();
   private fallbackLocale: LocaleCode = 'en';
   private currentLocale: LocaleCode = 'en';
-  private logger: Logger = defaultLogger;
+  private logger: Logger;
 
   /**
-   * Validate that imported JSON matches LocalizationMessages interface
+   * Determines whether the provided object conforms to the `LocalizationMessages` interface.
+   *
+   * This method checks that the input is an object and contains the required properties:
+   * - `locale` (string)
+   * - `common` (object)
+   * - `string` (object)
+   * - `email` (object)
+   * - `number` (object)
+   * - `network` (object)
+   *
+   * Additional validation can be added as needed for further type safety.
+   *
+   * @param obj - The object to validate.
+   * @returns `true` if the object matches the `LocalizationMessages` structure, otherwise `false`.
    */
   private isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
     return (
@@ -79,30 +135,24 @@ export class LocalizationManager implements LocalizationService {
   private static readonly localeImports: Record<LocaleCode, () => Promise<{ default: any }>> = (() => {
     const imports: Record<string, () => Promise<{ default: any }>> = {};
     imports.en = () => import('./locales/en.json');
-    imports['en-US'] = () => import('./locales/en-US.json');
-    imports['en-GB'] = () => import('./locales/en-GB.json');
     imports.es = () => import('./locales/es.json');
-    imports['es-ES'] = () => import('./locales/es-ES.json');
-    imports['es-MX'] = () => import('./locales/es-MX.json');
     imports.fr = () => import('./locales/fr.json');
-    imports['fr-FR'] = () => import('./locales/fr-FR.json');
-    imports['fr-CA'] = () => import('./locales/fr-CA.json');
     imports.de = () => import('./locales/de.json');
-    imports['de-DE'] = () => import('./locales/de-DE.json');
     imports.it = () => import('./locales/it.json');
     imports.pt = () => import('./locales/pt.json');
-    imports['pt-BR'] = () => import('./locales/pt-BR.json');
     imports.ru = () => import('./locales/ru.json');
     imports.zh = () => import('./locales/zh.json');
-    imports['zh-CN'] = () => import('./locales/zh-CN.json');
-    imports['zh-TW'] = () => import('./locales/zh-TW.json');
     imports.ja = () => import('./locales/ja.json');
     imports.ko = () => import('./locales/ko.json');
     return imports as Record<LocaleCode, () => Promise<{ default: any }>>;
   })();
 
   /**
-   * Load locale messages from JSON file
+   * Loads localization messages for the specified locale if they are not already loaded.
+   *
+   * @param locale - The locale code to load messages for.
+   * @returns A promise that resolves when the locale messages are loaded.
+   * @throws {Error} If the locale is unsupported, the localization messages are invalid, or if there is an error loading the locale file.
    */
   async loadLocale(locale: LocaleCode): Promise<void> {
     if (this.messages.has(locale)) {
@@ -138,7 +188,10 @@ export class LocalizationManager implements LocalizationService {
   }
 
   /**
-   * Load multiple locales at once
+   * Asynchronously loads multiple locales by invoking `loadLocale` for each provided locale code.
+   *
+   * @param locales - An array of locale codes to load.
+   * @returns A promise that resolves when all specified locales have been loaded.
    */
   async loadLocales(locales: LocaleCode[]): Promise<void> {
     await Promise.all(locales.map(locale => this.loadLocale(locale)));
@@ -194,10 +247,16 @@ export class LocalizationManager implements LocalizationService {
   }
 
   /**
-   * Get a message by key with optional parameter interpolation
-   * @param key - Message key in dot notation (e.g., 'string.required')
-   * @param params - Parameters for message interpolation
-   * @param locale - Optional locale override
+   * Retrieves a localized message string for the given key, optionally interpolating parameters and selecting a locale.
+   *
+   * The method attempts to fetch the message from the specified locale, falling back to the current locale,
+   * then to the fallback locale, and finally to the key itself if no message is found.
+   * Interpolates the message with the provided parameters if applicable.
+   *
+   * @param key - The key identifying the message to retrieve.
+   * @param params - Optional parameters to interpolate into the message.
+   * @param locale - Optional locale code to use for message retrieval. Defaults to the current locale if not provided.
+   * @returns The localized and interpolated message string, or the key if no message is found.
    */
   getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string {
     const targetLocale = locale ?? this.currentLocale;
@@ -210,7 +269,17 @@ export class LocalizationManager implements LocalizationService {
   }
 
   /**
-   * Get formatted error message for schemas
+   * Retrieves a localized and formatted error message for a given field.
+   *
+   * This method looks up the error message template using the provided message key and parameters,
+   * then formats it with the field name and the resolved message. It supports localization by accepting
+   * an optional locale code. If a specific error format template is not found, it falls back to a default format.
+   *
+   * @param fieldName - The name of the field associated with the error.
+   * @param messageKey - The key path used to look up the error message in the localization resources.
+   * @param params - Optional parameters to interpolate into the error message.
+   * @param locale - Optional locale code to use for localization.
+   * @returns The formatted, localized error message string.
    */
   getErrorMessage(
     fieldName: string,
@@ -275,8 +344,13 @@ export class LocalizationManager implements LocalizationService {
     return this.getNestedValue(messages, key);
   }
 
+
   /**
-   * Get nested value from object using dot notation
+   * Retrieves a nested string value from a `LocalizationMessages` object using a dot-separated path.
+   *
+   * @param obj - The object containing localization messages.
+   * @param path - The dot-separated path string representing the nested key (e.g., "errors.required").
+   * @returns The string value at the specified path, or `undefined` if the path does not exist or does not resolve to a string.
    */
   private getNestedValue(obj: LocalizationMessages, path: string): string | undefined {
     const result = path.split('.').reduce((current: any, key: string) => {
@@ -286,8 +360,17 @@ export class LocalizationManager implements LocalizationService {
     return typeof result === 'string' ? result : undefined;
   }
 
+
   /**
-   * Interpolate message parameters
+   * Replaces placeholders in a template string with corresponding values from the provided parameters.
+   *
+   * Placeholders in the template should be in the format `{key}`. If a key from the template exists in the
+   * `params` object, it will be replaced with its value. If the key does not exist in `params`, the placeholder
+   * will remain unchanged.
+   *
+   * @param template - The string containing placeholders to interpolate.
+   * @param params - An optional object containing key-value pairs to replace placeholders in the template.
+   * @returns The interpolated string with placeholders replaced by their corresponding values.
    */
   private interpolateMessage(template: string, params?: MessageParams): string {
     if (!params) return template;

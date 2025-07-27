@@ -1,6 +1,6 @@
 import { MessageHandler, createMessageHandler } from '../src/localization/message-handler';
 import type { ErrorMessageFormatter } from '../src/localization/message-handler.types';
-import type { Logger } from '../src/common/logger.types';
+import type { Logger } from '../src/common/types/logger.types';
 import { LocalizationManager } from '../src/localization/manager';
 
 // Mock Logger implementation
