@@ -1,6 +1,6 @@
 import { createEnumSchemas } from '../src/schemas/enum-schemas';
-import { MsgType } from '../src/schemas/msg-type';
-import { createTestMessageHandler } from '../src/common/message-handler.types';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/message-handler.types';
 
 // Create a type-safe mock using the test helper
 const mockMessageHandler = createTestMessageHandler(

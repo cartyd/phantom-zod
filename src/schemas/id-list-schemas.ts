@@ -24,7 +24,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     maxItems = 1000,
   ) =>
     z
-      .array(uuidSchemas.zUuidRequired("ID", msgType))
+      .array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
       .min(minItems, {
         message: messageHandler.formatErrorMessage({
           group: "array",
@@ -55,7 +55,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     minItems = 1,
     maxItems = 1000,
   ) =>
-    z.array(uuidSchemas.zUuidRequired("ID", msgType))
+    z.array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
       .min(minItems, {
         message: messageHandler.formatErrorMessage({
           group: "array",
@@ -82,7 +82,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zId = (
     msg = "ID",
     msgType: MsgType = MsgType.FieldName,
-  ) => uuidSchemas.zUuidRequired(msg, msgType);
+  ) => uuidSchemas.zUuidRequired({ msg, msgType });
 
   /**
    * ID list with duplicates removal.
@@ -236,7 +236,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.union([
-      uuidSchemas.zUuidRequired(msg, msgType),
+      uuidSchemas.zUuidRequired({ msg, msgType }),
       zMongoId(msg, msgType),
     ], {
       message: messageHandler.formatErrorMessage({

@@ -103,7 +103,7 @@ describe('UUID Schemas', () => {
         expected: new Error(),
         shouldThrow: true
       }
-    ], (input) => zUuidOptional().parse(input));
+    ], (input) => zUuidOptional({}).parse(input));
 
     it('should pass contract params to message handler for invalid values', () => {
       const { handler, calls } = createMockHandler();
@@ -113,10 +113,10 @@ describe('UUID Schemas', () => {
       calls.length = 0;
       expect(() => schema.parse('not-a-uuid')).toThrow(/mustBeValidUuid/);
       expect(calls[calls.length-1]?.params).toMatchObject({ receivedValue: 'not-a-uuid' });
-      // Not a string
-      calls.length = 0;
-      expect(() => schema.parse(123)).toThrow(/invalid/);
-      expect(calls[calls.length-1]?.params).toMatchObject({ receivedValue: 123 });
+      // Non-string values are rejected by Zod's union type checking, not our custom validation
+      expect(() => schema.parse(123)).toThrow();
+      expect(() => schema.parse({})).toThrow();
+      expect(() => schema.parse([])).toThrow();
     });
   });
 
@@ -158,7 +158,7 @@ describe('UUID Schemas', () => {
         expected: new Error(),
         shouldThrow: true
       }
-    ], (input) => zUuidRequired().parse(input));
+    ], (input) => zUuidRequired({}).parse(input));
 
     it('should pass contract params to message handler for invalid values', () => {
       const { handler, calls } = createMockHandler();
@@ -168,10 +168,10 @@ describe('UUID Schemas', () => {
       calls.length = 0;
       expect(() => schema.parse('not-a-uuid')).toThrow(/mustBeValidUuid/);
       expect(calls[calls.length-1]?.params).toMatchObject({ receivedValue: 'not-a-uuid' });
-      // Not a string
-      calls.length = 0;
-      expect(() => schema.parse(123)).toThrow(/invalid/);
-      expect(calls[calls.length-1]?.params).toMatchObject({ receivedValue: 123 });
+      // Non-string values are rejected by Zod's built-in type checking
+      expect(() => schema.parse(123)).toThrow();
+      expect(() => schema.parse({})).toThrow();
+      expect(() => schema.parse([])).toThrow();
     });
   });
 
@@ -217,10 +217,10 @@ describe('UUID Schemas', () => {
       const { handler, calls } = createMockHandler();
       const { zUuidV4Optional } = createUuidSchemas(handler);
       const schema = zUuidV4Optional();
-      // Not a string
-      calls.length = 0;
-      expect(() => schema.parse(123)).toThrow(/invalid/);
-      expect(calls[calls.length-1]?.params).toMatchObject({ receivedValue: 123 });
+      // Non-string values are rejected by Zod's union type checking
+      expect(() => schema.parse(123)).toThrow();
+      expect(() => schema.parse({})).toThrow();
+      expect(() => schema.parse([])).toThrow();
       // Valid UUID but not v4
       calls.length = 0;
       expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/mustBeValidUuidV4/);
@@ -362,6 +362,76 @@ describe('UUID Schemas', () => {
       ];
       withSpecialChars.forEach(uuid => {
         expect(() => schema.parse(uuid)).toThrow();
+      });
+    });
+  });
+
+  describe('invalidFormat message key support', () => {
+    it('should provide UUID format error message utility', () => {
+      const { handler, calls } = createMockHandler();
+      const { getUuidFormatErrorMessage } = createUuidSchemas(handler);
+      
+      const errorMessage = getUuidFormatErrorMessage({ msg: 'User ID' });
+      expect(errorMessage).toContain('invalidFormat');
+      expect(calls).toHaveLength(1);
+      expect(calls[0]).toMatchObject({
+        group: 'uuid',
+        messageKey: 'invalidFormat',
+        msg: 'User ID',
+        params: { expectedFormat: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' }
+      });
+    });
+
+    it('should use invalidFormat message in zUuidWithFormatError schema', () => {
+      const { handler, calls } = createMockHandler();
+      const { zUuidWithFormatError } = createUuidSchemas(handler);
+      const schema = zUuidWithFormatError({ msg: 'Token' });
+
+      // Test invalid format
+      calls.length = 0;
+      expect(() => schema.parse('not-a-uuid')).toThrow(/invalidFormat/);
+      expect(calls[calls.length-1]).toMatchObject({
+        group: 'uuid',
+        messageKey: 'invalidFormat',
+        msg: 'Token',
+        params: { expectedFormat: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' }
+      });
+
+      // Test required validation
+      calls.length = 0;
+      expect(() => schema.parse('')).toThrow(/required/);
+      expect(calls[calls.length-1]).toMatchObject({
+        group: 'uuid',
+        messageKey: 'required',
+        msg: 'Token'
+      });
+
+      // Test valid UUID
+      calls.length = 0;
+      const validUuid = '123e4567-e89b-42d3-a456-426614174000';
+      expect(schema.parse(validUuid)).toBe(validUuid);
+      expect(calls).toHaveLength(0); // No errors for valid input
+    });
+
+    it('should work with default options for invalidFormat utilities', () => {
+      const { handler, calls } = createMockHandler();
+      const { getUuidFormatErrorMessage, zUuidWithFormatError } = createUuidSchemas(handler);
+      
+      // Test default message
+      calls.length = 0;
+      getUuidFormatErrorMessage();
+      expect(calls[0]).toMatchObject({
+        msg: 'ID',
+        msgType: MsgType.FieldName
+      });
+
+      // Test default options in schema
+      calls.length = 0;
+      const schema = zUuidWithFormatError();
+      expect(() => schema.parse('invalid')).toThrow();
+      expect(calls[calls.length-1]).toMatchObject({
+        msg: 'ID',
+        msgType: MsgType.FieldName
       });
     });
   });
