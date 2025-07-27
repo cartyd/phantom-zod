@@ -3,9 +3,33 @@ import { LocalizationManager } from "./manager";
 import { MessageGroupMap, formatMessage } from './types/message-params.types';
 import type { ErrorMessageFormatter, FormatErrorOptions } from "./types/message-handler.types";
 
+
 /**
- * Message handler class that uses dependency injection for Logger and LocalizationManager
- * Implements ErrorMessageFormatter interface for consistent API contract
+ * Handles the formatting of error messages with localization and logging support.
+ * 
+ * The `MessageHandler` class implements the `ErrorMessageFormatter` interface and provides
+ * a type-safe method for formatting error messages based on message groups and keys.
+ * It leverages a localization manager to retrieve localized messages and a logger to
+ * optionally log debug information about the formatting process.
+ * 
+ * @remarks
+ * This class is intended to be used wherever consistent, localized error message formatting
+ * is required, such as in form validation or API error responses.
+ * 
+ * @example
+ * ```typescript
+ * const handler = new MessageHandler(logger, localizationManager);
+ * const errorMsg = handler.formatErrorMessage({
+ *   group: "string",
+ *   messageKey: "required",
+ *   params: {},
+ *   msg: "email",
+ *   msgType: "FieldName"
+ * });
+ * // Returns: "email is required" (localized)
+ * ```
+ * 
+ * @public
  */
 export class MessageHandler implements ErrorMessageFormatter {
   constructor(
