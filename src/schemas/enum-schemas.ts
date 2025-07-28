@@ -6,8 +6,11 @@ import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
 // --- Types ---
 // Note: These types are simplified since they rely on the factory functions
-export type EnumOptional<TEnum extends readonly [string, ...string[]]> = TEnum[number] | undefined;
-export type EnumRequired<TEnum extends readonly [string, ...string[]]> = TEnum[number];
+export type EnumOptional<TEnum extends readonly [string, ...string[]]> =
+  | TEnum[number]
+  | undefined;
+export type EnumRequired<TEnum extends readonly [string, ...string[]]> =
+  TEnum[number];
 
 /**
  * Creates a factory function for enum schemas with injected message handler
@@ -34,10 +37,10 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
     values: TEnum,
-    options: BaseSchemaOptions = {}
+    options: BaseSchemaOptions = {},
   ) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
-    
+
     return z
       .enum(values as unknown as [string, ...string[]], {
         message: messageHandler.formatErrorMessage({
@@ -54,7 +57,7 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a required Zod enum schema from a list of string values.
    * Accepts only values from the provided string literal array.
-   * 
+   *
    * @template TEnum - A tuple type representing the allowed string values for the enum.
    * @param values - The allowed string values for the enum.
    * @param options - Configuration options for the schema
@@ -70,10 +73,10 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
     values: TEnum,
-    options: BaseSchemaOptions = {}
+    options: BaseSchemaOptions = {},
   ) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
-    
+
     return z.enum(values as unknown as [string, ...string[]], {
       message: messageHandler.formatErrorMessage({
         group: "enum",

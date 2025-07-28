@@ -45,7 +45,7 @@ export interface ErrorMessageFormatter {
     TGroup extends keyof MessageGroupMap,
     TKey extends keyof MessageGroupMap[TGroup],
   >(
-    options: FormatErrorOptions<TGroup, TKey>
+    options: FormatErrorOptions<TGroup, TKey>,
   ): string;
 }
 
@@ -59,7 +59,6 @@ export interface SimpleFormatErrorOptions {
   msgType: MsgType;
   params?: Record<string, any>;
 }
-
 
 /**
  * Creates a mock error message handler for testing purposes.
@@ -89,7 +88,7 @@ export interface SimpleFormatErrorOptions {
  * ```
  */
 export function createTestMessageHandler(
-  customMock?: (options: SimpleFormatErrorOptions) => string
+  customMock?: (options: SimpleFormatErrorOptions) => string,
 ): ErrorMessageFormatter {
   const defaultMock = (options: SimpleFormatErrorOptions) => {
     if (options.msgType === MsgType.Message) {
@@ -190,9 +189,9 @@ export function createTestMessageHandler(
       case "usernameAlreadyExists":
         return `${options.msg} username is already taken`;
       case "invalidRole":
-        return `${options.msg} has invalid role: ${options.params?.role || 'unknown'}`;
+        return `${options.msg} has invalid role: ${options.params?.role || "unknown"}`;
       case "invalidAccountType":
-        return `${options.msg} has invalid account type: ${options.params?.type || 'unknown'}`;
+        return `${options.msg} has invalid account type: ${options.params?.type || "unknown"}`;
       default:
         return `${options.msg} is invalid`;
     }
@@ -205,7 +204,7 @@ export function createTestMessageHandler(
       TGroup extends keyof MessageGroupMap,
       TKey extends keyof MessageGroupMap[TGroup],
     >(
-      options: FormatErrorOptions<TGroup, TKey>
+      options: FormatErrorOptions<TGroup, TKey>,
     ): string => {
       // Cast to simpler type for the mock implementation
       return mockFn({

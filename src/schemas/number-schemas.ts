@@ -2,8 +2,10 @@ import { z } from "zod";
 
 import { MsgType } from "../common/types/msg-type";
 import type { NumberSchemaOptions } from "../common/types/schema-options.types";
-import { type ErrorMessageFormatter, createTestMessageHandler } from "../localization/types/message-handler.types";
-
+import {
+  type ErrorMessageFormatter,
+  createTestMessageHandler,
+} from "../localization/types/message-handler.types";
 
 /**
  * Creates a factory function for number schemas with injected message handler
@@ -11,13 +13,12 @@ import { type ErrorMessageFormatter, createTestMessageHandler } from "../localiz
  * @returns An object containing number schema creation functions
  */
 export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
-  
   // Helper function to create error messages - eliminates redundant code with improved typing
   const createErrorMessage = (
-    messageKey: keyof import("../localization/types/message-params.types").NumberMessageParams, 
-    params: Record<string, unknown>, 
-    msg: string, 
-    msgType: MsgType
+    messageKey: keyof import("../localization/types/message-params.types").NumberMessageParams,
+    params: Record<string, unknown>,
+    msg: string,
+    msgType: MsgType,
   ): string => {
     return messageHandler.formatErrorMessage({
       group: "number",
@@ -30,33 +31,35 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   // Helper function to add min/max constraints using refine
   const addMinMaxConstraints = (
-    schema: any, 
-    min?: number, 
-    max?: number, 
-    msg: string = "Value", 
-    msgType: MsgType = MsgType.FieldName
+    schema: any,
+    min?: number,
+    max?: number,
+    msg: string = "Value",
+    msgType: MsgType = MsgType.FieldName,
   ) => {
     let constrainedSchema = schema;
-    
+
     if (min !== undefined) {
       constrainedSchema = constrainedSchema.refine(
-        (val: any) => typeof val !== 'number' || val >= min,
-        { message: createErrorMessage("tooSmall", { min }, msg, msgType) }
+        (val: any) => typeof val !== "number" || val >= min,
+        { message: createErrorMessage("tooSmall", { min }, msg, msgType) },
       );
     }
-    
+
     if (max !== undefined) {
       constrainedSchema = constrainedSchema.refine(
-        (val: any) => typeof val !== 'number' || val <= max,
-        { message: createErrorMessage("tooBig", { max }, msg, msgType) }
+        (val: any) => typeof val !== "number" || val <= max,
+        { message: createErrorMessage("tooBig", { max }, msg, msgType) },
       );
     }
-    
+
     return constrainedSchema;
   };
 
   // Helper function to extract and provide default options with improved typing
-  const extractOptions = (options: NumberSchemaOptions): {
+  const extractOptions = (
+    options: NumberSchemaOptions,
+  ): {
     msg: string;
     msgType: MsgType;
     min?: number;
@@ -70,37 +73,52 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
   const createNumberSchema = (
     options: NumberSchemaOptions,
     isRequired: boolean,
-    asString: boolean = false
+    asString: boolean = false,
   ) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    
+
     // Create strict number schema with custom validation
     let schema = z.any().transform((val, ctx) => {
       // Reject null explicitly
       if (val === null) {
         ctx.addIssue({
           code: "custom",
-          message: createErrorMessage("mustBeNumber", { receivedType: 'object' }, msg, msgType)
+          message: createErrorMessage(
+            "mustBeNumber",
+            { receivedType: "object" },
+            msg,
+            msgType,
+          ),
         });
         return z.NEVER;
       }
-      
+
       // Handle strings with strict validation
-      if (typeof val === 'string') {
+      if (typeof val === "string") {
         const trimmed = val.trim();
         // Reject empty strings
-        if (trimmed === '') {
+        if (trimmed === "") {
           ctx.addIssue({
             code: "custom",
-            message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
+            message: createErrorMessage(
+              "mustBeNumber",
+              { receivedType: "string" },
+              msg,
+              msgType,
+            ),
           });
           return z.NEVER;
         }
         // Reject invalid formats like "123." or multiple dots
-        if (trimmed.endsWith('.') || (trimmed.match(/\./g) || []).length > 1) {
+        if (trimmed.endsWith(".") || (trimmed.match(/\./g) || []).length > 1) {
           ctx.addIssue({
             code: "custom",
-            message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
+            message: createErrorMessage(
+              "mustBeNumber",
+              { receivedType: "string" },
+              msg,
+              msgType,
+            ),
           });
           return z.NEVER;
         }
@@ -109,54 +127,80 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
         if (isNaN(num)) {
           ctx.addIssue({
             code: "custom",
-            message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
+            message: createErrorMessage(
+              "mustBeNumber",
+              { receivedType: "string" },
+              msg,
+              msgType,
+            ),
           });
           return z.NEVER;
         }
         return num;
       }
-      
+
       // Handle numbers directly
-      if (typeof val === 'number') {
+      if (typeof val === "number") {
         return val;
       }
-      
+
       // Reject everything else
       ctx.addIssue({
         code: "custom",
-        message: createErrorMessage("mustBeNumber", { receivedType: typeof val }, msg, msgType)
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: typeof val },
+          msg,
+          msgType,
+        ),
       });
       return z.NEVER;
     });
-    
+
     // Add min/max constraints
     schema = addMinMaxConstraints(schema, min, max, msg, msgType);
-    
+
     // Handle string transformation if needed
     if (asString) {
       const stringSchema = schema.transform((val) => String(val));
       return isRequired ? stringSchema : stringSchema.optional();
     }
-    
+
     return isRequired ? schema : schema.optional();
   };
 
-  const zNumberOptional = (options: NumberSchemaOptions = {}) => createNumberSchema(options, false);
+  const zNumberOptional = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, false);
 
-  const zNumberRequired = (options: NumberSchemaOptions = {}) => createNumberSchema(options, true);
+  const zNumberRequired = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, true);
 
-  const zNumberStringOptional = (options: NumberSchemaOptions = {}) => createNumberSchema(options, false, true);
+  const zNumberStringOptional = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, false, true);
 
-  const zNumberStringRequired = (options: NumberSchemaOptions = {}) => createNumberSchema(options, true, true);
+  const zNumberStringRequired = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, true, true);
 
   // Explicit specialized schema implementations - clear and maintainable
   const zIntegerRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).int({
-      message: createErrorMessage("mustBeInteger", { receivedValue: 'decimal' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .int({
+        message: createErrorMessage(
+          "mustBeInteger",
+          { receivedValue: "decimal" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -166,11 +210,23 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   const zPositiveRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).positive({
-      message: createErrorMessage("mustBePositive", { receivedValue: 'non-positive' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .positive({
+        message: createErrorMessage(
+          "mustBePositive",
+          { receivedValue: "non-positive" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -180,11 +236,23 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   const zNegativeRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).negative({
-      message: createErrorMessage("mustBeNegative", { receivedValue: 'non-negative' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .negative({
+        message: createErrorMessage(
+          "mustBeNegative",
+          { receivedValue: "non-negative" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -194,11 +262,23 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   const zNonNegativeRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).nonnegative({
-      message: createErrorMessage("mustBeNonNegative", { receivedValue: 'negative' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .nonnegative({
+        message: createErrorMessage(
+          "mustBeNonNegative",
+          { receivedValue: "negative" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -208,11 +288,23 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   const zNonPositiveRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).nonpositive({
-      message: createErrorMessage("mustBeNonPositive", { receivedValue: 'positive' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .nonpositive({
+        message: createErrorMessage(
+          "mustBeNonPositive",
+          { receivedValue: "positive" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -222,11 +314,23 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   const zFiniteRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).finite({
-      message: createErrorMessage("invalid", { reason: 'must be finite' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .finite({
+        message: createErrorMessage(
+          "invalid",
+          { reason: "must be finite" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -236,11 +340,23 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   const zSafeIntegerRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
-    const schema = z.coerce.number({
-      message: createErrorMessage("mustBeNumber", { receivedType: 'string' }, msg, msgType)
-    }).safe({
-      message: createErrorMessage("invalid", { reason: 'must be a safe integer' }, msg, msgType)
-    });
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .safe({
+        message: createErrorMessage(
+          "invalid",
+          { reason: "must be a safe integer" },
+          msg,
+          msgType,
+        ),
+      });
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
@@ -350,7 +466,7 @@ export {
   zFiniteRequired,
   zFiniteOptional,
   zSafeIntegerRequired,
-  zSafeIntegerOptional
+  zSafeIntegerOptional,
 };
 
 // Export the options interface for external use

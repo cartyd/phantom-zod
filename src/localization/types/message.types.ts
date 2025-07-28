@@ -16,8 +16,7 @@ export {
   AddressMessageParams,
   NetworkMessageParams,
   UserMessageParams,
-} from './message-params.types';
-
+} from "./message-params.types";
 
 import type {
   StringMessageParams,
@@ -37,7 +36,7 @@ import type {
   AddressMessageParams,
   NetworkMessageParams,
   UserMessageParams,
-} from './message-params.types';
+} from "./message-params.types";
 
 /**
  * Represents the union of all possible parameter types used for various message categories.
@@ -90,7 +89,11 @@ export interface CommonMessages {
 /**
  * String-specific validation messages
  */
-export interface StringMessages extends Pick<CommonMessages, 'required' | 'invalid' | 'tooShort' | 'tooLong' | 'empty'> {
+export interface StringMessages
+  extends Pick<
+    CommonMessages,
+    "required" | "invalid" | "tooShort" | "tooLong" | "empty"
+  > {
   mustBeString: string;
   trimmed: string;
 }
@@ -98,7 +101,8 @@ export interface StringMessages extends Pick<CommonMessages, 'required' | 'inval
 /**
  * Email-specific validation messages
  */
-export interface EmailMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface EmailMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidEmail: string;
   invalidFormat: string;
   domainInvalid: string;
@@ -107,7 +111,8 @@ export interface EmailMessages extends Pick<CommonMessages, 'required' | 'invali
 /**
  * Phone-specific validation messages
  */
-export interface PhoneMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface PhoneMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidPhone: string;
   invalidE164Format: string;
   invalidNationalFormat: string;
@@ -121,7 +126,8 @@ export interface PhoneMessages extends Pick<CommonMessages, 'required' | 'invali
 /**
  * UUID-specific validation messages
  */
-export interface UuidMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface UuidMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidUuid: string;
   mustBeValidUuidV4: string;
   mustBeValidUuidV6: string;
@@ -133,7 +139,8 @@ export interface UuidMessages extends Pick<CommonMessages, 'required' | 'invalid
 /**
  * URL-specific validation messages
  */
-export interface UrlMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface UrlMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidUrl: string;
   invalidProtocol: string;
   invalidDomain: string;
@@ -143,7 +150,8 @@ export interface UrlMessages extends Pick<CommonMessages, 'required' | 'invalid'
 /**
  * Number-specific validation messages
  */
-export interface NumberMessages extends Pick<CommonMessages, 'required' | 'invalid' | 'tooSmall' | 'tooBig'> {
+export interface NumberMessages
+  extends Pick<CommonMessages, "required" | "invalid" | "tooSmall" | "tooBig"> {
   mustBeNumber: string;
   mustBeInteger: string;
   mustBeFloat: string;
@@ -158,7 +166,7 @@ export interface NumberMessages extends Pick<CommonMessages, 'required' | 'inval
 /**
  * Boolean-specific validation messages
  */
-export interface BooleanMessages extends Pick<CommonMessages, 'invalid'> {
+export interface BooleanMessages extends Pick<CommonMessages, "invalid"> {
   mustBeBoolean: string;
   mustBeBooleanString: string;
   invalidBooleanString: string;
@@ -167,7 +175,11 @@ export interface BooleanMessages extends Pick<CommonMessages, 'invalid'> {
 /**
  * Array-specific validation messages
  */
-export interface ArrayMessages extends Pick<CommonMessages, 'required' | 'invalid' | 'empty' | 'tooSmall' | 'tooBig'> {
+export interface ArrayMessages
+  extends Pick<
+    CommonMessages,
+    "required" | "invalid" | "empty" | "tooSmall" | "tooBig"
+  > {
   mustBeArray: string;
   mustBeStringArray: string;
   mustHaveMinItems: string;
@@ -179,7 +191,7 @@ export interface ArrayMessages extends Pick<CommonMessages, 'required' | 'invali
 /**
  * Enum-specific validation messages
  */
-export interface EnumMessages extends Pick<CommonMessages, 'invalid'> {
+export interface EnumMessages extends Pick<CommonMessages, "invalid"> {
   mustBeOneOf: string;
   invalidOption: string;
   availableOptions: string;
@@ -188,7 +200,8 @@ export interface EnumMessages extends Pick<CommonMessages, 'invalid'> {
 /**
  * Date-specific validation messages
  */
-export interface DateMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface DateMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidDate: string;
   mustBeValidDateTime: string;
   invalidFormat: string;
@@ -202,7 +215,8 @@ export interface DateMessages extends Pick<CommonMessages, 'required' | 'invalid
 /**
  * Money/Currency-specific validation messages
  */
-export interface MoneyMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface MoneyMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidAmount: string;
   mustBeValidCurrency: string;
   mustBePositiveAmount: string;
@@ -214,7 +228,8 @@ export interface MoneyMessages extends Pick<CommonMessages, 'required' | 'invali
 /**
  * Postal code-specific validation messages
  */
-export interface PostalCodeMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface PostalCodeMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidZipCode: string;
   mustBeValidPostalCode: string;
   invalidFormat: string;
@@ -228,7 +243,8 @@ export interface PostalCodeMessages extends Pick<CommonMessages, 'required' | 'i
 /**
  * File upload-specific validation messages
  */
-export interface FileUploadMessages extends Pick<CommonMessages, 'invalid' | 'tooBig'> {
+export interface FileUploadMessages
+  extends Pick<CommonMessages, "invalid" | "tooBig"> {
   mustBeValidFile: string;
   fileSizeExceeded: string;
   invalidFileType: string;
@@ -244,7 +260,8 @@ export interface FileUploadMessages extends Pick<CommonMessages, 'invalid' | 'to
 /**
  * Pagination-specific validation messages
  */
-export interface PaginationMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface PaginationMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   invalidPageNumber: string;
   invalidLimit: string;
   invalidOffset: string;
@@ -257,7 +274,8 @@ export interface PaginationMessages extends Pick<CommonMessages, 'required' | 'i
 /**
  * Address-specific validation messages
  */
-export interface AddressMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface AddressMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidAddress: string;
   streetRequired: string;
   cityRequired: string;
@@ -271,7 +289,8 @@ export interface AddressMessages extends Pick<CommonMessages, 'required' | 'inva
 /**
  * Network-specific validation messages
  */
-export interface NetworkMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface NetworkMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   mustBeValidIPv4: string;
   mustBeValidIPv6: string;
   mustBeValidMacAddress: string;
@@ -288,7 +307,8 @@ export interface NetworkMessages extends Pick<CommonMessages, 'required' | 'inva
 /**
  * User-specific validation messages
  */
-export interface UserMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
+export interface UserMessages
+  extends Pick<CommonMessages, "required" | "invalid"> {
   usernameInvalid: string;
   passwordWeak: string;
   passwordTooShort: string;
@@ -308,7 +328,7 @@ export interface UserMessages extends Pick<CommonMessages, 'required' | 'invalid
  * Complete localization message structure
  */
 export interface LocalizationMessages {
-  locale: import('./locale.types').LocaleCode;
+  locale: import("./locale.types").LocaleCode;
   common: CommonMessages;
   string: StringMessages;
   email: EmailMessages;

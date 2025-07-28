@@ -27,7 +27,10 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Helper function to create error message
    */
-  const createErrorMessage = (messageKey: DateMessageKey, options: DateSchemaOptions = {}) => {
+  const createErrorMessage = (
+    messageKey: DateMessageKey,
+    options: DateSchemaOptions = {},
+  ) => {
     const { msg = "Date", msgType = MsgType.FieldName } = options;
     return messageHandler.formatErrorMessage({
       group: "date" as const,
@@ -40,10 +43,10 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Creates an optional Date schema that accepts both Date objects and date strings
-   * 
+   *
    * @param options - Configuration options for date validation
    * @returns Zod schema that accepts valid Date instances, date strings, or undefined
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateOptional();
@@ -56,11 +59,14 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     const { min, max } = options;
     let baseSchema = z.union([
       z.date({
-        message: createErrorMessage("mustBeValidDate", options)
+        message: createErrorMessage("mustBeValidDate", options),
       }),
-      z.string().date({
-        message: createErrorMessage("mustBeValidDate", options)
-      }).transform(val => new Date(val + "T00:00:00Z"))
+      z
+        .string()
+        .date({
+          message: createErrorMessage("mustBeValidDate", options),
+        })
+        .transform((val) => new Date(val + "T00:00:00Z")),
     ]);
 
     if (min || max) {
@@ -70,7 +76,7 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
           if (max && date > max) return false;
           return true;
         },
-        { message: createErrorMessage("invalid", options) }
+        { message: createErrorMessage("invalid", options) },
       );
     }
 
@@ -79,10 +85,10 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Creates a required Date schema that accepts both Date objects and date strings
-   * 
+   *
    * @param options - Configuration options for date validation
    * @returns Zod schema that accepts valid Date instances or date strings
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateRequired();
@@ -95,11 +101,14 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     const { min, max } = options;
     let schema = z.union([
       z.date({
-        message: createErrorMessage("mustBeValidDate", options)
+        message: createErrorMessage("mustBeValidDate", options),
       }),
-      z.string().date({
-        message: createErrorMessage("mustBeValidDate", options)
-      }).transform(val => new Date(val + "T00:00:00Z"))
+      z
+        .string()
+        .date({
+          message: createErrorMessage("mustBeValidDate", options),
+        })
+        .transform((val) => new Date(val + "T00:00:00Z")),
     ]);
 
     if (min || max) {
@@ -109,7 +118,7 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
           if (max && date > max) return false;
           return true;
         },
-        { message: createErrorMessage("invalid", options) }
+        { message: createErrorMessage("invalid", options) },
       );
     }
 
@@ -118,12 +127,12 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Creates an optional ISO date string schema that accepts strings and Date objects
-   * 
+   *
    * Accepts ISO 8601 date strings like "2023-01-01" or "2023-01-01T10:30:00Z" and Date objects
-   * 
+   *
    * @param options - Configuration options for datetime validation
    * @returns Zod schema that accepts valid ISO date strings, Date objects, or undefined
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateTimeStringOptional();
@@ -138,26 +147,28 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     return makeOptionalSimple(
       z.union([
         z.string().datetime({
-          message: createErrorMessage("mustBeValidDateTime", options)
+          message: createErrorMessage("mustBeValidDateTime", options),
         }),
         z.string().date({
-          message: createErrorMessage("mustBeValidDate", options)
+          message: createErrorMessage("mustBeValidDate", options),
         }),
-        z.date({
-          message: createErrorMessage("mustBeValidDate", options)
-        }).transform(val => val.toISOString())
-      ])
+        z
+          .date({
+            message: createErrorMessage("mustBeValidDate", options),
+          })
+          .transform((val) => val.toISOString()),
+      ]),
     );
   };
 
   /**
    * Creates a required ISO date string schema that accepts strings and Date objects
-   * 
+   *
    * Accepts ISO 8601 date strings like "2023-01-01" or "2023-01-01T10:30:00Z" and Date objects
-   * 
+   *
    * @param options - Configuration options for datetime validation
    * @returns Zod schema that accepts valid ISO date strings or Date objects
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateTimeStringRequired();
@@ -171,23 +182,25 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zDateTimeStringRequired = (options: DateSchemaOptions = {}) => {
     return z.union([
       z.string().datetime({
-        message: createErrorMessage("mustBeValidDateTime", options)
+        message: createErrorMessage("mustBeValidDateTime", options),
       }),
       z.string().date({
-        message: createErrorMessage("mustBeValidDate", options)
+        message: createErrorMessage("mustBeValidDate", options),
       }),
-      z.date({
-        message: createErrorMessage("mustBeValidDate", options)
-      }).transform(val => val.toISOString())
+      z
+        .date({
+          message: createErrorMessage("mustBeValidDate", options),
+        })
+        .transform((val) => val.toISOString()),
     ]);
   };
 
   /**
    * Creates an optional ISO date string schema that accepts both strings and Date objects
-   * 
+   *
    * @param options - Configuration options for date validation
    * @returns Zod schema that accepts valid ISO date strings, Date objects, or undefined
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateStringOptional();
@@ -201,21 +214,23 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     return makeOptionalSimple(
       z.union([
         z.string().date({
-          message: createErrorMessage("mustBeValidDate", options)
+          message: createErrorMessage("mustBeValidDate", options),
         }),
-        z.date({
-          message: createErrorMessage("mustBeValidDate", options)
-        }).transform(val => val.toISOString().split('T')[0])
-      ])
+        z
+          .date({
+            message: createErrorMessage("mustBeValidDate", options),
+          })
+          .transform((val) => val.toISOString().split("T")[0]),
+      ]),
     );
   };
 
   /**
    * Creates a required ISO date string schema that accepts both strings and Date objects
-   * 
+   *
    * @param options - Configuration options for date validation
    * @returns Zod schema that accepts valid ISO date strings or Date objects
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateStringRequired();
@@ -228,20 +243,22 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zDateStringRequired = (options: DateSchemaOptions = {}) => {
     return z.union([
       z.string().date({
-        message: createErrorMessage("mustBeValidDate", options)
+        message: createErrorMessage("mustBeValidDate", options),
       }),
-      z.date({
-        message: createErrorMessage("mustBeValidDate", options)
-      }).transform(val => val.toISOString().split('T')[0])
+      z
+        .date({
+          message: createErrorMessage("mustBeValidDate", options),
+        })
+        .transform((val) => val.toISOString().split("T")[0]),
     ]);
   };
 
   /**
    * Creates an optional ISO time string schema using Zod's built-in time validation
-   * 
+   *
    * @param options - Configuration options for time validation
    * @returns Zod schema that accepts valid ISO time strings or undefined
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zTimeStringOptional();
@@ -252,17 +269,20 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * ```
    */
   const zTimeStringOptional = (options: DateSchemaOptions = {}) => {
-    return z.string().time({
-      message: createErrorMessage("invalidFormat", options)
-    }).optional();
+    return z
+      .string()
+      .time({
+        message: createErrorMessage("invalidFormat", options),
+      })
+      .optional();
   };
 
   /**
    * Creates a required ISO time string schema using Zod's built-in time validation
-   * 
+   *
    * @param options - Configuration options for time validation
    * @returns Zod schema that accepts only valid ISO time strings
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zTimeStringRequired();
@@ -274,21 +294,21 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zTimeStringRequired = (options: DateSchemaOptions = {}) => {
     return z.string().time({
-      message: createErrorMessage("invalidFormat", options)
+      message: createErrorMessage("invalidFormat", options),
     });
   };
 
   /**
    * Creates an optional datetime schema that accepts strings and Date objects
-   * 
+   *
    * @param options - Configuration options for datetime validation
    * @returns Zod schema that accepts ISO datetime strings, Date objects, and returns Date objects or undefined
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateTimeOptional();
    * schema.parse("2023-01-01T10:30:00Z");  // ✓ Returns Date object
-   * schema.parse("2023-01-01");            // ✓ Returns Date object  
+   * schema.parse("2023-01-01");            // ✓ Returns Date object
    * schema.parse(new Date());              // ✓ Returns Date object
    * schema.parse(undefined);               // ✓ Returns undefined
    * schema.parse("invalid-date");          // ✗ Throws error
@@ -298,24 +318,30 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     return makeOptionalSimple(
       z.union([
         z.date({
-          message: createErrorMessage("mustBeValidDate", options)
+          message: createErrorMessage("mustBeValidDate", options),
         }),
-        z.string().datetime({
-          message: createErrorMessage("mustBeValidDateTime", options)
-        }).transform(val => new Date(val)),
-        z.string().date({
-          message: createErrorMessage("mustBeValidDate", options)
-        }).transform(val => new Date(val + "T00:00:00Z"))
-      ])
+        z
+          .string()
+          .datetime({
+            message: createErrorMessage("mustBeValidDateTime", options),
+          })
+          .transform((val) => new Date(val)),
+        z
+          .string()
+          .date({
+            message: createErrorMessage("mustBeValidDate", options),
+          })
+          .transform((val) => new Date(val + "T00:00:00Z")),
+      ]),
     );
   };
 
   /**
    * Creates a required datetime schema that accepts strings and Date objects
-   * 
+   *
    * @param options - Configuration options for datetime validation
    * @returns Zod schema that accepts ISO datetime strings, Date objects, and returns Date objects
-   * 
+   *
    * @example
    * ```typescript
    * const schema = zDateTimeRequired();
@@ -329,22 +355,28 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zDateTimeRequired = (options: DateSchemaOptions = {}) => {
     return z.union([
       z.date({
-        message: createErrorMessage("mustBeValidDate", options)
+        message: createErrorMessage("mustBeValidDate", options),
       }),
-      z.string().datetime({
-        message: createErrorMessage("mustBeValidDateTime", options)
-      }).transform(val => new Date(val)),
-      z.string().date({
-        message: createErrorMessage("mustBeValidDate", options)
-      }).transform(val => new Date(val + "T00:00:00Z"))
+      z
+        .string()
+        .datetime({
+          message: createErrorMessage("mustBeValidDateTime", options),
+        })
+        .transform((val) => new Date(val)),
+      z
+        .string()
+        .date({
+          message: createErrorMessage("mustBeValidDate", options),
+        })
+        .transform((val) => new Date(val + "T00:00:00Z")),
     ]);
   };
 
   /**
    * Returns example date and time formats for user guidance
-   * 
+   *
    * @returns Object containing example formats for each supported type
-   * 
+   *
    * @example
    * ```typescript
    * const examples = getDateExamples();
@@ -357,7 +389,7 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     return {
       date: "2023-01-01",
       dateTime: "2023-01-01T10:30:00Z",
-      time: "10:30:00"
+      time: "10:30:00",
     };
   };
 
@@ -420,10 +452,10 @@ const {
 
 /**
  * Creates an optional Date schema that accepts both Date objects and date strings
- * 
+ *
  * @param options - Configuration options for date validation
  * @returns Zod schema that accepts valid Date instances, date strings, or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateOptional();
@@ -436,10 +468,10 @@ export const zDateOptional = baseZDateOptional;
 
 /**
  * Creates a required Date schema that accepts both Date objects and date strings
- * 
+ *
  * @param options - Configuration options for date validation
  * @returns Zod schema that accepts valid Date instances or date strings
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateRequired();
@@ -452,10 +484,10 @@ export const zDateRequired = baseZDateRequired;
 
 /**
  * Creates an optional ISO date string schema that accepts both strings and Date objects
- * 
+ *
  * @param options - Configuration options for date validation
  * @returns Zod schema that accepts valid ISO date strings, Date objects, or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateStringOptional();
@@ -469,10 +501,10 @@ export const zDateStringOptional = baseZDateStringOptional;
 
 /**
  * Creates a required ISO date string schema that accepts both strings and Date objects
- * 
+ *
  * @param options - Configuration options for date validation
  * @returns Zod schema that accepts valid ISO date strings or Date objects
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateStringRequired();
@@ -486,15 +518,15 @@ export const zDateStringRequired = baseZDateStringRequired;
 
 /**
  * Creates an optional datetime schema that accepts strings and Date objects
- * 
+ *
  * @param options - Configuration options for datetime validation
  * @returns Zod schema that accepts ISO datetime strings, Date objects, and returns Date objects or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateTimeOptional();
  * schema.parse("2023-01-01T10:30:00Z");  // ✓ Returns Date object
- * schema.parse("2023-01-01");            // ✓ Returns Date object  
+ * schema.parse("2023-01-01");            // ✓ Returns Date object
  * schema.parse(new Date());              // ✓ Returns Date object
  * schema.parse(undefined);               // ✓ Returns undefined
  * schema.parse("invalid-date");          // ✗ Throws error
@@ -504,10 +536,10 @@ export const zDateTimeOptional = baseZDateTimeOptional;
 
 /**
  * Creates a required datetime schema that accepts strings and Date objects
- * 
+ *
  * @param options - Configuration options for datetime validation
  * @returns Zod schema that accepts ISO datetime strings, Date objects, and returns Date objects
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateTimeRequired();
@@ -522,12 +554,12 @@ export const zDateTimeRequired = baseZDateTimeRequired;
 
 /**
  * Creates an optional ISO date string schema that accepts strings and Date objects
- * 
+ *
  * Accepts ISO 8601 date strings like "2023-01-01" or "2023-01-01T10:30:00Z" and Date objects
- * 
+ *
  * @param options - Configuration options for datetime validation
  * @returns Zod schema that accepts valid ISO date strings, Date objects, or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateTimeStringOptional();
@@ -542,12 +574,12 @@ export const zDateTimeStringOptional = baseZDateTimeStringOptional;
 
 /**
  * Creates a required ISO date string schema that accepts strings and Date objects
- * 
+ *
  * Accepts ISO 8601 date strings like "2023-01-01" or "2023-01-01T10:30:00Z" and Date objects
- * 
+ *
  * @param options - Configuration options for datetime validation
  * @returns Zod schema that accepts valid ISO date strings or Date objects
- * 
+ *
  * @example
  * ```typescript
  * const schema = zDateTimeStringRequired();
@@ -562,10 +594,10 @@ export const zDateTimeStringRequired = baseZDateTimeStringRequired;
 
 /**
  * Creates an optional ISO time string schema using Zod's built-in time validation
- * 
+ *
  * @param options - Configuration options for time validation
  * @returns Zod schema that accepts valid ISO time strings or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zTimeStringOptional();
@@ -579,10 +611,10 @@ export const zTimeStringOptional = baseZTimeStringOptional;
 
 /**
  * Creates a required ISO time string schema using Zod's built-in time validation
- * 
+ *
  * @param options - Configuration options for time validation
  * @returns Zod schema that accepts only valid ISO time strings
- * 
+ *
  * @example
  * ```typescript
  * const schema = zTimeStringRequired();
@@ -596,9 +628,9 @@ export const zTimeStringRequired = baseZTimeStringRequired;
 
 /**
  * Returns example date and time formats for user guidance
- * 
+ *
  * @returns Object containing example formats for each supported type
- * 
+ *
  * @example
  * ```typescript
  * const examples = getDateExamples();
@@ -614,9 +646,18 @@ export type { DateSchemaOptions };
 
 // --- Types ---
 type DateSchemasFactory = ReturnType<typeof createDateSchemas>;
-export type DateValue = z.infer<ReturnType<DateSchemasFactory['zDateRequired']>>;
-export type DateString = z.infer<ReturnType<DateSchemasFactory['zDateStringRequired']>>;
-export type DateTimeValue = z.infer<ReturnType<DateSchemasFactory['zDateTimeRequired']>>;
-export type DateTimeString = z.infer<ReturnType<DateSchemasFactory['zDateTimeStringRequired']>>;
-export type TimeString = z.infer<ReturnType<DateSchemasFactory['zTimeStringRequired']>>;
-
+export type DateValue = z.infer<
+  ReturnType<DateSchemasFactory["zDateRequired"]>
+>;
+export type DateString = z.infer<
+  ReturnType<DateSchemasFactory["zDateStringRequired"]>
+>;
+export type DateTimeValue = z.infer<
+  ReturnType<DateSchemasFactory["zDateTimeRequired"]>
+>;
+export type DateTimeString = z.infer<
+  ReturnType<DateSchemasFactory["zDateTimeStringRequired"]>
+>;
+export type TimeString = z.infer<
+  ReturnType<DateSchemasFactory["zTimeStringRequired"]>
+>;

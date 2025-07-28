@@ -1,7 +1,7 @@
 /**
  * Validation schema barrel export for test files
  * Provides commonly used validation schemas in a single import
- * 
+ *
  * Note: All schemas are now factory functions that require a message handler.
  * For direct usage in tests, import the factory functions and create instances.
  */

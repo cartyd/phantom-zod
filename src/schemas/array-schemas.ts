@@ -50,91 +50,113 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse([1, 2]); // throws ZodError
    */
   const zStringArrayOptional = (options: ArraySchemaOptions = {}) => {
-    const { msg = "Value", msgType = MsgType.FieldName, minItems, maxItems } = options;
+    const {
+      msg = "Value",
+      msgType = MsgType.FieldName,
+      minItems,
+      maxItems,
+    } = options;
     // Start with a custom Zod type to allow for full contract coverage
-    let schema = z.custom<any[]>((val) => {
-      if (val === undefined) return true;
-      if (!Array.isArray(val)) return false;
-      return true;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "mustBeArray",
-        params: { receivedType: undefined },
-        msg,
-        msgType,
-      }),
-    }).optional();
+    let schema = z
+      .custom<any[]>(
+        (val) => {
+          if (val === undefined) return true;
+          if (!Array.isArray(val)) return false;
+          return true;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustBeArray",
+            params: { receivedType: undefined },
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .optional();
 
     // Type check for string elements
-    schema = schema.refine((val) => {
-      if (val === undefined) return true;
-      if (!Array.isArray(val)) return false;
-      const receivedTypes: string[] = [];
-      const invalidIndices: number[] = [];
-      val.forEach((v, i) => {
-        if (typeof v !== 'string') {
-          receivedTypes.push(typeof v);
-          invalidIndices.push(i);
-        }
-      });
-      return invalidIndices.length === 0;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "mustBeStringArray",
-        params: { receivedTypes: [], invalidIndices: [] },
-        msg,
-        msgType,
-      }),
-    });
-
-    // minItems/tooSmall
-    if (minItems !== undefined) {
-      schema = schema.refine((val) => {
+    schema = schema.refine(
+      (val) => {
         if (val === undefined) return true;
-        return val.length >= minItems;
-      }, {
+        if (!Array.isArray(val)) return false;
+        const receivedTypes: string[] = [];
+        const invalidIndices: number[] = [];
+        val.forEach((v, i) => {
+          if (typeof v !== "string") {
+            receivedTypes.push(typeof v);
+            invalidIndices.push(i);
+          }
+        });
+        return invalidIndices.length === 0;
+      },
+      {
         message: messageHandler.formatErrorMessage({
           group: "array",
-          messageKey: "tooSmall",
-          params: { min: minItems },
+          messageKey: "mustBeStringArray",
+          params: { receivedTypes: [], invalidIndices: [] },
           msg,
           msgType,
         }),
-      });
+      },
+    );
+
+    // minItems/tooSmall
+    if (minItems !== undefined) {
+      schema = schema.refine(
+        (val) => {
+          if (val === undefined) return true;
+          return val.length >= minItems;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooSmall",
+            params: { min: minItems },
+            msg,
+            msgType,
+          }),
+        },
+      );
     }
 
     // maxItems/tooBig
     if (maxItems !== undefined) {
-      schema = schema.refine((val) => {
-        if (val === undefined) return true;
-        return val.length <= maxItems;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "tooBig",
-          params: { max: maxItems },
-          msg,
-          msgType,
-        }),
-      });
+      schema = schema.refine(
+        (val) => {
+          if (val === undefined) return true;
+          return val.length <= maxItems;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooBig",
+            params: { max: maxItems },
+            msg,
+            msgType,
+          }),
+        },
+      );
     }
 
     // duplicateItems
-    schema = schema.refine((val) => {
-      if (val === undefined) return true;
-      const { values: duplicateValues } = findDuplicates(val);
-      return duplicateValues.length === 0;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "duplicateItems",
-        params: { duplicateValues: [], indices: [] },
-        msg,
-        msgType,
-      }),
-    });
+    schema = schema.refine(
+      (val) => {
+        if (val === undefined) return true;
+        const { values: duplicateValues } = findDuplicates(val);
+        return duplicateValues.length === 0;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "duplicateItems",
+          params: { duplicateValues: [], indices: [] },
+          msg,
+          msgType,
+        }),
+      },
+    );
 
     return schema;
   };
@@ -158,101 +180,124 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse([1, 2]); // throws ZodError
    */
   const zStringArrayRequired = (options: ArraySchemaOptions = {}) => {
-    const { msg = "Value", msgType = MsgType.FieldName, minItems = 1, maxItems } = options;
-    let schema = z.custom<any[]>((val) => {
-      return Array.isArray(val);
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "mustBeArray",
-        params: { receivedType: undefined },
-        msg,
-        msgType,
-      }),
-    });
-
-    // Required
-    schema = schema.refine((val) => {
-      if (!Array.isArray(val)) return false;
-      return val.length > 0;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "mustNotBeEmpty",
-        params: {},
-        msg,
-        msgType,
-      }),
-    });
-
-    // Type check for string elements
-    schema = schema.refine((val) => {
-      if (!Array.isArray(val)) return false;
-      const receivedTypes: string[] = [];
-      const invalidIndices: number[] = [];
-      val.forEach((v, i) => {
-        if (typeof v !== 'string') {
-          receivedTypes.push(typeof v);
-          invalidIndices.push(i);
-        }
-      });
-      return invalidIndices.length === 0;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "mustBeStringArray",
-        params: { receivedTypes: [], invalidIndices: [] },
-        msg,
-        msgType,
-      }),
-    });
-
-    // minItems/tooSmall
-    if (minItems !== undefined) {
-      schema = schema.refine((val) => {
-        if (!Array.isArray(val)) return false;
-        return val.length >= minItems;
-      }, {
+    const {
+      msg = "Value",
+      msgType = MsgType.FieldName,
+      minItems = 1,
+      maxItems,
+    } = options;
+    let schema = z.custom<any[]>(
+      (val) => {
+        return Array.isArray(val);
+      },
+      {
         message: messageHandler.formatErrorMessage({
           group: "array",
-          messageKey: "tooSmall",
-          params: { min: minItems },
+          messageKey: "mustBeArray",
+          params: { receivedType: undefined },
           msg,
           msgType,
         }),
-      });
+      },
+    );
+
+    // Required
+    schema = schema.refine(
+      (val) => {
+        if (!Array.isArray(val)) return false;
+        return val.length > 0;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "mustNotBeEmpty",
+          params: {},
+          msg,
+          msgType,
+        }),
+      },
+    );
+
+    // Type check for string elements
+    schema = schema.refine(
+      (val) => {
+        if (!Array.isArray(val)) return false;
+        const receivedTypes: string[] = [];
+        const invalidIndices: number[] = [];
+        val.forEach((v, i) => {
+          if (typeof v !== "string") {
+            receivedTypes.push(typeof v);
+            invalidIndices.push(i);
+          }
+        });
+        return invalidIndices.length === 0;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "mustBeStringArray",
+          params: { receivedTypes: [], invalidIndices: [] },
+          msg,
+          msgType,
+        }),
+      },
+    );
+
+    // minItems/tooSmall
+    if (minItems !== undefined) {
+      schema = schema.refine(
+        (val) => {
+          if (!Array.isArray(val)) return false;
+          return val.length >= minItems;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooSmall",
+            params: { min: minItems },
+            msg,
+            msgType,
+          }),
+        },
+      );
     }
 
     // maxItems/tooBig
     if (maxItems !== undefined) {
-      schema = schema.refine((val) => {
-        if (!Array.isArray(val)) return false;
-        return val.length <= maxItems;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "tooBig",
-          params: { max: maxItems },
-          msg,
-          msgType,
-        }),
-      });
+      schema = schema.refine(
+        (val) => {
+          if (!Array.isArray(val)) return false;
+          return val.length <= maxItems;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "tooBig",
+            params: { max: maxItems },
+            msg,
+            msgType,
+          }),
+        },
+      );
     }
 
     // duplicateItems
-    schema = schema.refine((val) => {
-      if (!Array.isArray(val)) return false;
-      const { values: duplicateValues } = findDuplicates(val);
-      return duplicateValues.length === 0;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "array",
-        messageKey: "duplicateItems",
-        params: { duplicateValues: [], indices: [] },
-        msg,
-        msgType,
-      }),
-    });
+    schema = schema.refine(
+      (val) => {
+        if (!Array.isArray(val)) return false;
+        const { values: duplicateValues } = findDuplicates(val);
+        return duplicateValues.length === 0;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "duplicateItems",
+          params: { duplicateValues: [], indices: [] },
+          msg,
+          msgType,
+        }),
+      },
+    );
 
     return schema;
   };

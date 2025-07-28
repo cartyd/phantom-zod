@@ -1,28 +1,34 @@
 // Import types used in this file
-import type { LocaleCode, LocaleConfig } from './types/locale.types';
-import type { LocalizationMessages, MessageParams } from './types/message.types';
-import type { MessageKeyPath } from './types/message-key-path.types';
-import type { MessageRetriever, LocalizationService } from './types/localization-manager.types';
+import type { LocaleCode, LocaleConfig } from "./types/locale.types";
+import type {
+  LocalizationMessages,
+  MessageParams,
+} from "./types/message.types";
+import type { MessageKeyPath } from "./types/message-key-path.types";
+import type {
+  MessageRetriever,
+  LocalizationService,
+} from "./types/localization-manager.types";
 
 // Export all types for consumers
-export type { 
-  LocaleCode, 
+export type {
+  LocaleCode,
   LocaleConfig,
-  LocalizationMessages, 
-  MessageParams, 
+  LocalizationMessages,
+  MessageParams,
   MessageKeyPath,
   MessageRetriever,
-  LocalizationService 
+  LocalizationService,
 };
 
 // Export manager
-export { LocalizationManager, localizationManager } from './manager';
+export { LocalizationManager, localizationManager } from "./manager";
 
 // Import manager instance for initialization
-import { localizationManager } from './manager';
+import { localizationManager } from "./manager";
 
 // Import default locale data
-import enMessages from './locales/en.json';
+import enMessages from "./locales/en.json";
 
 /**
  * Type guard to validate that imported JSON matches LocalizationMessages interface
@@ -30,13 +36,13 @@ import enMessages from './locales/en.json';
 function isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
   return (
     obj &&
-    typeof obj === 'object' &&
-    typeof obj.locale === 'string' &&
-    typeof obj.common === 'object' &&
-    typeof obj.string === 'object' &&
-    typeof obj.email === 'object' &&
-    typeof obj.number === 'object' &&
-    typeof obj.network === 'object'
+    typeof obj === "object" &&
+    typeof obj.locale === "string" &&
+    typeof obj.common === "object" &&
+    typeof obj.string === "object" &&
+    typeof obj.email === "object" &&
+    typeof obj.number === "object" &&
+    typeof obj.network === "object"
     // Add more validation as needed
   );
 }
@@ -47,10 +53,10 @@ function isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
  */
 export function initializeLocalization(): void {
   if (!isValidLocalizationMessages(enMessages)) {
-    throw new Error('Invalid localization messages format in en.json');
+    throw new Error("Invalid localization messages format in en.json");
   }
   localizationManager.registerMessages(enMessages as LocalizationMessages);
-  localizationManager.setFallbackLocale('en');
+  localizationManager.setFallbackLocale("en");
 }
 
 // Auto-initialize for convenience (can be disabled by calling initializeLocalization manually)
@@ -63,7 +69,11 @@ initializeLocalization();
  * @param params - Parameters for interpolation
  * @param locale - Locale to use (defaults to manager's fallback locale)
  */
-export function getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string {
+export function getMessage(
+  key: string,
+  params?: MessageParams,
+  locale?: LocaleCode,
+): string {
   const targetLocale = locale ?? localizationManager.getFallbackLocale();
   return localizationManager.getMessage(key, params, targetLocale);
 }
@@ -72,9 +82,9 @@ export function getMessage(key: string, params?: MessageParams, locale?: LocaleC
 // Use localizationManager directly for full API access
 export const {
   loadLocale,
-  loadLocales, 
+  loadLocales,
   setLocale,
   getLocale,
   hasLocale,
-  getAvailableLocales
+  getAvailableLocales,
 } = localizationManager;

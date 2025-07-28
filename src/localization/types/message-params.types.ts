@@ -1,7 +1,6 @@
-
 /**
  * Unified mapping of message group names to their corresponding parameter types.
- * 
+ *
  * This type provides a centralized registry that maps each validation category
  * (such as string, number, email, etc.) to its specific parameter interface.
  * It enables type-safe message formatting by ensuring the correct parameter
@@ -71,7 +70,7 @@ export type MessageGroupMap = {
  */
 export function formatMessage<
   TGroup extends keyof MessageGroupMap,
-  TKey extends keyof MessageGroupMap[TGroup]
+  TKey extends keyof MessageGroupMap[TGroup],
 >(opts: {
   group: TGroup;
   messageKey: TKey;
@@ -632,7 +631,11 @@ export type UserMessageParams = {
   required: {};
   invalid: { reason?: string };
   usernameInvalid: { violations?: string[]; requirements?: string[] };
-  passwordWeak: { score?: number; missingRequirements?: string[]; suggestions?: string[] };
+  passwordWeak: {
+    score?: number;
+    missingRequirements?: string[];
+    suggestions?: string[];
+  };
   passwordTooShort: { min: number };
   passwordMissingUppercase: { minRequired?: number };
   passwordMissingLowercase: { minRequired?: number };
@@ -647,5 +650,8 @@ export type UserMessageParams = {
   termsNotAccepted: { termsVersion?: string; requiredSections?: string[] };
   invalidUnderscorePosition: { position?: number; allowedPositions?: string };
   invalidHyphenPosition: { position?: number; allowedPositions?: string };
-  mustBeValidUserObject: { requiredFields?: string[]; invalidFields?: string[] };
+  mustBeValidUserObject: {
+    requiredFields?: string[];
+    invalidFields?: string[];
+  };
 };

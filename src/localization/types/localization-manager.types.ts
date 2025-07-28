@@ -1,6 +1,6 @@
-import type { LocaleCode } from './locale.types';
-import type { MessageParams, LocalizationMessages } from './message.types';
-import type { MessageKeyPath } from './message-key-path.types';
+import type { LocaleCode } from "./locale.types";
+import type { MessageParams, LocalizationMessages } from "./message.types";
+import type { MessageKeyPath } from "./message-key-path.types";
 
 /**
  * Retrieves a localized message string based on a key and optional parameters.
@@ -62,7 +62,12 @@ export interface LocalizationService {
 
   // Message Operations
   getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string;
-  getErrorMessage(fieldName: string, messageKey: MessageKeyPath, params?: MessageParams, locale?: LocaleCode): string;
+  getErrorMessage(
+    fieldName: string,
+    messageKey: MessageKeyPath,
+    params?: MessageParams,
+    locale?: LocaleCode,
+  ): string;
   registerMessages(messages: LocalizationMessages): void;
 
   // Introspection

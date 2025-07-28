@@ -89,7 +89,9 @@ export const ALL_MIME_TYPES = [
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing file upload schema creation functions
  */
-export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) => {
+export const createFileUploadSchemas = (
+  messageHandler: ErrorMessageFormatter,
+) => {
   const stringSchemas = createStringSchemas(messageHandler);
 
   /**
@@ -101,21 +103,32 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
     msg = "File Size",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.number({
-      message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalid" }),
-    })
-    .positive({
-      message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalid" }),
-    })
-    .max(maxSize, {
-      message: messageHandler.formatErrorMessage({ 
-        msg, 
-        msgType, 
-        group: "fileUpload",
-        messageKey: "fileSizeExceeded",
-        params: { maxSize: maxSize }
-      }),
-    });
+    z
+      .number({
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "invalid",
+        }),
+      })
+      .positive({
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "invalid",
+        }),
+      })
+      .max(maxSize, {
+        message: messageHandler.formatErrorMessage({
+          msg,
+          msgType,
+          group: "fileUpload",
+          messageKey: "fileSizeExceeded",
+          params: { maxSize: maxSize },
+        }),
+      });
 
   /**
    * MIME type validation schema.
@@ -127,12 +140,12 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.enum(allowedTypes as [string, ...string[]], {
-      message: messageHandler.formatErrorMessage({ 
-        msg, 
-        msgType, 
+      message: messageHandler.formatErrorMessage({
+        msg,
+        msgType,
         group: "fileUpload",
         messageKey: "invalidMimeType",
-        params: { mime: allowedTypes.join(", ") }
+        params: { mime: allowedTypes.join(", ") },
       }),
     });
 
@@ -140,23 +153,27 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
    * Filename validation schema.
    * Accepts a string with filename validation rules.
    */
-  const zFilename = (
-    msg = "Filename",
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    stringSchemas.zStringRequired({ msg, msgType })
-      .refine(
-        (name) => FILENAME_INVALID_CHARS_PATTERN.test(name),
-        {
-          message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalidFileName", params: { name: msg } }),
-        },
-      )
-      .refine(
-        (name) => !name.startsWith(".") && !name.endsWith("."),
-        {
-          message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalidFileName", params: { name: msg } }),
-        },
-      );
+  const zFilename = (msg = "Filename", msgType: MsgType = MsgType.FieldName) =>
+    stringSchemas
+      .zStringRequired({ msg, msgType })
+      .refine((name) => FILENAME_INVALID_CHARS_PATTERN.test(name), {
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "invalidFileName",
+          params: { name: msg },
+        }),
+      })
+      .refine((name) => !name.startsWith(".") && !name.endsWith("."), {
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "invalidFileName",
+          params: { name: msg },
+        }),
+      });
 
   /**
    * Optional file upload schema with comprehensive validation.
@@ -170,30 +187,54 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
     msg = "File",
     msgType: MsgType = MsgType.FieldName,
   ) => {
-    const { maxSize = 10 * 1024 * 1024, allowedTypes = ALL_MIME_TYPES, requireExtension = false } = config;
+    const {
+      maxSize = 10 * 1024 * 1024,
+      allowedTypes = ALL_MIME_TYPES,
+      requireExtension = false,
+    } = config;
 
     return z
       .object({
-        filename: zFilename("Filename", msgType)
-          .refine(
-            (name) => !requireExtension || name.includes("."),
-            {
-              message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalidFileName", params: { name: msg } }),
-            },
-          ),
+        filename: zFilename("Filename", msgType).refine(
+          (name) => !requireExtension || name.includes("."),
+          {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "invalidFileName",
+              params: { name: msg },
+            }),
+          },
+        ),
         mimetype: zMimeType(allowedTypes, "File Type", msgType),
         size: zFileSize(maxSize, "File Size", msgType),
         encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
-        originalName: stringSchemas.zStringOptional({ msg: "Original Name", msgType }),
-        buffer: z.instanceof(Buffer, {
-          message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "mustBeValidFile" }),
-        }).optional(),
+        originalName: stringSchemas.zStringOptional({
+          msg: "Original Name",
+          msgType,
+        }),
+        buffer: z
+          .instanceof(Buffer, {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "mustBeValidFile",
+            }),
+          })
+          .optional(),
       })
       .optional()
       .refine(
         (val) => val === undefined || (typeof val === "object" && val !== null),
         {
-          message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalid" }),
+          message: messageHandler.formatErrorMessage({
+            group: "fileUpload",
+            msg,
+            msgType,
+            messageKey: "invalid",
+          }),
         },
       );
   };
@@ -210,26 +251,53 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
     msg = "File",
     msgType: MsgType = MsgType.FieldName,
   ) => {
-    const { maxSize = 10 * 1024 * 1024, allowedTypes = ALL_MIME_TYPES, requireExtension = false } = config;
+    const {
+      maxSize = 10 * 1024 * 1024,
+      allowedTypes = ALL_MIME_TYPES,
+      requireExtension = false,
+    } = config;
 
-    return z.object({
-      filename: zFilename("Filename", msgType)
-        .refine(
+    return z.object(
+      {
+        filename: zFilename("Filename", msgType).refine(
           (name) => !requireExtension || name.includes("."),
           {
-            message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "invalidFileName", params: { name: msg } }),
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "invalidFileName",
+              params: { name: msg },
+            }),
           },
         ),
-      mimetype: zMimeType(allowedTypes, "File Type", msgType),
-      size: zFileSize(maxSize, "File Size", msgType),
-      encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
-      originalName: stringSchemas.zStringOptional({ msg: "Original Name", msgType }),
-      buffer: z.instanceof(Buffer, {
-        message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "mustBeValidFile" }),
-      }).optional(),
-    }, {
-      message: messageHandler.formatErrorMessage({ group: "fileUpload", msg, msgType, messageKey: "fileRequired" }),
-    });
+        mimetype: zMimeType(allowedTypes, "File Type", msgType),
+        size: zFileSize(maxSize, "File Size", msgType),
+        encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
+        originalName: stringSchemas.zStringOptional({
+          msg: "Original Name",
+          msgType,
+        }),
+        buffer: z
+          .instanceof(Buffer, {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "mustBeValidFile",
+            }),
+          })
+          .optional(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "fileRequired",
+        }),
+      },
+    );
   };
 
   /**
@@ -284,17 +352,24 @@ export const createFileUploadSchemas = (messageHandler: ErrorMessageFormatter) =
     msgType: MsgType = MsgType.FieldName,
     maxFiles = 5,
   ) =>
-    z.array(zFileUploadRequired(config, msg, msgType))
+    z
+      .array(zFileUploadRequired(config, msg, msgType))
       .min(1, {
-        message: messageHandler.formatErrorMessage({ group: "array", msg, msgType, messageKey: "mustHaveMinItems", params: { min: 1 } }),
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          msg,
+          msgType,
+          messageKey: "mustHaveMinItems",
+          params: { min: 1 },
+        }),
       })
       .max(maxFiles, {
-        message: messageHandler.formatErrorMessage({ 
-          msg, 
-          msgType, 
+        message: messageHandler.formatErrorMessage({
+          msg,
+          msgType,
           group: "array",
           messageKey: "mustHaveMaxItems",
-          params: { max: maxFiles }
+          params: { max: maxFiles },
         }),
       });
 
@@ -346,7 +421,10 @@ export function getFileExtension(filename: string): string {
  * @param mimetype - The MIME type.
  * @returns True if extension matches MIME type.
  */
-export function isExtensionMatchingMimeType(filename: string, mimetype: string): boolean {
+export function isExtensionMatchingMimeType(
+  filename: string,
+  mimetype: string,
+): boolean {
   const extension = getFileExtension(filename);
   const mimeToExtension: Record<string, string[]> = {
     "image/jpeg": ["jpg", "jpeg"],
@@ -356,7 +434,9 @@ export function isExtensionMatchingMimeType(filename: string, mimetype: string):
     "image/svg+xml": ["svg"],
     "application/pdf": ["pdf"],
     "application/msword": ["doc"],
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+      "docx",
+    ],
     "text/plain": ["txt"],
     "text/csv": ["csv"],
     "application/zip": ["zip"],

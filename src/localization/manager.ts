@@ -1,10 +1,8 @@
-
-import type { Logger } from '../common/types/logger.types';
-import { LocaleCode } from './types/locale.types';
-import { LocalizationService } from './types/localization-manager.types';
-import { MessageKeyPath } from './types/message-key-path.types';
-import { LocalizationMessages, MessageParams } from './types/message.types';
-
+import type { Logger } from "../common/types/logger.types";
+import { LocaleCode } from "./types/locale.types";
+import { LocalizationService } from "./types/localization-manager.types";
+import { MessageKeyPath } from "./types/message-key-path.types";
+import { LocalizationMessages, MessageParams } from "./types/message.types";
 
 /**
  * Default logger that uses console
@@ -69,11 +67,11 @@ export class LocalizationManager implements LocalizationService {
     const messages = this.messages.get(targetLocale);
     if (!messages) return [];
     // Recursively collect all keys in dot notation
-    const collectKeys = (obj: any, prefix = ''): string[] => {
-      if (typeof obj !== 'object' || obj === null) return [];
+    const collectKeys = (obj: any, prefix = ""): string[] => {
+      if (typeof obj !== "object" || obj === null) return [];
       return Object.entries(obj).flatMap(([key, value]) => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
-        if (typeof value === 'string') return [fullKey];
+        if (typeof value === "string") return [fullKey];
         return collectKeys(value, fullKey);
       });
     };
@@ -91,11 +89,11 @@ export class LocalizationManager implements LocalizationService {
     const targetLocale = locale ?? this.currentLocale;
     const messages = this.messages.get(targetLocale);
     if (!messages) return false;
-    return typeof this.getNestedValue(messages, key) === 'string';
+    return typeof this.getNestedValue(messages, key) === "string";
   }
   private messages = new Map<LocaleCode, LocalizationMessages>();
-  private fallbackLocale: LocaleCode = 'en';
-  private currentLocale: LocaleCode = 'en';
+  private fallbackLocale: LocaleCode = "en";
+  private currentLocale: LocaleCode = "en";
   private logger: Logger;
 
   /**
@@ -117,13 +115,13 @@ export class LocalizationManager implements LocalizationService {
   private isValidLocalizationMessages(obj: any): obj is LocalizationMessages {
     return (
       obj &&
-      typeof obj === 'object' &&
-      typeof obj.locale === 'string' &&
-      typeof obj.common === 'object' &&
-      typeof obj.string === 'object' &&
-      typeof obj.email === 'object' &&
-      typeof obj.number === 'object' &&
-      typeof obj.network === 'object'
+      typeof obj === "object" &&
+      typeof obj.locale === "string" &&
+      typeof obj.common === "object" &&
+      typeof obj.string === "object" &&
+      typeof obj.email === "object" &&
+      typeof obj.number === "object" &&
+      typeof obj.network === "object"
       // Add more validation as needed
     );
   }
@@ -132,18 +130,21 @@ export class LocalizationManager implements LocalizationService {
    * Static mapping of locale codes to their import functions
    * This enables static analysis and better bundling
    */
-  private static readonly localeImports: Record<LocaleCode, () => Promise<{ default: any }>> = (() => {
+  private static readonly localeImports: Record<
+    LocaleCode,
+    () => Promise<{ default: any }>
+  > = (() => {
     const imports: Record<string, () => Promise<{ default: any }>> = {};
-    imports.en = () => import('./locales/en.json');
-    imports.es = () => import('./locales/es.json');
-    imports.fr = () => import('./locales/fr.json');
-    imports.de = () => import('./locales/de.json');
-    imports.it = () => import('./locales/it.json');
-    imports.pt = () => import('./locales/pt.json');
-    imports.ru = () => import('./locales/ru.json');
-    imports.zh = () => import('./locales/zh.json');
-    imports.ja = () => import('./locales/ja.json');
-    imports.ko = () => import('./locales/ko.json');
+    imports.en = () => import("./locales/en.json");
+    imports.es = () => import("./locales/es.json");
+    imports.fr = () => import("./locales/fr.json");
+    imports.de = () => import("./locales/de.json");
+    imports.it = () => import("./locales/it.json");
+    imports.pt = () => import("./locales/pt.json");
+    imports.ru = () => import("./locales/ru.json");
+    imports.zh = () => import("./locales/zh.json");
+    imports.ja = () => import("./locales/ja.json");
+    imports.ko = () => import("./locales/ko.json");
     return imports as Record<LocaleCode, () => Promise<{ default: any }>>;
   })();
 
@@ -161,29 +162,41 @@ export class LocalizationManager implements LocalizationService {
 
     const importFunction = LocalizationManager.localeImports[locale];
     if (!importFunction) {
-      throw new Error(`Unsupported locale '${locale}'. Available locales: ${Object.keys(LocalizationManager.localeImports).join(', ')}`);
+      throw new Error(
+        `Unsupported locale '${locale}'. Available locales: ${Object.keys(LocalizationManager.localeImports).join(", ")}`,
+      );
     }
 
     try {
       const messages = await importFunction();
       const localeData = messages.default;
-      
+
       if (!this.isValidLocalizationMessages(localeData)) {
-        throw new Error(`Invalid localization messages format in ${locale}.json`);
+        throw new Error(
+          `Invalid localization messages format in ${locale}.json`,
+        );
       }
-      
+
       this.registerMessages(localeData);
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Invalid localization messages format')) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Invalid localization messages format")
+      ) {
         // Re-throw validation errors as-is (they have clear messages)
         throw error;
       }
-      if (error instanceof Error && error.message.includes('Unsupported locale')) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Unsupported locale")
+      ) {
         // Re-throw unsupported locale errors as-is
         throw error;
       }
       // For file not found and other import errors, provide a clear error
-      throw new Error(`Failed to load locale '${locale}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to load locale '${locale}': ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -194,7 +207,7 @@ export class LocalizationManager implements LocalizationService {
    * @returns A promise that resolves when all specified locales have been loaded.
    */
   async loadLocales(locales: LocaleCode[]): Promise<void> {
-    await Promise.all(locales.map(locale => this.loadLocale(locale)));
+    await Promise.all(locales.map((locale) => this.loadLocale(locale)));
   }
 
   /**
@@ -202,7 +215,9 @@ export class LocalizationManager implements LocalizationService {
    */
   setFallbackLocale(locale: LocaleCode): void {
     if (!this.isValidLocaleCode(locale)) {
-      throw new Error(`Invalid locale code '${locale}'. Must be one of: ${this.getSupportedLocales().join(', ')}`);
+      throw new Error(
+        `Invalid locale code '${locale}'. Must be one of: ${this.getSupportedLocales().join(", ")}`,
+      );
     }
     this.fallbackLocale = locale;
   }
@@ -219,7 +234,9 @@ export class LocalizationManager implements LocalizationService {
    */
   setLocale(locale: LocaleCode): void {
     if (!this.isValidLocaleCode(locale)) {
-      throw new Error(`Invalid locale code '${locale}'. Must be one of: ${this.getSupportedLocales().join(', ')}`);
+      throw new Error(
+        `Invalid locale code '${locale}'. Must be one of: ${this.getSupportedLocales().join(", ")}`,
+      );
     }
     this.currentLocale = locale;
   }
@@ -260,10 +277,11 @@ export class LocalizationManager implements LocalizationService {
    */
   getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string {
     const targetLocale = locale ?? this.currentLocale;
-    
-    const message = this.getMessageFromLocale(targetLocale, key) 
-      ?? this.getMessageFromLocale(this.fallbackLocale, key)
-      ?? key; // Fallback to key itself
+
+    const message =
+      this.getMessageFromLocale(targetLocale, key) ??
+      this.getMessageFromLocale(this.fallbackLocale, key) ??
+      key; // Fallback to key itself
 
     return this.interpolateMessage(message, params);
   }
@@ -285,15 +303,16 @@ export class LocalizationManager implements LocalizationService {
     fieldName: string,
     messageKey: MessageKeyPath,
     params?: MessageParams,
-    locale?: LocaleCode
+    locale?: LocaleCode,
   ): string {
     const message = this.getMessage(messageKey, params, locale);
-    
+
     // Get the error formatting template from localization messages
-    const formatTemplate = this.getMessage('common.errorFormat', { fieldName, message }, locale) 
-      || this.getMessage('errorFormat', { fieldName, message }, locale)
-      || '{fieldName} {message}'; // Ultimate fallback
-    
+    const formatTemplate =
+      this.getMessage("common.errorFormat", { fieldName, message }, locale) ||
+      this.getMessage("errorFormat", { fieldName, message }, locale) ||
+      "{fieldName} {message}"; // Ultimate fallback
+
     return this.interpolateMessage(formatTemplate, { fieldName, message });
   }
 
@@ -337,13 +356,15 @@ export class LocalizationManager implements LocalizationService {
   /**
    * Get message from specific locale
    */
-  private getMessageFromLocale(locale: LocaleCode, key: string): string | undefined {
+  private getMessageFromLocale(
+    locale: LocaleCode,
+    key: string,
+  ): string | undefined {
     const messages = this.messages.get(locale);
     if (!messages) return undefined;
 
     return this.getNestedValue(messages, key);
   }
-
 
   /**
    * Retrieves a nested string value from a `LocalizationMessages` object using a dot-separated path.
@@ -352,14 +373,16 @@ export class LocalizationManager implements LocalizationService {
    * @param path - The dot-separated path string representing the nested key (e.g., "errors.required").
    * @returns The string value at the specified path, or `undefined` if the path does not exist or does not resolve to a string.
    */
-  private getNestedValue(obj: LocalizationMessages, path: string): string | undefined {
-    const result = path.split('.').reduce((current: any, key: string) => {
-      return current && typeof current === 'object' ? current[key] : undefined;
+  private getNestedValue(
+    obj: LocalizationMessages,
+    path: string,
+  ): string | undefined {
+    const result = path.split(".").reduce((current: any, key: string) => {
+      return current && typeof current === "object" ? current[key] : undefined;
     }, obj);
-    
-    return typeof result === 'string' ? result : undefined;
-  }
 
+    return typeof result === "string" ? result : undefined;
+  }
 
   /**
    * Replaces placeholders in a template string with corresponding values from the provided parameters.
@@ -404,6 +427,6 @@ export function resetGlobalLocalizationManager(): void {
   // Clear existing data
   const currentManager = localizationManager as any;
   currentManager.messages.clear();
-  currentManager.currentLocale = 'en';
-  currentManager.fallbackLocale = 'en';
+  currentManager.currentLocale = "en";
+  currentManager.fallbackLocale = "en";
 }

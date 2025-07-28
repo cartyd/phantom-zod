@@ -17,7 +17,10 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Helper function to create error message
    */
-  const createErrorMessage = (messageKey: UuidMessageKey, options: BaseSchemaOptions = {}) => {
+  const createErrorMessage = (
+    messageKey: UuidMessageKey,
+    options: BaseSchemaOptions = {},
+  ) => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
     return messageHandler.formatErrorMessage({
       group: "uuid" as const,
@@ -31,7 +34,10 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Helper function to create required UUID schema
    */
-  const createRequiredUuid = (version?: UuidVersion, messageKey: UuidMessageKey = "mustBeValidUuid") => {
+  const createRequiredUuid = (
+    version?: UuidVersion,
+    messageKey: UuidMessageKey = "mustBeValidUuid",
+  ) => {
     return (options: BaseSchemaOptions = {}) => {
       const zodOptions: any = {
         message: createErrorMessage(messageKey, options),
@@ -45,13 +51,15 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Helper function to create required nanoid schema
-   * 
+   *
    * Nanoids are URL-safe, unique string ID generators. They are:
    * - 21 characters long by default
    * - Use a URL-safe alphabet: A-Za-z0-9_-
    * - More compact than UUIDs while maintaining uniqueness
    */
-  const createRequiredNanoid = (messageKey: UuidMessageKey = "mustBeValidNanoid") => {
+  const createRequiredNanoid = (
+    messageKey: UuidMessageKey = "mustBeValidNanoid",
+  ) => {
     return (options: BaseSchemaOptions = {}) => {
       return z.nanoid({
         message: createErrorMessage(messageKey, options),
@@ -62,32 +70,39 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Helper function to create optional UUID schema
    */
-  const createOptionalUuid = (version?: UuidVersion, messageKey: UuidMessageKey = "mustBeValidUuid") => {
+  const createOptionalUuid = (
+    version?: UuidVersion,
+    messageKey: UuidMessageKey = "mustBeValidUuid",
+  ) => {
     return (options: BaseSchemaOptions = {}) => {
       const validator = version ? z.uuid({ version }) : z.uuid();
       return makeOptionalSimple(
-        z.string().refine(
-          (val) => val === "" || validator.safeParse(val).success,
-          { message: createErrorMessage(messageKey, options) }
-        )
+        z
+          .string()
+          .refine((val) => val === "" || validator.safeParse(val).success, {
+            message: createErrorMessage(messageKey, options),
+          }),
       );
     };
   };
 
   /**
    * Helper function to create optional nanoid schema
-   * 
+   *
    * Creates a schema that accepts valid nanoids or undefined.
    * Nanoids are 21-character URL-safe unique identifiers.
    */
-  const createOptionalNanoid = (messageKey: UuidMessageKey = "mustBeValidNanoid") => {
+  const createOptionalNanoid = (
+    messageKey: UuidMessageKey = "mustBeValidNanoid",
+  ) => {
     return (options: BaseSchemaOptions = {}) => {
       const validator = z.nanoid();
       return makeOptionalSimple(
-        z.string().refine(
-          (val) => val === "" || validator.safeParse(val).success,
-          { message: createErrorMessage(messageKey, options) }
-        )
+        z
+          .string()
+          .refine((val) => val === "" || validator.safeParse(val).success, {
+            message: createErrorMessage(messageKey, options),
+          }),
       );
     };
   };
@@ -101,7 +116,7 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zUuidV6Required = createRequiredUuid("v6", "mustBeValidUuidV6");
   const zUuidV7Optional = createOptionalUuid("v7", "mustBeValidUuidV7");
   const zUuidV7Required = createRequiredUuid("v7", "mustBeValidUuidV7");
-  
+
   // Nanoid schemas
   const zNanoidOptional = createOptionalNanoid();
   const zNanoidRequired = createRequiredNanoid();
@@ -110,9 +125,7 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Validates UUID format and returns a formatted error message using invalidFormat.
    * This utility function demonstrates usage of the invalidFormat message key.
    */
-  const getUuidFormatErrorMessage = (
-    options: BaseSchemaOptions = {}
-  ) => {
+  const getUuidFormatErrorMessage = (options: BaseSchemaOptions = {}) => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
     return messageHandler.formatErrorMessage({
       group: "uuid",
@@ -126,9 +139,7 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a strict UUID validator that uses invalidFormat message for format errors.
    */
-  const zUuidWithFormatError = (
-    options: BaseSchemaOptions = {}
-  ) => {
+  const zUuidWithFormatError = (options: BaseSchemaOptions = {}) => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
     return z.uuid({
       message: messageHandler.formatErrorMessage({
@@ -206,13 +217,13 @@ const {
 
 /**
  * Creates an optional UUID schema that accepts valid UUIDs or undefined
- * 
+ *
  * Accepts UUIDs of any version (v1-v8). For specific version validation,
  * use the version-specific schemas like zUuidV4Optional.
- * 
+ *
  * @param options - Configuration options for UUID validation
  * @returns Zod schema that accepts valid UUIDs or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zUuidOptional();
@@ -225,13 +236,13 @@ export const zUuidOptional = baseZUuidOptional;
 
 /**
  * Creates a required UUID schema that accepts only valid UUIDs
- * 
+ *
  * Accepts UUIDs of any version (v1-v8). For specific version validation,
  * use the version-specific schemas like zUuidV4Required.
- * 
+ *
  * @param options - Configuration options for UUID validation
  * @returns Zod schema that accepts only valid UUIDs
- * 
+ *
  * @example
  * ```typescript
  * const schema = zUuidRequired();
@@ -244,16 +255,16 @@ export const zUuidRequired = baseZUuidRequired;
 
 /**
  * Creates an optional nanoid schema that accepts valid nanoids or undefined
- * 
+ *
  * Nanoids are URL-safe unique string ID generators that are:
  * - 21 characters long by default
  * - Use URL-safe alphabet: A-Za-z0-9_-
  * - More compact than UUIDs while maintaining collision resistance
  * - Generated using a cryptographically strong random API
- * 
+ *
  * @param options - Configuration options for nanoid validation
  * @returns Zod schema that accepts valid nanoids or undefined
- * 
+ *
  * @example
  * ```typescript
  * const schema = zNanoidOptional();
@@ -261,7 +272,7 @@ export const zUuidRequired = baseZUuidRequired;
  * schema.parse(undefined);               // ✓ Valid
  * schema.parse('too-short');             // ✗ Throws error
  * schema.parse('invalid@characters!');   // ✗ Throws error
- * 
+ *
  * // With custom error message
  * const customSchema = zNanoidOptional({ msg: 'Task ID' });
  * ```
@@ -270,23 +281,23 @@ export const zNanoidOptional = baseZNanoidOptional;
 
 /**
  * Creates a required nanoid schema that accepts only valid nanoids
- * 
+ *
  * Nanoids are URL-safe unique string ID generators that are:
  * - 21 characters long by default
  * - Use URL-safe alphabet: A-Za-z0-9_-
  * - More compact than UUIDs while maintaining collision resistance
  * - Generated using a cryptographically strong random API
- * 
+ *
  * @param options - Configuration options for nanoid validation
  * @returns Zod schema that accepts only valid nanoids
- * 
+ *
  * @example
  * ```typescript
  * const schema = zNanoidRequired();
  * schema.parse('V1StGXR8_Z5jdHi6B-myT');  // ✓ Valid (21 chars)
  * schema.parse(undefined);               // ✗ Throws error
  * schema.parse('too-short');             // ✗ Throws error
- * 
+ *
  * // For API endpoints requiring nanoid IDs
  * const apiSchema = z.object({
  *   id: zNanoidRequired({ msg: 'Resource ID' }),
@@ -307,4 +318,3 @@ export const zUuidV7Required = baseZUuidV7Required;
 // Re-export utility functions
 export const getUuidFormatErrorMessage = baseGetUuidFormatErrorMessage;
 export const zUuidWithFormatError = baseZUuidWithFormatError;
-

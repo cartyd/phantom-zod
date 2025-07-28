@@ -6,16 +6,14 @@ import { createStringSchemas } from "./string-schemas";
 // Provide a default message handler for test and direct import usage
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
 
-
-
-
-
 /**
  * Creates a factory function for pagination schemas with injected message handler
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing pagination schema creation functions
  */
-export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) => {
+export const createPaginationSchemas = (
+  messageHandler: ErrorMessageFormatter,
+) => {
   /**
    * Offset-based pagination schema.
    */
@@ -26,14 +24,15 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
     maxLimit = 100,
   ) =>
     z.object({
-      offset: z.number({
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "required",
-          msg,
-          msgType,
-        }),
-      })
+      offset: z
+        .number({
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        })
         .int({
           message: messageHandler.formatErrorMessage({
             group: "pagination",
@@ -53,14 +52,15 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
           }),
         })
         .default(0),
-      limit: z.number({
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "required",
-          msg,
-          msgType,
-        }),
-      })
+      limit: z
+        .number({
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        })
         .int({
           message: messageHandler.formatErrorMessage({
             group: "pagination",
@@ -90,15 +90,17 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
         })
         .default(defaultLimit),
       sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
-      order: z.enum(["asc", "desc"], {
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "invalidSortOrder",
-          msg,
-          msgType,
-          params: { order: "asc, desc" },
-        }),
-      }).optional(),
+      order: z
+        .enum(["asc", "desc"], {
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "invalidSortOrder",
+            msg,
+            msgType,
+            params: { order: "asc, desc" },
+          }),
+        })
+        .optional(),
     });
   /**
    * Cursor-based pagination schema.
@@ -110,9 +112,10 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
     maxLimit = 100,
   ) =>
     z.object({
-      cursor: z.string().optional().refine(
-        val => val === undefined || typeof val === "string",
-        {
+      cursor: z
+        .string()
+        .optional()
+        .refine((val) => val === undefined || typeof val === "string", {
           message: messageHandler.formatErrorMessage({
             group: "pagination",
             messageKey: "invalidCursor",
@@ -120,16 +123,16 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
             msgType,
             params: { cursor: "" },
           }),
-        }
-      ),
-      limit: z.number({
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "required",
-          msg,
-          msgType,
         }),
-      })
+      limit: z
+        .number({
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        })
         .int({
           message: messageHandler.formatErrorMessage({
             group: "pagination",
@@ -159,15 +162,17 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
         })
         .default(defaultLimit),
       sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
-      order: z.enum(["asc", "desc"], {
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "invalidSortOrder",
-          msg,
-          msgType,
-          params: { order: "asc, desc" },
-        }),
-      }).optional(),
+      order: z
+        .enum(["asc", "desc"], {
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "invalidSortOrder",
+            msg,
+            msgType,
+            params: { order: "asc, desc" },
+          }),
+        })
+        .optional(),
     });
   /**
    * Pagination query schema for parsing query params as strings and converting to numbers.
@@ -179,11 +184,12 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
     maxLimit = 100,
   ) =>
     z.object({
-      page: z.string()
+      page: z
+        .string()
         .optional()
         .default("0")
-        .transform(val => parseInt(val, 10))
-        .refine(val => !isNaN(val) && val >= 0, {
+        .transform((val) => parseInt(val, 10))
+        .refine((val) => !isNaN(val) && val >= 0, {
           message: messageHandler.formatErrorMessage({
             group: "pagination",
             messageKey: "invalidPageNumber",
@@ -192,11 +198,12 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
             params: { page: 0 },
           }),
         }),
-      limit: z.string()
+      limit: z
+        .string()
         .optional()
         .default(defaultLimit.toString())
-        .transform(val => parseInt(val, 10))
-        .refine(val => !isNaN(val) && val > 0, {
+        .transform((val) => parseInt(val, 10))
+        .refine((val) => !isNaN(val) && val > 0, {
           message: messageHandler.formatErrorMessage({
             group: "pagination",
             messageKey: "invalidLimit",
@@ -205,7 +212,7 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
             params: { limit: 1 },
           }),
         })
-        .refine(val => val <= maxLimit, {
+        .refine((val) => val <= maxLimit, {
           message: messageHandler.formatErrorMessage({
             group: "pagination",
             messageKey: "limitExceeded",
@@ -215,15 +222,17 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
           }),
         }),
       sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
-      order: z.enum(["asc", "desc"], {
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "invalidSortOrder",
-          msg,
-          msgType,
-          params: { order: "asc, desc" },
-        }),
-      }).optional(),
+      order: z
+        .enum(["asc", "desc"], {
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "invalidSortOrder",
+            msg,
+            msgType,
+            params: { order: "asc, desc" },
+          }),
+        })
+        .optional(),
     });
   const stringSchemas = createStringSchemas(messageHandler);
 
@@ -237,14 +246,15 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
     maxLimit = 100,
   ) =>
     z.object({
-      page: z.number({
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "required",
-          msg,
-          msgType,
-        }),
-      })
+      page: z
+        .number({
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        })
         .int({
           message: messageHandler.formatErrorMessage({
             group: "pagination",
@@ -264,14 +274,15 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
           }),
         })
         .default(0),
-      limit: z.number({
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "required",
-          msg,
-          msgType,
-        }),
-      })
+      limit: z
+        .number({
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        })
         .int({
           message: messageHandler.formatErrorMessage({
             group: "pagination",
@@ -301,15 +312,17 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
         })
         .default(defaultLimit),
       sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
-      order: z.enum(["asc", "desc"], {
-        message: messageHandler.formatErrorMessage({
-          group: "pagination",
-          messageKey: "invalidSortOrder",
-          msg,
-          msgType,
-          params: { order: "asc, desc" },
-        }),
-      }).optional(),
+      order: z
+        .enum(["asc", "desc"], {
+          message: messageHandler.formatErrorMessage({
+            group: "pagination",
+            messageKey: "invalidSortOrder",
+            msg,
+            msgType,
+            params: { order: "asc, desc" },
+          }),
+        })
+        .optional(),
     });
 
   /**
@@ -319,21 +332,24 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
     msg = "Pagination Response",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      page: z.number().int().nonnegative(),
-      limit: z.number().int().positive(),
-      total: z.number().int().nonnegative(),
-      pages: z.number().int().nonnegative(),
-      hasNext: z.boolean(),
-      hasPrev: z.boolean(),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "pagination",
-        messageKey: "invalid",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        page: z.number().int().nonnegative(),
+        limit: z.number().int().positive(),
+        total: z.number().int().nonnegative(),
+        pages: z.number().int().nonnegative(),
+        hasNext: z.boolean(),
+        hasPrev: z.boolean(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "pagination",
+          messageKey: "invalid",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Paginated data schema that wraps data with pagination metadata.
@@ -343,17 +359,20 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
     msg = "Paginated Data",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      data: dataSchema,
-      pagination: zPaginationResponse(msg, msgType),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "pagination",
-        messageKey: "invalid",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        data: dataSchema,
+        pagination: zPaginationResponse(msg, msgType),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "pagination",
+          messageKey: "invalid",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   return {
     zPagination,
@@ -365,11 +384,12 @@ export const createPaginationSchemas = (messageHandler: ErrorMessageFormatter) =
   };
 };
 
-
 // --- Type Exports ---
 // Provide a default message handler for test and direct import usage
 
-const defaultPaginationSchemas = createPaginationSchemas(createTestMessageHandler());
+const defaultPaginationSchemas = createPaginationSchemas(
+  createTestMessageHandler(),
+);
 export const zPagination = defaultPaginationSchemas.zPagination;
 export const zPaginationQuery = defaultPaginationSchemas.zPaginationQuery;
 export const zCursorPagination = defaultPaginationSchemas.zCursorPagination;
@@ -380,9 +400,13 @@ export const zPaginatedData = defaultPaginationSchemas.zPaginatedData;
 /**
  * Type for a pagination schema.
  */
-export type PaginationType = z.infer<ReturnType<ReturnType<typeof createPaginationSchemas>["zPagination"]>>;
+export type PaginationType = z.infer<
+  ReturnType<ReturnType<typeof createPaginationSchemas>["zPagination"]>
+>;
 
 /**
  * Type for query parameter pagination (from URL query string).
  */
-export type PaginationQueryType = z.infer<ReturnType<ReturnType<typeof createPaginationSchemas>["zPaginationQuery"]>>;
+export type PaginationQueryType = z.infer<
+  ReturnType<ReturnType<typeof createPaginationSchemas>["zPaginationQuery"]>
+>;

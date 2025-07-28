@@ -24,28 +24,31 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     minItems = 1,
     maxItems = 1000,
   ) => {
-    const baseSchema = z.array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
+    const baseSchema = z
+      .array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
       .optional();
-      
+
     return addArrayConstraints(
       baseSchema,
       { min: minItems, max: maxItems },
       {
-        tooSmall: (min) => messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustHaveMinItems",
-          msg,
-          msgType,
-          params: { min },
-        }),
-        tooBig: (max) => messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustHaveMaxItems",
-          msg,
-          msgType,
-          params: { max },
-        })
-      }
+        tooSmall: (min) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMinItems",
+            msg,
+            msgType,
+            params: { min },
+          }),
+        tooBig: (max) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMaxItems",
+            msg,
+            msgType,
+            params: { max },
+          }),
+      },
     );
   };
 
@@ -59,27 +62,31 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     minItems = 1,
     maxItems = 1000,
   ) => {
-    const baseSchema = z.array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }));
-      
+    const baseSchema = z.array(
+      uuidSchemas.zUuidRequired({ msg: "ID", msgType }),
+    );
+
     return addArrayConstraints(
       baseSchema,
       { min: minItems, max: maxItems },
       {
-        tooSmall: (min) => messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustHaveMinItems",
-          msg,
-          msgType,
-          params: { min },
-        }),
-        tooBig: (max) => messageHandler.formatErrorMessage({
-          group: "array",
-          messageKey: "mustHaveMaxItems",
-          msg,
-          msgType,
-          params: { max },
-        })
-      }
+        tooSmall: (min) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMinItems",
+            msg,
+            msgType,
+            params: { min },
+          }),
+        tooBig: (max) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMaxItems",
+            msg,
+            msgType,
+            params: { max },
+          }),
+      },
     );
   };
 
@@ -87,10 +94,8 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Generic ID schema for validating single UUID.
    * Wrapper around UUID validation for ID-specific use cases.
    */
-  const zId = (
-    msg = "ID",
-    msgType: MsgType = MsgType.FieldName,
-  ) => uuidSchemas.zUuidRequired({ msg, msgType });
+  const zId = (msg = "ID", msgType: MsgType = MsgType.FieldName) =>
+    uuidSchemas.zUuidRequired({ msg, msgType });
 
   /**
    * ID list with duplicates removal.
@@ -102,18 +107,18 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     minItems = 1,
     maxItems = 1000,
   ) =>
-    zIdListRequired(msg, msgType, minItems, maxItems)
-      .refine(
-        (list) => Array.isArray(list) ? new Set(list).size === list.length : true,
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "duplicateItems",
-            msg,
-            msgType,
-          }),
-        },
-      );
+    zIdListRequired(msg, msgType, minItems, maxItems).refine(
+      (list) =>
+        Array.isArray(list) ? new Set(list).size === list.length : true,
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "duplicateItems",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Paginated ID list schema for batch processing with pagination.
@@ -124,32 +129,43 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     minItems = 1,
     maxItems = 1000,
   ) =>
-    z.object({
-      ids: zIdListRequired("IDs", msgType, minItems, maxItems),
-      page: z.number({
+    z.object(
+      {
+        ids: zIdListRequired("IDs", msgType, minItems, maxItems),
+        page: z
+          .number({
+            message: messageHandler.formatErrorMessage({
+              group: "number",
+              messageKey: "mustBeNumber",
+              msg: "Page",
+              msgType,
+            }),
+          })
+          .int()
+          .nonnegative(),
+        limit: z
+          .number({
+            message: messageHandler.formatErrorMessage({
+              group: "number",
+              messageKey: "mustBeNumber",
+              msg: "Limit",
+              msgType,
+            }),
+          })
+          .int()
+          .positive()
+          .max(maxItems)
+          .default(minItems),
+      },
+      {
         message: messageHandler.formatErrorMessage({
-          group: "number",
-          messageKey: "mustBeNumber",
-          msg: "Page",
+          group: "string",
+          messageKey: "required",
+          msg,
           msgType,
         }),
-      }).int().nonnegative(),
-      limit: z.number({
-        message: messageHandler.formatErrorMessage({
-          group: "number",
-          messageKey: "mustBeNumber",
-          msg: "Limit",
-          msgType,
-        }),
-      }).int().positive().max(maxItems).default(minItems),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+      },
+    );
 
   /**
    * Batch operation response schema includes processed IDs and errors.
@@ -158,18 +174,21 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Batch Operation Response",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      successIds: zIdListRequired("Success IDs", msgType, 0, 10000),
-      failedIds: zIdListOptional("Failed IDs", msgType, 0, 10000),
-      errors: z.array(z.string()).optional(),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        successIds: zIdListRequired("Success IDs", msgType, 0, 10000),
+        failedIds: zIdListOptional("Failed IDs", msgType, 0, 10000),
+        errors: z.array(z.string()).optional(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Custom ID validation schema with specification.
@@ -180,15 +199,14 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Custom ID",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType })
-      .refine(validateFn, {
-        message: messageHandler.formatErrorMessage({
-          group: "uuid",
-          messageKey: "invalid",
-          msg,
-          msgType,
-        }),
-      });
+    stringSchemas.zStringRequired({ msg, msgType }).refine(validateFn, {
+      message: messageHandler.formatErrorMessage({
+        group: "uuid",
+        messageKey: "invalid",
+        msg,
+        msgType,
+      }),
+    });
 
   /**
    * MongoDB ObjectId validation schema.
@@ -197,8 +215,9 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "MongoDB ObjectId",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType })
-      .refine(val => /^[0-9a-fA-F]{24}$/.test(val), {
+    stringSchemas
+      .zStringRequired({ msg, msgType })
+      .refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
         message: messageHandler.formatErrorMessage({
           group: "uuid",
           messageKey: "invalid",
@@ -216,7 +235,8 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     minItems = 1,
     maxItems = 1000,
   ) =>
-    z.array(zMongoId("ID", msgType))
+    z
+      .array(zMongoId("ID", msgType))
       .min(minItems, {
         message: messageHandler.formatErrorMessage({
           group: "array",
@@ -239,21 +259,18 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Flexible ID schema that accepts either UUIDs or MongoDB ObjectIds.
    */
-  const zFlexibleId = (
-    msg = "ID",
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    z.union([
-      uuidSchemas.zUuidRequired({ msg, msgType }),
-      zMongoId(msg, msgType),
-    ], {
-      message: messageHandler.formatErrorMessage({
-        group: "uuid",
-        messageKey: "invalid",
-        msg,
-        msgType,
-      }),
-    });
+  const zFlexibleId = (msg = "ID", msgType: MsgType = MsgType.FieldName) =>
+    z.union(
+      [uuidSchemas.zUuidRequired({ msg, msgType }), zMongoId(msg, msgType)],
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "uuid",
+          messageKey: "invalid",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   return {
     zIdListOptional,
