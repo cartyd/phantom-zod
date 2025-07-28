@@ -3,6 +3,7 @@ import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createUuidSchemas } from "./uuid-schemas";
 import { createStringSchemas } from "./string-schemas";
+import { addArrayConstraints } from "../common/utils/zod-utils";
 
 /**
  * Creates a factory function for ID list schemas with injected message handler
@@ -22,28 +23,31 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
     minItems = 1,
     maxItems = 1000,
-  ) =>
-    z
-      .array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
-      .min(minItems, {
-        message: messageHandler.formatErrorMessage({
+  ) => {
+    const baseSchema = z.array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
+      .optional();
+      
+    return addArrayConstraints(
+      baseSchema,
+      { min: minItems, max: maxItems },
+      {
+        tooSmall: (min) => messageHandler.formatErrorMessage({
           group: "array",
           messageKey: "mustHaveMinItems",
           msg,
           msgType,
-          params: { min: minItems },
+          params: { min },
         }),
-      })
-      .max(maxItems, {
-        message: messageHandler.formatErrorMessage({
+        tooBig: (max) => messageHandler.formatErrorMessage({
           group: "array",
           messageKey: "mustHaveMaxItems",
           msg,
           msgType,
-          params: { max: maxItems },
-        }),
-      })
-      .optional();
+          params: { max },
+        })
+      }
+    );
+  };
 
   /**
    * Required ID list schema for batch operations.
@@ -54,26 +58,30 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
     minItems = 1,
     maxItems = 1000,
-  ) =>
-    z.array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
-      .min(minItems, {
-        message: messageHandler.formatErrorMessage({
+  ) => {
+    const baseSchema = z.array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }));
+      
+    return addArrayConstraints(
+      baseSchema,
+      { min: minItems, max: maxItems },
+      {
+        tooSmall: (min) => messageHandler.formatErrorMessage({
           group: "array",
           messageKey: "mustHaveMinItems",
           msg,
           msgType,
-          params: { min: minItems },
+          params: { min },
         }),
-      })
-      .max(maxItems, {
-        message: messageHandler.formatErrorMessage({
+        tooBig: (max) => messageHandler.formatErrorMessage({
           group: "array",
           messageKey: "mustHaveMaxItems",
           msg,
           msgType,
-          params: { max: maxItems },
-        }),
-      });
+          params: { max },
+        })
+      }
+    );
+  };
 
   /**
    * Generic ID schema for validating single UUID.

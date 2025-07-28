@@ -3,6 +3,7 @@ import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 import type { UuidMessageParams } from "../localization/types/message-params.types";
+import { makeOptionalSimple } from "../common/utils/zod-utils";
 
 type UuidVersion = "v4" | "v6" | "v7";
 type UuidMessageKey = keyof UuidMessageParams;
@@ -64,13 +65,12 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const createOptionalUuid = (version?: UuidVersion, messageKey: UuidMessageKey = "mustBeValidUuid") => {
     return (options: BaseSchemaOptions = {}) => {
       const validator = version ? z.uuid({ version }) : z.uuid();
-      return z.union([
+      return makeOptionalSimple(
         z.string().refine(
           (val) => val === "" || validator.safeParse(val).success,
           { message: createErrorMessage(messageKey, options) }
-        ),
-        z.undefined()
-      ]);
+        )
+      );
     };
   };
 
@@ -83,13 +83,12 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   const createOptionalNanoid = (messageKey: UuidMessageKey = "mustBeValidNanoid") => {
     return (options: BaseSchemaOptions = {}) => {
       const validator = z.nanoid();
-      return z.union([
+      return makeOptionalSimple(
         z.string().refine(
           (val) => val === "" || validator.safeParse(val).success,
           { message: createErrorMessage(messageKey, options) }
-        ),
-        z.undefined()
-      ]);
+        )
+      );
     };
   };
 

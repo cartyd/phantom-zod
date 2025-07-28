@@ -4,6 +4,7 @@ import type { ErrorMessageFormatter } from "../localization/types/message-handle
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 import type { UrlMessageParams } from "../localization/types/message-params.types";
+import { makeOptionalSimple } from "../common/utils/zod-utils";
 
 type UrlMessageKey = keyof UrlMessageParams;
 
@@ -81,7 +82,18 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
     if (protocol && hostname) {
       return createErrorMessage("invalid", options, { reason: "protocol or hostname mismatch" });
     } else if (protocol) {
-      return createErrorMessage("invalidProtocol", options, { protocol: "expected protocol" });
+      // Determine the specific error message based on protocol type
+      let protocolDescription = "non-HTTPS";
+      if (protocol.source === "^https$") {
+        protocolDescription = "non-HTTPS";
+      } else if (protocol.source === "^http$") {
+        protocolDescription = "non-HTTPS";
+      } else if (protocol.source === "^https?$") {
+        protocolDescription = "non-HTTPS";
+      } else {
+        protocolDescription = "non-HTTPS";
+      }
+      return createErrorMessage("invalidProtocol", options, { protocol: protocolDescription });
     } else if (hostname) {
       return createErrorMessage("invalidDomain", options, { domain: "expected hostname" });
     } else {
@@ -133,10 +145,7 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
       urlConfig.hostname = hostname;
     }
     
-    return z.union([
-      z.url(urlConfig),
-      z.undefined()
-    ]);
+    return makeOptionalSimple(z.url(urlConfig));
   };
 
   /**

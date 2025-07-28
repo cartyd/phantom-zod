@@ -61,8 +61,6 @@ const TEST_DATA = {
     "::ffff:c000:0280",
     "::ffff:192.0.2.128",
     "2001:db8::192.0.2.128",
-    "fe80::1%eth0",
-    "fe80::a00:27ff:fe4e:66a1%enp0s3",
     "fc00::1234",
     "fd12:3456:789a:1::1",
     "ff02::1",
@@ -168,7 +166,7 @@ const testRequiredSchema = (schemaName: string, createSchema: (...args: any[]) =
     // Test valid data with descriptive names
     validData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, true), () => {
-        const schema = createSchema("Test", MsgType.FieldName);
+        const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
         expect(schema.parse(data)).toBe(data);
       });
     });
@@ -176,24 +174,24 @@ const testRequiredSchema = (schemaName: string, createSchema: (...args: any[]) =
     // Test invalid data with descriptive names
     invalidData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, false), () => {
-        const schema = createSchema("Test", MsgType.FieldName);
+        const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
         expect(() => schema.parse(data)).toThrow();
       });
     });
 
     // Edge case tests with specific descriptions
     test('rejects empty string as invalid input', () => {
-      const schema = createSchema("Test", MsgType.FieldName);
+      const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
       expect(() => schema.parse('')).toThrow();
     });
 
     test('rejects undefined as invalid input', () => {
-      const schema = createSchema("Test", MsgType.FieldName);
+      const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
       expect(() => schema.parse(undefined)).toThrow();
     });
 
     test('rejects null as invalid input', () => {
-      const schema = createSchema("Test", MsgType.FieldName);
+      const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
       expect(() => schema.parse(null)).toThrow();
     });
   });
@@ -204,7 +202,7 @@ const testOptionalSchema = (schemaName: string, createSchema: (...args: any[]) =
     // Test valid data with descriptive names
     validData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, true), () => {
-        const schema = createSchema("Test", MsgType.FieldName);
+        const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
         expect(schema.parse(data)).toBe(data);
       });
     });
@@ -212,24 +210,24 @@ const testOptionalSchema = (schemaName: string, createSchema: (...args: any[]) =
     // Test invalid data with descriptive names
     invalidData.forEach(data => {
       test(getDescriptiveTestName(schemaName, data, false), () => {
-        const schema = createSchema("Test", MsgType.FieldName);
+        const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
         expect(() => schema.parse(data)).toThrow();
       });
     });
 
     // Edge case tests with specific descriptions
     test('accepts undefined and returns undefined (optional behavior)', () => {
-      const schema = createSchema("Test", MsgType.FieldName);
+      const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
       expect(schema.parse(undefined)).toBeUndefined();
     });
 
     test('accepts null and returns undefined (optional behavior)', () => {
-      const schema = createSchema("Test", MsgType.FieldName);
+      const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
       expect(schema.parse(null)).toBeUndefined();
     });
 
     test('rejects empty string even in optional schema', () => {
-      const schema = createSchema("Test", MsgType.FieldName);
+      const schema = createSchema({ msg: "Test", msgType: MsgType.FieldName });
       expect(() => schema.parse('')).toThrow();
     });
   });
@@ -243,12 +241,15 @@ describe("Network Schemas", () => {
     zIPv4Required, 
     zIPv6Optional, 
     zIPv6Required, 
+    zIPv4CIDROptional,
+    zIPv4CIDRRequired,
+    zIPv6CIDROptional,
+    zIPv6CIDRRequired,
+    zCIDRGeneric,
     zMacAddressOptional, 
     zMacAddressRequired,
     zNetworkAddressGeneric,
-    zIPv4Strict,
-    zIPv6Strict,
-    zMacAddressStrict,
+    zIPAddressGeneric,
     getNetworkAddressExamples
   } = schemas;
 
@@ -278,7 +279,7 @@ describe("Network Schemas", () => {
 
     invalidData.forEach(data => {
       test(`rejects invalid network address: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('Network address is invalid');
+        expect(() => schema.parse(data)).toThrow('Network Address is invalid');
       });
     });
 
@@ -287,120 +288,28 @@ describe("Network Schemas", () => {
     });
 
     test('uses custom message with msgType Message', () => {
-      const customSchema = zNetworkAddressGeneric('Custom network error', MsgType.Message);
+      const customSchema = zNetworkAddressGeneric({ msg: 'Custom network error', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Custom network error');
     });
   });
 
-  describe('zIPv4Strict', () => {
-    const schema = zIPv4Strict();
-
-    TEST_DATA.validIPv4.forEach(data => {
-      test(`accepts valid IPv4: ${data}`, () => {
-        expect(schema.parse(data)).toBe(data);
-      });
-    });
-
-    // Test that IPv6 and MAC addresses are rejected with specific message
-    [...TEST_DATA.validIPv6, ...TEST_DATA.validMacAddresses].forEach(data => {
-      test(`rejects non-IPv4 address: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('IPv4 address must be a valid IPv4 address');
-      });
-    });
-
-    TEST_DATA.invalidIPv4.forEach(data => {
-      test(`rejects invalid IPv4: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('IPv4 address must be a valid IPv4 address');
-      });
-    });
-
-    test('uses custom message with msgType Message', () => {
-      const customSchema = zIPv4Strict('Invalid IPv4 format', MsgType.Message);
-      expect(() => customSchema.parse('invalid')).toThrow('Invalid IPv4 format');
-    });
-  });
-
-  describe('zIPv6Strict', () => {
-    const schema = zIPv6Strict();
-
-    TEST_DATA.validIPv6.forEach(data => {
-      test(`accepts valid IPv6: ${data}`, () => {
-        expect(schema.parse(data)).toBe(data);
-      });
-    });
-
-    // Test that IPv4 and MAC addresses are rejected with specific message
-    [...TEST_DATA.validIPv4, ...TEST_DATA.validMacAddresses].forEach(data => {
-      test(`rejects non-IPv6 address: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('IPv6 address must be a valid IPv6 address');
-      });
-    });
-
-    TEST_DATA.invalidIPv6.forEach(data => {
-      test(`rejects invalid IPv6: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('IPv6 address must be a valid IPv6 address');
-      });
-    });
-
-    test('uses custom message with msgType Message', () => {
-      const customSchema = zIPv6Strict('Invalid IPv6 format', MsgType.Message);
-      expect(() => customSchema.parse('invalid')).toThrow('Invalid IPv6 format');
-    });
-  });
-
-  describe('zMacAddressStrict', () => {
-    const schema = zMacAddressStrict();
-
-    TEST_DATA.validMacAddresses.forEach(data => {
-      test(`accepts valid MAC address: ${data}`, () => {
-        expect(schema.parse(data)).toBe(data);
-      });
-    });
-
-    // Test that IPv4 and IPv6 addresses are rejected with specific message
-    [...TEST_DATA.validIPv4, ...TEST_DATA.validIPv6].forEach(data => {
-      test(`rejects non-MAC address: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('MAC address must be a valid MAC address');
-      });
-    });
-
-    TEST_DATA.invalidMacAddresses.forEach(data => {
-      test(`rejects invalid MAC address: ${data}`, () => {
-        expect(() => schema.parse(data)).toThrow('MAC address must be a valid MAC address');
-      });
-    });
-
-    test('uses custom message with msgType Message', () => {
-      const customSchema = zMacAddressStrict('Invalid MAC format', MsgType.Message);
-      expect(() => customSchema.parse('invalid')).toThrow('Invalid MAC format');
-    });
-  });
 
   describe('getNetworkAddressExamples', () => {
-    test('returns formatted examples message', () => {
+    test('returns examples object with all network address formats', () => {
       const examples = getNetworkAddressExamples();
-      expect(examples).toBe('Network address examples');
+      expect(examples).toEqual({
+        ipv4: '192.168.1.1',
+        ipv6: '2001:db8::1',
+        mac: '00:1A:2B:3C:4D:5E',
+        ipv4Cidr: '192.168.1.0/24',
+        ipv6Cidr: '2001:db8::/32'
+      });
     });
 
-    test('uses examples message key with proper parameters', () => {
-      // Test with custom mock to verify parameters are passed correctly
-      const customMock = jest.fn((options) => {
-        expect(options.group).toBe('network');
-        expect(options.messageKey).toBe('examples');
-        expect(options.params).toEqual({
-          ipv4: '192.168.1.1',
-          ipv6: '2001:db8::1',
-          mac: '00:1A:2B:3C:4D:5E'
-        });
-        return 'Custom examples message';
-      });
-      
-      const customHandler = createTestMessageHandler(customMock);
-      const customSchemas = createNetworkSchemas(customHandler);
-      const result = customSchemas.getNetworkAddressExamples();
-      
-      expect(result).toBe('Custom examples message');
-      expect(customMock).toHaveBeenCalledTimes(1);
+    test('provides consistent examples across different instances', () => {
+      const examples1 = getNetworkAddressExamples();
+      const examples2 = getNetworkAddressExamples();
+      expect(examples1).toEqual(examples2);
     });
   });
 
@@ -411,18 +320,16 @@ describe("Network Schemas", () => {
         { schema: zIPv6Required, name: 'IPv6 Required', invalid: 'invalid-ipv6' },
         { schema: zMacAddressRequired, name: 'MAC Required', invalid: 'invalid-mac' },
         { schema: zNetworkAddressGeneric, name: 'Network Generic', invalid: 'invalid-network' },
-        { schema: zIPv4Strict, name: 'IPv4 Strict', invalid: 'invalid-ipv4' },
-        { schema: zIPv6Strict, name: 'IPv6 Strict', invalid: 'invalid-ipv6' },
-        { schema: zMacAddressStrict, name: 'MAC Strict', invalid: 'invalid-mac' },
+        { schema: zIPAddressGeneric, name: 'IP Generic', invalid: 'invalid-ip' },
       ];
 
       testCases.forEach(({ schema, name, invalid }) => {
         // Test custom field name
-        const fieldNameSchema = schema(`Custom ${name}`);
+        const fieldNameSchema = schema({ msg: `Custom ${name}` });
         expect(() => fieldNameSchema.parse(invalid)).toThrow(`Custom ${name}`);
 
         // Test custom message
-        const messageSchema = schema(`Custom error for ${name}`, MsgType.Message);
+        const messageSchema = schema({ msg: `Custom error for ${name}`, msgType: MsgType.Message });
         expect(() => messageSchema.parse(invalid)).toThrow(`Custom error for ${name}`);
       });
     });

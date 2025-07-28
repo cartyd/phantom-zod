@@ -32,32 +32,20 @@ export interface EmailSchemaOptions extends BaseSchemaOptions {
  * Options for number schema creation functions.
  */
 export interface NumberSchemaOptions extends BaseSchemaOptions {
-  /** The type of number validation (integer or float). */
-  type?: import("../../schemas/number-schemas").NumberFieldType;
   /** Optional minimum value constraint. */
   min?: number;
   /** Optional maximum value constraint. */
   max?: number;
-  /** Whether the field is required or optional. */
-  requirement?: import("../../schemas/number-schemas").NumberFieldRequirement;
-  /** Whether to output as number or string. */
-  output?: import("../../schemas/number-schemas").NumberFieldOutput;
 }
 
 /**
  * Options for date schema creation functions.
  */
 export interface DateSchemaOptions extends BaseSchemaOptions {
-  /** The expected date format. */
-  format?: import("../../schemas/date-schemas").DateFormat;
-  /** Whether the field is required or optional. */
-  requirement?: import("../../schemas/date-schemas").FieldRequirement;
-  /** Whether to return Date object or string. */
-  returnType?: import("../../schemas/date-schemas").ReturnType;
-  /** Custom format validation (regex or function). */
-  customFormat?: RegExp | ((str: string) => boolean);
-  /** Custom date parsing function. */
-  customParse?: (str: string) => Date | null;
+  /** Optional minimum date constraint */
+  min?: Date;
+  /** Optional maximum date constraint */
+  max?: Date;
 }
 
 /**

@@ -3,6 +3,7 @@ import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createPostalCodeSchemas } from "./postal-code-schemas";
 import { createStringSchemas } from "./string-schemas";
+import { makeOptionalSimple, removeEmptyStringFields } from "../common/utils/zod-utils";
 
 // --- US State Codes ---
 export const US_STATE_CODES = [
@@ -55,33 +56,23 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Address",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z
-      .union([
-        z.undefined(),
-        z.object({
-          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
-          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
-          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
-          state: stringSchemas.zStringRequired({ msg: "State", msgType }),
-          postalCode: postalCodeSchemas.zPostalCodeRequired({ msg: "Postal Code", msgType }),
-          country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
-        })
-        .transform((val) => {
-          // Remove empty string fields
-          const result = { ...val } as Partial<typeof val>;
-          if (result.street2 === "") {
-            delete result.street2;
-          }
-          return result;
-        })
-      ], {
-        message: messageHandler.formatErrorMessage({
-          group: "address",
-          messageKey: "mustBeValidAddress",
-          msg,
-          msgType,
-        }),
-      });
+    makeOptionalSimple(
+      z.object({
+        street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
+        street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
+        city: stringSchemas.zStringRequired({ msg: "City", msgType }),
+        state: stringSchemas.zStringRequired({ msg: "State", msgType }),
+        postalCode: postalCodeSchemas.zPostalCodeRequired({ msg: "Postal Code", msgType }),
+        country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+      })
+      .transform(removeEmptyStringFields(['street2'])),
+      messageHandler.formatErrorMessage({
+        group: "address",
+        messageKey: "mustBeValidAddress",
+        msg,
+        msgType,
+      })
+    );
 
   /**
    * Required address schema with all fields.
@@ -106,14 +97,7 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
         msgType,
       }),
     })
-    .transform((val) => {
-      // Remove empty string fields
-      const result = { ...val } as Partial<typeof val>;
-      if (result.street2 === "") {
-        delete result.street2;
-      }
-      return result;
-    });
+    .transform(removeEmptyStringFields(['street2']));
 
   /**
    * Simple address schema with minimal fields (street, city, country).
@@ -176,14 +160,7 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
         msgType,
       }),
     })
-    .transform((val) => {
-      // Remove empty string fields
-      const result = { ...val } as Partial<typeof val>;
-      if (result.street2 === "") {
-        delete result.street2;
-      }
-      return result;
-    });
+    .transform(removeEmptyStringFields(['street2']));
 
   return {
     zAddressOptional,

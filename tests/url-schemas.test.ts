@@ -336,9 +336,9 @@ describe('URL Schemas', () => {
       });
 
       it('should reject other protocols', () => {
-        expect(() => schema.parse('ftp://example.com')).toThrow('URL has invalid protocol: expected protocol');
-        expect(() => schema.parse('mailto:user@example.com')).toThrow('URL has invalid protocol: expected protocol');
-        expect(() => schema.parse('file:///path/to/file')).toThrow('URL has invalid protocol: expected protocol');
+        expect(() => schema.parse('ftp://example.com')).toThrow('URL has invalid protocol: non-HTTPS');
+        expect(() => schema.parse('mailto:user@example.com')).toThrow('URL has invalid protocol: non-HTTPS');
+        expect(() => schema.parse('file:///path/to/file')).toThrow('URL has invalid protocol: non-HTTPS');
       });
 
       it('should reject invalid URLs', () => {
