@@ -1,333 +1,287 @@
 import { z } from "zod";
-
-import { MsgType } from "./msg-type";
-import { zUuidRequired } from "./uuid-schemas";
-import { zStringRequired } from "./string-schemas";
-import { formatErrorMessage } from "../common/message-handler";
-
-// --- ID List Schema Types ---
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createUuidSchemas } from "./uuid-schemas";
+import { createStringSchemas } from "./string-schemas";
+import { addArrayConstraints } from "../common/utils/zod-utils";
 
 /**
- * Type for an optional ID list.
+ * Creates a factory function for ID list schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing ID list schema creation functions
  */
-export type IdListOptional = z.infer<ReturnType<typeof zIdListOptional>>;
+export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
+  const uuidSchemas = createUuidSchemas(messageHandler);
+  const stringSchemas = createStringSchemas(messageHandler);
 
-/**
- * Type for a required ID list.
- */
-export type IdListRequired = z.infer<ReturnType<typeof zIdListRequired>>;
+  /**
+   * Optional ID list schema for batch operations.
+   * Validates an array of UUIDs with configurable min/max constraints.
+   */
+  const zIdListOptional = (
+    msg = "ID List",
+    msgType: MsgType = MsgType.FieldName,
+    minItems = 1,
+    maxItems = 1000,
+  ) => {
+    const baseSchema = z
+      .array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
+      .optional();
 
-// --- ID List Schemas ---
-
-/**
- * Optional ID list schema for batch operations.
- * Validates an array of UUIDs or Mongo ObjectIds.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minItems - Minimum number of IDs (default: 1).
- * @param maxItems - Maximum number of IDs (default: 1000).
- * @returns Zod schema for an optional ID list.
- * 
- * @example
- * const idListSchema = zIdListOptional("User IDs", MsgType.FieldName, 1, 100);
- * const result = idListSchema.parse(["123e4567-e89b-12d3-a456-426614174000"]);
- */
-export const zIdListOptional = (
-  fieldName = "ID List",
-  msgType: MsgType = MsgType.FieldName,
-  minItems = 1,
-  maxItems = 1000,
-) =>
-  z
-    .array(zUuidRequired(
-      msgType === MsgType.Message ? "ID must be valid" : "ID",
-      msgType,
-    ))
-    .min(minItems, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `must contain at least ${minItems} IDs`
-      ),
-    })
-    .max(maxItems, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `must contain at most ${maxItems} IDs`
-      ),
-    })
-    .optional();
-
-/**
- * Required ID list schema for batch operations.
- * Validates an array of UUIDs or Mongo ObjectIds.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minItems - Minimum number of IDs (default: 1).
- * @param maxItems - Maximum number of IDs (default: 1000).
- * @returns Zod schema for a required ID list.
- * 
- * @example
- * const idListSchema = zIdListRequired("User IDs", MsgType.FieldName, 1, 100);
- * const result = idListSchema.parse(["123e4567-e89b-12d3-a456-426614174000"]);
- */
-export const zIdListRequired = (
-  fieldName = "ID List",
-  msgType: MsgType = MsgType.FieldName,
-  minItems = 1,
-  maxItems = 1000,
-) =>
-  z.array(zUuidRequired(
-    msgType === MsgType.Message ? "ID must be valid" : "ID",
-    msgType,
-  ))
-  .min(minItems, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must contain at least ${minItems} IDs`
-    ),
-  })
-  .max(maxItems, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must contain at most ${maxItems} IDs`
-    ),
-  });
-
-/**
- * Generic ID schema for validating single UUID or Mongo ObjectId.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a single ID.
- * 
- * @example
- * const idSchema = zId("User ID");
- * const result = idSchema.parse("123e4567-e89b-12d3-a456-426614174000");
- */
-export const zId = (
-  fieldName = "ID",
-  msgType: MsgType = MsgType.FieldName,
-) => zUuidRequired(
-  msgType === MsgType.Message ? "ID must be valid" : fieldName,
-  msgType,
-);
-
-/**
- * ID list with duplicates removal.
- * Ensures all IDs in the list are unique.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minItems - Minimum number of IDs (default: 1).
- * @param maxItems - Maximum number of IDs (default: 1000).
- * @returns Zod schema for a unique ID list.
- * 
- * @example
- * const uniqueIdListSchema = zUniqueIdList("Unique User IDs");
- * const result = uniqueIdListSchema.parse(["123e4567-e89b-12d3-a456-426614174000"]);
- */
-export const zUniqueIdList = (
-  fieldName = "Unique ID List",
-  msgType: MsgType = MsgType.FieldName,
-  minItems = 1,
-  maxItems = 1000,
-) =>
-  zIdListRequired(fieldName, msgType, minItems, maxItems)
-    .refine(
-      (list) => Array.isArray(list) ? new Set(list).size === list.length : true,
+    return addArrayConstraints(
+      baseSchema,
+      { min: minItems, max: maxItems },
       {
-        message:
-          msgType === MsgType.Message
-            ? String(fieldName)
-            : `${fieldName} must have unique IDs`,
+        tooSmall: (min) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMinItems",
+            msg,
+            msgType,
+            params: { min },
+          }),
+        tooBig: (max) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMaxItems",
+            msg,
+            msgType,
+            params: { max },
+          }),
+      },
+    );
+  };
+
+  /**
+   * Required ID list schema for batch operations.
+   * Validates an array of UUIDs with configurable min/max constraints.
+   */
+  const zIdListRequired = (
+    msg = "ID List",
+    msgType: MsgType = MsgType.FieldName,
+    minItems = 1,
+    maxItems = 1000,
+  ) => {
+    const baseSchema = z.array(
+      uuidSchemas.zUuidRequired({ msg: "ID", msgType }),
+    );
+
+    return addArrayConstraints(
+      baseSchema,
+      { min: minItems, max: maxItems },
+      {
+        tooSmall: (min) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMinItems",
+            msg,
+            msgType,
+            params: { min },
+          }),
+        tooBig: (max) =>
+          messageHandler.formatErrorMessage({
+            group: "array",
+            messageKey: "mustHaveMaxItems",
+            msg,
+            msgType,
+            params: { max },
+          }),
+      },
+    );
+  };
+
+  /**
+   * Generic ID schema for validating single UUID.
+   * Wrapper around UUID validation for ID-specific use cases.
+   */
+  const zId = (msg = "ID", msgType: MsgType = MsgType.FieldName) =>
+    uuidSchemas.zUuidRequired({ msg, msgType });
+
+  /**
+   * ID list with duplicates removal.
+   * Ensures all IDs in the list are unique.
+   */
+  const zUniqueIdList = (
+    msg = "Unique ID List",
+    msgType: MsgType = MsgType.FieldName,
+    minItems = 1,
+    maxItems = 1000,
+  ) =>
+    zIdListRequired(msg, msgType, minItems, maxItems).refine(
+      (list) =>
+        Array.isArray(list) ? new Set(list).size === list.length : true,
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "duplicateItems",
+          msg,
+          msgType,
+        }),
       },
     );
 
-/**
- * Paginated ID list schema for batch processing with pagination.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minItems - Minimum number of IDs per page (default: 1).
- * @param maxItems - Maximum number of IDs per page (default: 1000).
- * @returns Zod schema for a paginated ID list.
- * 
- * @example
- * const paginatedIdListSchema = zPaginatedIdList("Paginated User IDs");
- * const result = paginatedIdListSchema.parse({
- *   ids: ["123e4567-e89b-12d3-a456-426614174000"],
- *   page: 0,
- *   limit: 10
- * });
- */
-export const zPaginatedIdList = (
-  fieldName = "Paginated ID List",
-  msgType: MsgType = MsgType.FieldName,
-  minItems = 1,
-  maxItems = 1000,
-) =>
-  z.object({
-    ids: zIdListRequired(fieldName, msgType, minItems, maxItems),
-    page: z.number({
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} page number must be an integer`,
-    }).int().nonnegative(),
-    limit: z.number({
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} limit must be an integer between 1 and ${maxItems}`,
-    }).int().positive().max(maxItems).default(minItems),
-  }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} is required`,
-  });
+  /**
+   * Paginated ID list schema for batch processing with pagination.
+   */
+  const zPaginatedIdList = (
+    msg = "Paginated ID List",
+    msgType: MsgType = MsgType.FieldName,
+    minItems = 1,
+    maxItems = 1000,
+  ) =>
+    z.object(
+      {
+        ids: zIdListRequired("IDs", msgType, minItems, maxItems),
+        page: z
+          .number({
+            message: messageHandler.formatErrorMessage({
+              group: "number",
+              messageKey: "mustBeNumber",
+              msg: "Page",
+              msgType,
+            }),
+          })
+          .int()
+          .nonnegative(),
+        limit: z
+          .number({
+            message: messageHandler.formatErrorMessage({
+              group: "number",
+              messageKey: "mustBeNumber",
+              msg: "Limit",
+              msgType,
+            }),
+          })
+          .int()
+          .positive()
+          .max(maxItems)
+          .default(minItems),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
-/**
- * Batch operation response schema includes processed IDs and errors.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for batch operation response with ID list.
- * 
- * @example
- * const batchResponseSchema = zBatchOperationResponse("Batch Delete Response");
- * const result = batchResponseSchema.parse({
- *   successIds: ["123e4567-e89b-12d3-a456-426614174000"],
- *   failedIds: ["987fcdeb-51a2-4321-b654-321098765432"],
- *   errors: ["Access denied for ID 987fcdeb-51a2-4321-b654-321098765432"]
- * });
- */
-export const zBatchOperationResponse = (
-  fieldName = "Batch Operation Response",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    successIds: zIdListRequired("Success IDs", msgType, 0, 10000),
-    failedIds: zIdListOptional("Failed IDs", msgType, 0, 10000),
-    errors: z.array(z.string(), {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} errors must be an array of strings`,
-    }).optional(),
-  }, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must be a valid batch operation response`,
-  });
+  /**
+   * Batch operation response schema includes processed IDs and errors.
+   */
+  const zBatchOperationResponse = (
+    msg = "Batch Operation Response",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object(
+      {
+        successIds: zIdListRequired("Success IDs", msgType, 0, 10000),
+        failedIds: zIdListOptional("Failed IDs", msgType, 0, 10000),
+        errors: z.array(z.string()).optional(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
-/**
- * Custom ID validation schema with specification.
- * Allows passing a custom validation function for ID format.
- * @param validateFn - Custom function for ID validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a custom ID validation.
- * 
- * @example
- * const mongoIdSchema = zCustomId(
- *   (id) => /^[0-9a-fA-F]{24}$/.test(id),
- *   "MongoDB ObjectId"
- * );
- * const result = mongoIdSchema.parse("507f1f77bcf86cd799439011");
- */
-export const zCustomId = (
-  validateFn: (val: string) => boolean,
-  fieldName = "Custom ID",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  zStringRequired(fieldName, msgType)
-    .refine(validateFn, {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must pass custom validation`,
+  /**
+   * Custom ID validation schema with specification.
+   * Allows passing a custom validation function for ID format.
+   */
+  const zCustomId = (
+    validateFn: (val: string) => boolean,
+    msg = "Custom ID",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    stringSchemas.zStringRequired({ msg, msgType }).refine(validateFn, {
+      message: messageHandler.formatErrorMessage({
+        group: "uuid",
+        messageKey: "invalid",
+        msg,
+        msgType,
+      }),
     });
 
-/**
- * MongoDB ObjectId validation schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for MongoDB ObjectId validation.
- * 
- * @example
- * const mongoIdSchema = zMongoId("Document ID");
- * const result = mongoIdSchema.parse("507f1f77bcf86cd799439011");
- */
-export const zMongoId = (
-  fieldName = "MongoDB ObjectId",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  zStringRequired(fieldName, msgType)
-    .refine(val => /^[0-9a-fA-F]{24}$/.test(val), {
-      message:
-        msgType === MsgType.Message
-          ? String(fieldName)
-          : `${fieldName} must be a valid MongoDB ObjectId`,
-    });
+  /**
+   * MongoDB ObjectId validation schema.
+   */
+  const zMongoId = (
+    msg = "MongoDB ObjectId",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    stringSchemas
+      .zStringRequired({ msg, msgType })
+      .refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
+        message: messageHandler.formatErrorMessage({
+          group: "uuid",
+          messageKey: "invalid",
+          msg,
+          msgType,
+        }),
+      });
 
-/**
- * MongoDB ObjectId list schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param minItems - Minimum number of IDs (default: 1).
- * @param maxItems - Maximum number of IDs (default: 1000).
- * @returns Zod schema for MongoDB ObjectId list.
- * 
- * @example
- * const mongoIdListSchema = zMongoIdList("Document IDs");
- * const result = mongoIdListSchema.parse(["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]);
- */
-export const zMongoIdList = (
-  fieldName = "MongoDB ObjectId List",
-  msgType: MsgType = MsgType.FieldName,
-  minItems = 1,
-  maxItems = 1000,
-) =>
-  z.array(zMongoId(
-    msgType === MsgType.Message ? "ID must be valid" : "ID",
-    msgType,
-  ))
-  .min(minItems, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must contain at least ${minItems} IDs`,
-  })
-  .max(maxItems, {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must contain at most ${maxItems} IDs`,
-  });
+  /**
+   * MongoDB ObjectId list schema.
+   */
+  const zMongoIdList = (
+    msg = "MongoDB ObjectId List",
+    msgType: MsgType = MsgType.FieldName,
+    minItems = 1,
+    maxItems = 1000,
+  ) =>
+    z
+      .array(zMongoId("ID", msgType))
+      .min(minItems, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "mustHaveMinItems",
+          msg,
+          msgType,
+          params: { min: minItems },
+        }),
+      })
+      .max(maxItems, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "mustHaveMaxItems",
+          msg,
+          msgType,
+          params: { max: maxItems },
+        }),
+      });
 
-/**
- * Flexible ID schema that accepts either UUIDs or MongoDB ObjectIds.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for flexible ID validation.
- * 
- * @example
- * const flexibleIdSchema = zFlexibleId("Record ID");
- * const result1 = flexibleIdSchema.parse("123e4567-e89b-12d3-a456-426614174000"); // UUID
- * const result2 = flexibleIdSchema.parse("507f1f77bcf86cd799439011"); // MongoDB ObjectId
- */
-export const zFlexibleId = (
-  fieldName = "ID",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.union([
-    zUuidRequired(fieldName, msgType),
-    zMongoId(fieldName, msgType),
-  ], {
-    message:
-      msgType === MsgType.Message
-        ? String(fieldName)
-        : `${fieldName} must be a valid UUID or MongoDB ObjectId`,
-  });
+  /**
+   * Flexible ID schema that accepts either UUIDs or MongoDB ObjectIds.
+   */
+  const zFlexibleId = (msg = "ID", msgType: MsgType = MsgType.FieldName) =>
+    z.union(
+      [uuidSchemas.zUuidRequired({ msg, msgType }), zMongoId(msg, msgType)],
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "uuid",
+          messageKey: "invalid",
+          msg,
+          msgType,
+        }),
+      },
+    );
+
+  return {
+    zIdListOptional,
+    zIdListRequired,
+    zId,
+    zUniqueIdList,
+    zPaginatedIdList,
+    zBatchOperationResponse,
+    zCustomId,
+    zMongoId,
+    zMongoIdList,
+    zFlexibleId,
+  };
+};

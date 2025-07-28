@@ -1,13 +1,8 @@
 import { z } from "zod";
-
-import { MsgType } from "./msg-type";
-import { zStringRequired, zStringOptional } from "./string-schemas";
-import { formatErrorMessage } from "../common/message-handler";
+import { MsgType } from "../common/types/msg-type";
 import { FILENAME_INVALID_CHARS_PATTERN } from "../common/regex-patterns";
-
-// --- File Upload Schema Types ---
-export type FileUploadOptional = z.infer<ReturnType<typeof zFileUploadOptional>>;
-export type FileUploadRequired = z.infer<ReturnType<typeof zFileUploadRequired>>;
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createStringSchemas } from "./string-schemas";
 
 // --- Common MIME Types ---
 
@@ -89,422 +84,306 @@ export const ALL_MIME_TYPES = [
   ...ARCHIVE_MIME_TYPES,
 ] as const;
 
-// --- File Upload Schemas ---
-
 /**
- * File size validation schema.
- * @param maxSize - Maximum file size in bytes.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for file size validation.
+ * Creates a factory function for file upload schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing file upload schema creation functions
  */
-/**
- * Creates a Zod schema for validating file sizes.
- *
- * The schema ensures that the value is a number, is positive, and does not exceed the specified maximum size.
- * Custom error messages can be provided for each validation step.
- *
- * @param maxSize - The maximum allowed file size in bytes.
- * @param fieldName - The name of the field being validated (used in error messages). Defaults to "File Size".
- * @param msgType - The type of message formatting to use for errors. Defaults to `MsgType.FieldName`.
- * @returns A Zod number schema with validation for file size.
- *
- * @example
- * // Allow files up to 2MB
- * const fileSizeSchema = zFileSize(2 * 1024 * 1024, "Upload Size");
- * fileSizeSchema.parse(1024 * 1024); // Passes
- * fileSizeSchema.parse(3 * 1024 * 1024); // Throws ZodError
- */
-export const zFileSize = (
-  maxSize: number,
-  fieldName = "File Size",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.number({
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "must be a number"
-    ),
-  })
-  .positive({
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "must be greater than 0"
-    ),
-  })
-  .max(maxSize, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must be less than ${formatBytes(maxSize)}`
-    ),
-  });
-
-
-/**
- * MIME type validation schema.
- * @param allowedTypes - Array of allowed MIME types.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for MIME type validation.
- *
- * @example
- * // Allow only JPEG and PNG images
- * const mimeSchema = zMimeType(["image/jpeg", "image/png"]);
- * mimeSchema.parse("image/jpeg"); // Passes
- * mimeSchema.parse("image/gif"); // Throws ZodError
- *
- * @example
- * // Custom error message
- * const mimeSchema = zMimeType(["application/pdf"], "Document Type", MsgType.Message);
- * mimeSchema.parse("application/pdf"); // Passes
- * mimeSchema.parse("image/png"); // Throws ZodError with custom message
- */
-export const zMimeType = (
-  allowedTypes: readonly string[],
-  fieldName = "File Type",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.enum(allowedTypes as [string, ...string[]], {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      `must be one of: ${allowedTypes.join(", ")}`
-    ),
-  });
-
-
-/**
- * Filename validation schema.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for filename validation.
- *
- * @example
- * // Basic usage
- * const filenameSchema = zFilename();
- * filenameSchema.parse("myfile.txt"); // Passes
- * filenameSchema.parse(".hiddenfile"); // Throws ZodError
- * filenameSchema.parse("file?.txt"); // Throws ZodError (invalid character)
- */
-export const zFilename = (
-  fieldName = "Filename",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  zStringRequired(fieldName, msgType)
-    .refine(
-      (name) => FILENAME_INVALID_CHARS_PATTERN.test(name),
-      {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          "contains invalid characters"
-        ),
-      },
-    )
-    .refine(
-      (name) => !name.startsWith(".") && !name.endsWith("."),
-      {
-        message: formatErrorMessage(
-          fieldName,
-          msgType,
-          "cannot start or end with a dot"
-        ),
-      },
-    );
-
-/**
- * Optional file upload schema with comprehensive validation.
- * @param config - Configuration object for file validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for an optional file upload.
- * 
- * @example
- * const fileSchema = zFileUploadOptional({ 
- *   maxSize: 5 * 1024 * 1024, // 5MB
- *   allowedTypes: IMAGE_MIME_TYPES 
- * }, "Profile Picture");
- */
-export const zFileUploadOptional = (
-  config: {
-    maxSize?: number;
-    allowedTypes?: readonly string[];
-    requireExtension?: boolean;
-  } = {},
-  fieldName = "File",
-  msgType: MsgType = MsgType.FieldName,
+export const createFileUploadSchemas = (
+  messageHandler: ErrorMessageFormatter,
 ) => {
-  const { maxSize = 10 * 1024 * 1024, allowedTypes = ALL_MIME_TYPES, requireExtension = false } = config;
+  const stringSchemas = createStringSchemas(messageHandler);
 
-  return z
-    .object({
-      filename: zFilename(
-        msgType === MsgType.Message ? "Filename is required" : "Filename",
-        msgType,
-      ).refine(
-        (name) => !requireExtension || name.includes("."),
-        {
-          message: formatErrorMessage(
-            fieldName,
-            msgType,
-            "must have a file extension"
-          ),
-        },
-      ),
-      mimetype: zMimeType(
-        allowedTypes,
-        msgType === MsgType.Message ? "Invalid file type" : "File Type",
-        msgType,
-      ),
-      size: zFileSize(
-        maxSize,
-        msgType === MsgType.Message ? "File too large" : "File Size",
-        msgType,
-      ),
-      encoding: zStringOptional(
-        msgType === MsgType.Message ? "Encoding is optional" : "Encoding",
-        msgType,
-      ),
-      originalName: zStringOptional(
-        msgType === MsgType.Message ? "Original name is optional" : "Original Name",
-        msgType,
-      ),
-      buffer: z.instanceof(Buffer, {
-        message: formatErrorMessage(
-          fieldName,
+  /**
+   * File size validation schema.
+   * Accepts a number representing file size in bytes with maximum size limit.
+   */
+  const zFileSize = (
+    maxSize: number,
+    msg = "File Size",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .number({
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
           msgType,
-          "buffer must be a Buffer instance"
-        ),
-      }).optional(),
-    })
-    .optional()
-    .refine(
-      (val) => val === undefined || (typeof val === "object" && val !== null),
-      {
-        message: formatErrorMessage(
-          fieldName,
+          messageKey: "invalid",
+        }),
+      })
+      .positive({
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
           msgType,
-          "must be a valid file object"
-        ),
-      },
-    );
-};
-
-/**
- * Required file upload schema with comprehensive validation.
- * @param config - Configuration object for file validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a required file upload.
- * 
- * @example
- * const fileSchema = zFileUploadRequired({ 
- *   maxSize: 5 * 1024 * 1024, // 5MB
- *   allowedTypes: IMAGE_MIME_TYPES 
- * }, "Profile Picture");
- */
-export const zFileUploadRequired = (
-  config: {
-    maxSize?: number;
-    allowedTypes?: readonly string[];
-    requireExtension?: boolean;
-  } = {},
-  fieldName = "File",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  const { maxSize = 10 * 1024 * 1024, allowedTypes = ALL_MIME_TYPES, requireExtension = false } = config;
-
-  return z.object({
-    filename: zFilename(
-      msgType === MsgType.Message ? "Filename is required" : "Filename",
-      msgType,
-    ).refine(
-      (name) => !requireExtension || name.includes("."),
-      {
-        message: formatErrorMessage(
-          fieldName,
+          messageKey: "invalid",
+        }),
+      })
+      .max(maxSize, {
+        message: messageHandler.formatErrorMessage({
+          msg,
           msgType,
-          "must have a file extension"
-        ),
-      },
-    ),
-    mimetype: zMimeType(
-      allowedTypes,
-      msgType === MsgType.Message ? "Invalid file type" : "File Type",
-      msgType,
-    ),
-    size: zFileSize(
-      maxSize,
-      msgType === MsgType.Message ? "File too large" : "File Size",
-      msgType,
-    ),
-    encoding: zStringOptional(
-      msgType === MsgType.Message ? "Encoding is optional" : "Encoding",
-      msgType,
-    ),
-    originalName: zStringOptional(
-      msgType === MsgType.Message ? "Original name is optional" : "Original Name",
-      msgType,
-    ),
-    buffer: z.instanceof(Buffer, {
-      message: formatErrorMessage(
-        fieldName,
+          group: "fileUpload",
+          messageKey: "fileSizeExceeded",
+          params: { maxSize: maxSize },
+        }),
+      });
+
+  /**
+   * MIME type validation schema.
+   * Accepts a string that must be one of the allowed MIME types.
+   */
+  const zMimeType = (
+    allowedTypes: readonly string[],
+    msg = "File Type",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.enum(allowedTypes as [string, ...string[]], {
+      message: messageHandler.formatErrorMessage({
+        msg,
         msgType,
-        "buffer must be a Buffer instance"
-      ),
-    }).optional(),
-  }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
-  });
-};
-
-
-/**
- * Creates a Zod schema for validating image file uploads.
- *
- * @param maxSize - The maximum allowed file size in bytes. Defaults to 5MB.
- * @param fieldName - The name of the field being validated. Defaults to "Image".
- * @param msgType - The type of message to use for validation errors. Defaults to `MsgType.FieldName`.
- * @returns A Zod schema that validates required image uploads with specified constraints.
- *
- * @example
- * // Allow image uploads up to 5MB
- * const imageSchema = zImageUpload();
- * imageSchema.parse({
- *   filename: "photo.jpg",
- *   mimetype: "image/jpeg",
- *   size: 1024 * 1024,
- *   encoding: "7bit",
- *   originalName: "photo.jpg",
- *   buffer: Buffer.from([]),
- * });
- */
-export const zImageUpload = (
-  maxSize = 5 * 1024 * 1024, // 5MB
-  fieldName = "Image",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  zFileUploadRequired(
-    {
-      maxSize,
-      allowedTypes: IMAGE_MIME_TYPES,
-      requireExtension: true,
-    },
-    fieldName,
-    msgType,
-  );
-
-
-/**
- * Creates a Zod schema for validating a required document upload.
- *
- * @param maxSize - The maximum allowed file size in bytes. Defaults to 10MB.
- * @param fieldName - The name of the field to use in validation messages. Defaults to "Document".
- * @param msgType - The type of message to use for validation errors. Defaults to `MsgType.FieldName`.
- * @returns A Zod schema for validating a required document upload with specified constraints.
- *
- * @example
- * // Allow document uploads up to 10MB
- * const documentSchema = zDocumentUpload();
- * documentSchema.parse({
- *   filename: "report.pdf",
- *   mimetype: "application/pdf",
- *   size: 1024 * 1024,
- *   encoding: "7bit",
- *   originalName: "report.pdf",
- *   buffer: Buffer.from([]),
- * });
- */
-export const zDocumentUpload = (
-  maxSize = 10 * 1024 * 1024, // 10MB
-  fieldName = "Document",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  zFileUploadRequired(
-    {
-      maxSize,
-      allowedTypes: DOCUMENT_MIME_TYPES,
-      requireExtension: true,
-    },
-    fieldName,
-    msgType,
-  );
-
-
-/**
- * Creates a Zod schema for validating an array of file uploads.
- *
- * @param config - Optional configuration for file validation, including:
- *   - `maxSize`: Maximum allowed file size in bytes.
- *   - `allowedTypes`: Array of allowed MIME types.
- *   - `requireExtension`: Whether a file extension is required.
- * @param fieldName - The name of the field being validated (default: "Files").
- * @param msgType - The type of message formatting to use for error messages.
- * @param maxFiles - The maximum number of files allowed in the array (default: 5).
- * @returns A Zod array schema that:
- *   - Requires at least one file.
- *   - Limits the number of files to `maxFiles`.
- *   - Applies the file validation schema to each file in the array.
- *
- * @example
- * // Allow up to 3 image files, each max 2MB
- * const multiImageSchema = zMultipleFileUpload(
- *   { maxSize: 2 * 1024 * 1024, allowedTypes: IMAGE_MIME_TYPES, requireExtension: true },
- *   "Images",
- *   MsgType.FieldName,
- *   3
- * );
- * multiImageSchema.parse([
- *   {
- *     filename: "photo1.jpg",
- *     mimetype: "image/jpeg",
- *     size: 1024 * 1024,
- *     encoding: "7bit",
- *     originalName: "photo1.jpg",
- *     buffer: Buffer.from([]),
- *   },
- *   {
- *     filename: "photo2.png",
- *     mimetype: "image/png",
- *     size: 512 * 1024,
- *     encoding: "7bit",
- *     originalName: "photo2.png",
- *     buffer: Buffer.from([]),
- *   }
- * ]);
- */
-export const zMultipleFileUpload = (
-  config: {
-    maxSize?: number;
-    allowedTypes?: readonly string[];
-    requireExtension?: boolean;
-  } = {},
-  fieldName = "Files",
-  msgType: MsgType = MsgType.FieldName,
-  maxFiles = 5,
-) =>
-  z.array(zFileUploadRequired(config, fieldName, msgType))
-    .min(1, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        "must contain at least one file"
-      ),
-    })
-    .max(maxFiles, {
-      message: formatErrorMessage(
-        fieldName,
-        msgType,
-        `must contain at most ${maxFiles} files`
-      ),
+        group: "fileUpload",
+        messageKey: "invalidMimeType",
+        params: { mime: allowedTypes.join(", ") },
+      }),
     });
+
+  /**
+   * Filename validation schema.
+   * Accepts a string with filename validation rules.
+   */
+  const zFilename = (msg = "Filename", msgType: MsgType = MsgType.FieldName) =>
+    stringSchemas
+      .zStringRequired({ msg, msgType })
+      .refine((name) => FILENAME_INVALID_CHARS_PATTERN.test(name), {
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "invalidFileName",
+          params: { name: msg },
+        }),
+      })
+      .refine((name) => !name.startsWith(".") && !name.endsWith("."), {
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "invalidFileName",
+          params: { name: msg },
+        }),
+      });
+
+  /**
+   * Optional file upload schema with comprehensive validation.
+   */
+  const zFileUploadOptional = (
+    config: {
+      maxSize?: number;
+      allowedTypes?: readonly string[];
+      requireExtension?: boolean;
+    } = {},
+    msg = "File",
+    msgType: MsgType = MsgType.FieldName,
+  ) => {
+    const {
+      maxSize = 10 * 1024 * 1024,
+      allowedTypes = ALL_MIME_TYPES,
+      requireExtension = false,
+    } = config;
+
+    return z
+      .object({
+        filename: zFilename("Filename", msgType).refine(
+          (name) => !requireExtension || name.includes("."),
+          {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "invalidFileName",
+              params: { name: msg },
+            }),
+          },
+        ),
+        mimetype: zMimeType(allowedTypes, "File Type", msgType),
+        size: zFileSize(maxSize, "File Size", msgType),
+        encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
+        originalName: stringSchemas.zStringOptional({
+          msg: "Original Name",
+          msgType,
+        }),
+        buffer: z
+          .instanceof(Buffer, {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "mustBeValidFile",
+            }),
+          })
+          .optional(),
+      })
+      .optional()
+      .refine(
+        (val) => val === undefined || (typeof val === "object" && val !== null),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "fileUpload",
+            msg,
+            msgType,
+            messageKey: "invalid",
+          }),
+        },
+      );
+  };
+
+  /**
+   * Required file upload schema with comprehensive validation.
+   */
+  const zFileUploadRequired = (
+    config: {
+      maxSize?: number;
+      allowedTypes?: readonly string[];
+      requireExtension?: boolean;
+    } = {},
+    msg = "File",
+    msgType: MsgType = MsgType.FieldName,
+  ) => {
+    const {
+      maxSize = 10 * 1024 * 1024,
+      allowedTypes = ALL_MIME_TYPES,
+      requireExtension = false,
+    } = config;
+
+    return z.object(
+      {
+        filename: zFilename("Filename", msgType).refine(
+          (name) => !requireExtension || name.includes("."),
+          {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "invalidFileName",
+              params: { name: msg },
+            }),
+          },
+        ),
+        mimetype: zMimeType(allowedTypes, "File Type", msgType),
+        size: zFileSize(maxSize, "File Size", msgType),
+        encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
+        originalName: stringSchemas.zStringOptional({
+          msg: "Original Name",
+          msgType,
+        }),
+        buffer: z
+          .instanceof(Buffer, {
+            message: messageHandler.formatErrorMessage({
+              group: "fileUpload",
+              msg,
+              msgType,
+              messageKey: "mustBeValidFile",
+            }),
+          })
+          .optional(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "fileUpload",
+          msg,
+          msgType,
+          messageKey: "fileRequired",
+        }),
+      },
+    );
+  };
+
+  /**
+   * Image upload schema.
+   * Required file upload with image-specific constraints.
+   */
+  const zImageUpload = (
+    maxSize = 5 * 1024 * 1024, // 5MB
+    msg = "Image",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    zFileUploadRequired(
+      {
+        maxSize,
+        allowedTypes: IMAGE_MIME_TYPES,
+        requireExtension: true,
+      },
+      msg,
+      msgType,
+    );
+
+  /**
+   * Document upload schema.
+   * Required file upload with document-specific constraints.
+   */
+  const zDocumentUpload = (
+    maxSize = 10 * 1024 * 1024, // 10MB
+    msg = "Document",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    zFileUploadRequired(
+      {
+        maxSize,
+        allowedTypes: DOCUMENT_MIME_TYPES,
+        requireExtension: true,
+      },
+      msg,
+      msgType,
+    );
+
+  /**
+   * Multiple file upload schema.
+   * Array of required file uploads with configurable limits.
+   */
+  const zMultipleFileUpload = (
+    config: {
+      maxSize?: number;
+      allowedTypes?: readonly string[];
+      requireExtension?: boolean;
+    } = {},
+    msg = "Files",
+    msgType: MsgType = MsgType.FieldName,
+    maxFiles = 5,
+  ) =>
+    z
+      .array(zFileUploadRequired(config, msg, msgType))
+      .min(1, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          msg,
+          msgType,
+          messageKey: "mustHaveMinItems",
+          params: { min: 1 },
+        }),
+      })
+      .max(maxFiles, {
+        message: messageHandler.formatErrorMessage({
+          msg,
+          msgType,
+          group: "array",
+          messageKey: "mustHaveMaxItems",
+          params: { max: maxFiles },
+        }),
+      });
+
+  return {
+    zFileSize,
+    zMimeType,
+    zFilename,
+    zFileUploadOptional,
+    zFileUploadRequired,
+    zImageUpload,
+    zDocumentUpload,
+    zMultipleFileUpload,
+  };
+};
 
 // --- Utility Functions ---
 
@@ -542,7 +421,10 @@ export function getFileExtension(filename: string): string {
  * @param mimetype - The MIME type.
  * @returns True if extension matches MIME type.
  */
-export function isExtensionMatchingMimeType(filename: string, mimetype: string): boolean {
+export function isExtensionMatchingMimeType(
+  filename: string,
+  mimetype: string,
+): boolean {
   const extension = getFileExtension(filename);
   const mimeToExtension: Record<string, string[]> = {
     "image/jpeg": ["jpg", "jpeg"],
@@ -552,7 +434,9 @@ export function isExtensionMatchingMimeType(filename: string, mimetype: string):
     "image/svg+xml": ["svg"],
     "application/pdf": ["pdf"],
     "application/msword": ["doc"],
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+      "docx",
+    ],
     "text/plain": ["txt"],
     "text/csv": ["csv"],
     "application/zip": ["zip"],

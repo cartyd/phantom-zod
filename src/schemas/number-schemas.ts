@@ -1,208 +1,473 @@
 import { z } from "zod";
-import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "../common/message-handler";
-import { INTEGER_PATTERN, FLOAT_PATTERN } from "../common/regex-patterns";
-/**
- * Enum to specify if the output should be a string or a number.
- */
-export enum NumberFieldOutput {
-  AsNumber = "number",
-  AsString = "string",
-}
-/**
- * Enum to specify if a field is required or optional.
- */
-export enum NumberFieldRequirement {
-  Required = "required",
-  Optional = "optional",
-}
-/**
- * Enum to specify if the schema should constrain by integer or float.
- */
-export enum NumberFieldType {
-  Integer = "integer",
-  Float = "float",
-}
+
+import { MsgType } from "../common/types/msg-type";
+import type { NumberSchemaOptions } from "../common/types/schema-options.types";
+import {
+  type ErrorMessageFormatter,
+  createTestMessageHandler,
+} from "../localization/types/message-handler.types";
 
 /**
- * Creates a Zod schema for validating numbers (or numeric strings) with optional constraints.
- *
- * @param params - Configuration options for the schema.
- * @param params.msg - The field name or custom message for error output (default: "Value").
- * @param params.msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @param params.type - Whether to constrain to integer or float (default: integer).
- * @param params.requirement - Whether the field is required or optional.
- * @param params.output - Whether to coerce the output to a string or number.
- * @param params.min - The minimum allowed value (if provided).
- * @param params.max - The maximum allowed value (if provided).
- * @returns A Zod schema that validates numbers or numeric strings, applies min/max constraints if specified,
- *          and optionally transforms the value to a string.
- *
- * @example
- * const schema = makeNumberSchema({ type: NumberFieldType.Float, requirement: NumberFieldRequirement.Required, min: 10, max: 100 });
- * schema.parse(42.5); // 42.5
- * schema.parse("50.1"); // 50.1
- * schema.parse("abc"); // Throws validation error
+ * Creates a factory function for number schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing number schema creation functions
  */
-export function makeNumberSchema({
-  msg = "Value",
-  msgType = MsgType.FieldName,
-  type = NumberFieldType.Integer,
-  requirement = NumberFieldRequirement.Optional,
-  output = NumberFieldOutput.AsNumber,
-  min,
-  max,
-}: {
-  msg?: string;
-  msgType?: MsgType;
-  type?: NumberFieldType;
-  requirement?: NumberFieldRequirement;
-  output?: NumberFieldOutput;
-  min?: number;
-  max?: number;
-}) {
-  const regex = type === NumberFieldType.Float ? FLOAT_PATTERN : INTEGER_PATTERN;
+export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
+  // Helper function to create error messages - eliminates redundant code with improved typing
+  const createErrorMessage = (
+    messageKey: keyof import("../localization/types/message-params.types").NumberMessageParams,
+    params: Record<string, unknown>,
+    msg: string,
+    msgType: MsgType,
+  ): string => {
+    return messageHandler.formatErrorMessage({
+      group: "number",
+      messageKey,
+      params,
+      msg,
+      msgType,
+    });
+  };
 
-  let base: z.ZodTypeAny;
-  if (requirement === NumberFieldRequirement.Optional) {
-    base = z.union([z.number(), z.string().regex(regex)]).optional();
-  } else {
-    base = z.union([z.number(), z.string().regex(regex)]);
+  // Helper function to add min/max constraints using refine
+  const addMinMaxConstraints = (
+    schema: any,
+    min?: number,
+    max?: number,
+    msg: string = "Value",
+    msgType: MsgType = MsgType.FieldName,
+  ) => {
+    let constrainedSchema = schema;
+
+    if (min !== undefined) {
+      constrainedSchema = constrainedSchema.refine(
+        (val: any) => typeof val !== "number" || val >= min,
+        { message: createErrorMessage("tooSmall", { min }, msg, msgType) },
+      );
+    }
+
+    if (max !== undefined) {
+      constrainedSchema = constrainedSchema.refine(
+        (val: any) => typeof val !== "number" || val <= max,
+        { message: createErrorMessage("tooBig", { max }, msg, msgType) },
+      );
+    }
+
+    return constrainedSchema;
+  };
+
+  // Helper function to extract and provide default options with improved typing
+  const extractOptions = (
+    options: NumberSchemaOptions,
+  ): {
+    msg: string;
+    msgType: MsgType;
+    min?: number;
+    max?: number;
+  } => {
+    const { msg = "Value", msgType = MsgType.FieldName, min, max } = options;
+    return { msg, msgType, min, max };
+  };
+
+  // Modern approach with strict validation
+  const createNumberSchema = (
+    options: NumberSchemaOptions,
+    isRequired: boolean,
+    asString: boolean = false,
+  ) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+
+    // Create strict number schema with custom validation
+    let schema = z.any().transform((val, ctx) => {
+      // Reject null explicitly
+      if (val === null) {
+        ctx.addIssue({
+          code: "custom",
+          message: createErrorMessage(
+            "mustBeNumber",
+            { receivedType: "object" },
+            msg,
+            msgType,
+          ),
+        });
+        return z.NEVER;
+      }
+
+      // Handle strings with strict validation
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        // Reject empty strings
+        if (trimmed === "") {
+          ctx.addIssue({
+            code: "custom",
+            message: createErrorMessage(
+              "mustBeNumber",
+              { receivedType: "string" },
+              msg,
+              msgType,
+            ),
+          });
+          return z.NEVER;
+        }
+        // Reject invalid formats like "123." or multiple dots
+        if (trimmed.endsWith(".") || (trimmed.match(/\./g) || []).length > 1) {
+          ctx.addIssue({
+            code: "custom",
+            message: createErrorMessage(
+              "mustBeNumber",
+              { receivedType: "string" },
+              msg,
+              msgType,
+            ),
+          });
+          return z.NEVER;
+        }
+        // Convert to number
+        const num = Number(trimmed);
+        if (isNaN(num)) {
+          ctx.addIssue({
+            code: "custom",
+            message: createErrorMessage(
+              "mustBeNumber",
+              { receivedType: "string" },
+              msg,
+              msgType,
+            ),
+          });
+          return z.NEVER;
+        }
+        return num;
+      }
+
+      // Handle numbers directly
+      if (typeof val === "number") {
+        return val;
+      }
+
+      // Reject everything else
+      ctx.addIssue({
+        code: "custom",
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: typeof val },
+          msg,
+          msgType,
+        ),
+      });
+      return z.NEVER;
+    });
+
+    // Add min/max constraints
+    schema = addMinMaxConstraints(schema, min, max, msg, msgType);
+
+    // Handle string transformation if needed
+    if (asString) {
+      const stringSchema = schema.transform((val) => String(val));
+      return isRequired ? stringSchema : stringSchema.optional();
+    }
+
+    return isRequired ? schema : schema.optional();
+  };
+
+  const zNumberOptional = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, false);
+
+  const zNumberRequired = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, true);
+
+  const zNumberStringOptional = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, false, true);
+
+  const zNumberStringRequired = (options: NumberSchemaOptions = {}) =>
+    createNumberSchema(options, true, true);
+
+  // Explicit specialized schema implementations - clear and maintainable
+  const zIntegerRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .int({
+        message: createErrorMessage(
+          "mustBeInteger",
+          { receivedValue: "decimal" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zIntegerOptional = (options: NumberSchemaOptions = {}) => {
+    return zIntegerRequired(options).optional();
+  };
+
+  const zPositiveRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .positive({
+        message: createErrorMessage(
+          "mustBePositive",
+          { receivedValue: "non-positive" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zPositiveOptional = (options: NumberSchemaOptions = {}) => {
+    return zPositiveRequired(options).optional();
+  };
+
+  const zNegativeRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .negative({
+        message: createErrorMessage(
+          "mustBeNegative",
+          { receivedValue: "non-negative" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zNegativeOptional = (options: NumberSchemaOptions = {}) => {
+    return zNegativeRequired(options).optional();
+  };
+
+  const zNonNegativeRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .nonnegative({
+        message: createErrorMessage(
+          "mustBeNonNegative",
+          { receivedValue: "negative" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zNonNegativeOptional = (options: NumberSchemaOptions = {}) => {
+    return zNonNegativeRequired(options).optional();
+  };
+
+  const zNonPositiveRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .nonpositive({
+        message: createErrorMessage(
+          "mustBeNonPositive",
+          { receivedValue: "positive" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zNonPositiveOptional = (options: NumberSchemaOptions = {}) => {
+    return zNonPositiveRequired(options).optional();
+  };
+
+  const zFiniteRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .finite({
+        message: createErrorMessage(
+          "invalid",
+          { reason: "must be finite" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zFiniteOptional = (options: NumberSchemaOptions = {}) => {
+    return zFiniteRequired(options).optional();
+  };
+
+  const zSafeIntegerRequired = (options: NumberSchemaOptions = {}) => {
+    const { msg, msgType, min, max } = extractOptions(options);
+    const schema = z.coerce
+      .number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      })
+      .safe({
+        message: createErrorMessage(
+          "invalid",
+          { reason: "must be a safe integer" },
+          msg,
+          msgType,
+        ),
+      });
+    return addMinMaxConstraints(schema, min, max, msg, msgType);
+  };
+
+  const zSafeIntegerOptional = (options: NumberSchemaOptions = {}) => {
+    return zSafeIntegerRequired(options).optional();
+  };
+
+  return {
+    zNumberOptional,
+    zNumberRequired,
+    zNumberStringOptional,
+    zNumberStringRequired,
+    zIntegerRequired,
+    zIntegerOptional,
+    zPositiveRequired,
+    zPositiveOptional,
+    zNegativeRequired,
+    zNegativeOptional,
+    zNonNegativeRequired,
+    zNonNegativeOptional,
+    zNonPositiveRequired,
+    zNonPositiveOptional,
+    zFiniteRequired,
+    zFiniteOptional,
+    zSafeIntegerRequired,
+    zSafeIntegerOptional,
+  };
+};
+
+// Create a test message handler for number validation
+const numberMessageHandler = createTestMessageHandler((options) => {
+  if (options.msgType === MsgType.Message) {
+    return options.msg;
   }
 
-  let schema = base.transform((val) => {
-    if (val === undefined || val === "") return undefined;
-    const num = typeof val === "number" ? val : Number(val);
-    return output === NumberFieldOutput.AsString ? String(num) : num;
-  });
+  // Number-specific error messages
+  switch (options.messageKey) {
+    case "required":
+      return `${options.msg} is required`;
+    case "invalid":
+      return `${options.msg} is invalid`;
+    case "mustBeNumber":
+      return `${options.msg} must be a number`;
+    case "mustBeInteger":
+      return `${options.msg} must be an integer`;
+    case "mustBeFloat":
+      return `${options.msg} must be a float`;
+    case "mustBePositive":
+      return `${options.msg} must be positive`;
+    case "mustBeNegative":
+      return `${options.msg} must be negative`;
+    case "mustBeNonNegative":
+      return `${options.msg} must be non-negative`;
+    case "mustBeNonPositive":
+      return `${options.msg} must be non-positive`;
+    case "tooSmall":
+      return `${options.msg} must be at least ${(options.params as any)?.min}`;
+    case "tooBig":
+      return `${options.msg} must be at most ${(options.params as any)?.max}`;
+    case "outOfRange":
+      return `${options.msg} must be between ${(options.params as any)?.min} and ${(options.params as any)?.max}`;
+    case "invalidDecimalPlaces":
+      return `${options.msg} must have at most ${(options.params as any)?.max} decimal places`;
+    default:
+      return `${options.msg} is invalid`;
+  }
+});
 
-  schema = schema.refine(
-    (val) => {
-      if (val === undefined) return true;
-      const num = Number(val);
-      if (isNaN(num)) return false;
-      if (type === NumberFieldType.Integer && !Number.isInteger(num))
-        return false;
-      if (typeof min === "number" && num < min) return false;
-      if (typeof max === "number" && num > max) return false;
-      return true;
-    },
-    {
-      message: formatErrorMessage(
-        msg,
-        msgType,
-        `must be a valid ${type === NumberFieldType.Integer ? "integer" : "number"}${
-            typeof min === "number" && typeof max === "number"
-              ? ` between ${min} and ${max}`
-              : typeof min === "number"
-              ? ` greater than or equal to ${min}`
-              : typeof max === "number"
-              ? ` less than or equal to ${max}`
-              : ""
-          }`
-      ),
-    },
-  );
+// Create schemas with default handler and export them directly - eliminates all repetitive export patterns
+const {
+  zNumberOptional,
+  zNumberRequired,
+  zNumberStringOptional,
+  zNumberStringRequired,
+  zIntegerRequired,
+  zIntegerOptional,
+  zPositiveRequired,
+  zPositiveOptional,
+  zNegativeRequired,
+  zNegativeOptional,
+  zNonNegativeRequired,
+  zNonNegativeOptional,
+  zNonPositiveRequired,
+  zNonPositiveOptional,
+  zFiniteRequired,
+  zFiniteOptional,
+  zSafeIntegerRequired,
+  zSafeIntegerOptional,
+} = createNumberSchemas(numberMessageHandler);
 
-  return schema;
-}
+// Export schemas for direct use - single destructuring and export eliminates all repetitive patterns
+export {
+  zNumberOptional,
+  zNumberRequired,
+  zNumberStringOptional,
+  zNumberStringRequired,
+  zIntegerRequired,
+  zIntegerOptional,
+  zPositiveRequired,
+  zPositiveOptional,
+  zNegativeRequired,
+  zNegativeOptional,
+  zNonNegativeRequired,
+  zNonNegativeOptional,
+  zNonPositiveRequired,
+  zNonPositiveOptional,
+  zFiniteRequired,
+  zFiniteOptional,
+  zSafeIntegerRequired,
+  zSafeIntegerOptional,
+};
 
-/**
- * Zod schema for an optional number field.
- * @param msg - The field name or custom message for error output.
- * @param type - NumberFieldType (Integer or Float, default Integer)
- * @param min - Minimum allowed value (optional)
- * @param max - Maximum allowed value (optional)
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- */
-export const zNumberOptional = (
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  makeNumberSchema({
-    msg,
-    msgType,
-    type,
-    requirement: NumberFieldRequirement.Optional,
-    output: NumberFieldOutput.AsNumber,
-    min,
-    max,
-  });
-
-/**
- * Zod schema for a required number field.
- * @param msg - The field name or custom message for error output.
- * @param type - NumberFieldType (Integer or Float, default Integer)
- * @param min - Minimum allowed value (optional)
- * @param max - Maximum allowed value (optional)
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- */
-export const zNumberRequired = (
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  makeNumberSchema({
-    msg,
-    msgType,
-    type,
-    requirement: NumberFieldRequirement.Required,
-    output: NumberFieldOutput.AsNumber,
-    min,
-    max,
-  });
-
-/**
- * Zod schema for an optional number field, output as string.
- * @param msg - The field name or custom message for error output.
- * @param type - NumberFieldType (Integer or Float, default Integer)
- * @param min - Minimum allowed value (optional)
- * @param max - Maximum allowed value (optional)
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- */
-export const zNumberStringOptional = (
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  makeNumberSchema({
-    msg,
-    msgType,
-    type,
-    requirement: NumberFieldRequirement.Optional,
-    output: NumberFieldOutput.AsString,
-    min,
-    max,
-  });
-
-/**
- * Zod schema for a required number field, output as string.
- * @param msg - The field name or custom message for error output.
- * @param type - NumberFieldType (Integer or Float, default Integer)
- * @param min - Minimum allowed value (optional)
- * @param max - Maximum allowed value (optional)
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- */
-export const zNumberStringRequired = (
-  msg = "Value",
-  type: NumberFieldType = NumberFieldType.Integer,
-  min?: number,
-  max?: number,
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  makeNumberSchema({
-    msg,
-    msgType,
-    type,
-    requirement: NumberFieldRequirement.Required,
-    output: NumberFieldOutput.AsString,
-    min,
-    max,
-  });
+// Export the options interface for external use
+export type { NumberSchemaOptions };

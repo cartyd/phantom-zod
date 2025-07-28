@@ -1,6 +1,54 @@
-import { MsgType } from "../src/schemas/msg-type";
-import { zStringOptional, zStringRequired } from "../src/schemas/string-schemas";
+import { MsgType } from "../src/common/types/msg-type";
+import { createStringSchemas } from "../src/schemas/string-schemas";
 import { generateTestData, runTableTests } from "./setup";
+import { createTestMessageHandler } from "../src/localization/types/message-handler.types";
+
+// Create a type-safe mock using the test helper
+const mockMessageHandler = createTestMessageHandler(
+  // Custom mock implementation (optional)
+  (options) => {
+    if (options.msgType === MsgType.Message) {
+      return options.msg;
+    }
+    
+    // Simple mock implementation for field name formatting
+    switch (options.messageKey) {
+      case "required":
+        return `${options.msg} is required`;
+      case "mustBeString":
+        return `${options.msg} must be a string`;
+      case "tooShort":
+        return `${options.msg} is too short (minimum: ${options.params?.min} characters)`;
+      case "tooLong":
+        return `${options.msg} is too long (maximum: ${options.params?.max} characters)`;
+      default:
+        return `${options.msg} is invalid`;
+    }
+  }
+);
+
+// Create schema functions with injected message handler
+const { zStringOptional, zStringRequired } = createStringSchemas(mockMessageHandler);
+
+describe('Type enforcement (mustBeString)', () => {
+  const nonStringValues = [5, true, null, undefined, {}, [], Symbol('s')];
+
+  nonStringValues.forEach((value) => {
+    it(`zStringOptional should throw mustBeString for value: ${String(value)}`, () => {
+      if (value === undefined) {
+        // zStringOptional allows undefined, returns ""
+        expect(zStringOptional().parse(undefined)).toBe("");
+      } else {
+        expect(() => zStringOptional().parse(value)).toThrow(/must be a string|is invalid/);
+      }
+    });
+
+    it(`zStringRequired should throw mustBeString for value: ${String(value)}`, () => {
+      expect(() => zStringRequired().parse(value)).toThrow(/must be a string|is invalid/);
+    });
+  });
+});
+
 
 describe('String Schemas', () => {
   describe('zStringOptional', () => {
@@ -76,23 +124,23 @@ describe('String Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom message when MsgType is Message for empty string', () => {
-        const schema = zStringRequired('Custom required message', MsgType.Message);
+        const schema = zStringRequired({ msg: 'Custom required message', msgType: MsgType.Message });
         expect(() => schema.parse('')).toThrow('Custom required message');
       });
 
       it('should use custom message when MsgType is Message for whitespace-only string', () => {
-        const schema = zStringRequired('Custom required message', MsgType.Message);
+        const schema = zStringRequired({ msg: 'Custom required message', msgType: MsgType.Message });
         expect(() => schema.parse('   ')).toThrow('Custom required message');
       });
       it('should use custom field name in error message', () => {
-        const schema = zStringOptional('Name');
+        const schema = zStringOptional({ msg: 'Name' });
         // This schema should not throw for valid strings, 
         // but would throw for non-string types if TypeScript allowed it
         expect(schema.parse('test')).toBe('test');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zStringOptional('Custom validation message', MsgType.Message);
+        const schema = zStringOptional({ msg: 'Custom validation message', msgType: MsgType.Message });
         expect(schema.parse('test')).toBe('test');
       });
     });
@@ -179,17 +227,17 @@ describe('String Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in required error message', () => {
-        const schema = zStringRequired('Name');
+        const schema = zStringRequired({ msg: 'Name' });
         expect(() => schema.parse('')).toThrow('Name is required');
       });
 
       it('should use custom field name in validation error message', () => {
-        const schema = zStringRequired('Name');
+        const schema = zStringRequired({ msg: 'Name' });
         expect(() => schema.parse('   ')).toThrow('Name is required');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zStringRequired('Please provide a value', MsgType.Message);
+        const schema = zStringRequired({ msg: 'Please provide a value', msgType: MsgType.Message });
         expect(() => schema.parse('')).toThrow('Please provide a value');
       });
     });
@@ -219,6 +267,39 @@ describe('String Schemas', () => {
     it('should handle mixed whitespace characters', () => {
       const schema = zStringOptional();
       expect(schema.parse('\t\n  hello world  \t\n')).toBe('hello world');
+    });
+  });
+
+  describe('Length constraints with options', () => {
+    it('should enforce minimum length for optional strings', () => {
+      const schema = zStringOptional({ minLength: 3 });
+      expect(schema.parse('hello')).toBe('hello');
+      expect(() => schema.parse('hi')).toThrow();
+    });
+
+    it('should enforce maximum length for optional strings', () => {
+      const schema = zStringOptional({ maxLength: 5 });
+      expect(schema.parse('hello')).toBe('hello');
+      expect(() => schema.parse('hello world')).toThrow();
+    });
+
+    it('should enforce both min and max length for optional strings', () => {
+      const schema = zStringOptional({ minLength: 3, maxLength: 10 });
+      expect(schema.parse('hello')).toBe('hello');
+      expect(() => schema.parse('hi')).toThrow();
+      expect(() => schema.parse('this is too long')).toThrow();
+    });
+
+    it('should enforce minimum length for required strings', () => {
+      const schema = zStringRequired({ minLength: 3 });
+      expect(schema.parse('hello')).toBe('hello');
+      expect(() => schema.parse('hi')).toThrow();
+    });
+
+    it('should enforce maximum length for required strings', () => {
+      const schema = zStringRequired({ maxLength: 5 });
+      expect(schema.parse('hello')).toBe('hello');
+      expect(() => schema.parse('hello world')).toThrow();
     });
   });
 

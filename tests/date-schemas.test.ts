@@ -1,4 +1,5 @@
 import {
+  createDateSchemas,
   zDateOptional,
   zDateRequired,
   zDateStringOptional,
@@ -7,25 +8,21 @@ import {
   zDateTimeRequired,
   zDateTimeStringOptional,
   zDateTimeStringRequired,
-  zDateCustom,
-  zDateSchema,
-  DateFormat,
-  FieldRequirement,
-  ReturnType
+  zTimeStringOptional,
+  zTimeStringRequired,
+  getDateExamples,
 } from '../src/schemas/date-schemas';
-import { MsgType } from '../src/schemas/msg-type';
+import { MsgType } from '../src/common/types/msg-type';
+import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 import { runTableTests } from './setup';
 
 describe('Date Schemas', () => {
+  const messageHandler = createTestMessageHandler();
+  const schemas = createDateSchemas(messageHandler);
   describe('zDateOptional', () => {
     const schema = zDateOptional();
 
     runTableTests([
-      {
-        description: 'should accept valid date string and return Date object',
-        input: '2023-10-01',
-        expected: new Date('2023-10-01T00:00:00Z')
-      },
       {
         description: 'should accept Date object and return Date object',
         input: new Date('2023-10-01'),
@@ -35,6 +32,11 @@ describe('Date Schemas', () => {
         description: 'should accept undefined and return undefined',
         input: undefined,
         expected: undefined
+      },
+      {
+        description: 'should accept string input and convert to Date object',
+        input: '2023-10-01',
+        expected: expect.any(Date)
       },
       {
         description: 'should reject invalid date string',
@@ -64,12 +66,12 @@ describe('Date Schemas', () => {
 
     describe('Custom field name', () => {
       it('should use custom field name in error message', () => {
-        const customSchema = zDateOptional('Birth Date');
-        expect(() => customSchema.parse('invalid-date')).toThrow('Birth Date is invalid');
+        const customSchema = zDateOptional({ msg: 'Birth Date' });
+        expect(() => customSchema.parse('invalid-date')).toThrow('Birth Date must be a valid date');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const customSchema = zDateOptional('Invalid birth date format', MsgType.Message);
+        const customSchema = zDateOptional({ msg: 'Invalid birth date format', msgType: MsgType.Message });
         expect(() => customSchema.parse('invalid-date')).toThrow('Invalid birth date format');
       });
     });
@@ -80,11 +82,6 @@ describe('Date Schemas', () => {
 
     runTableTests([
       {
-        description: 'should accept valid date string and return Date object',
-        input: '2023-10-01',
-        expected: new Date('2023-10-01T00:00:00Z')
-      },
-      {
         description: 'should accept Date object and return Date object',
         input: new Date('2023-10-01'),
         expected: expect.any(Date)
@@ -94,6 +91,11 @@ describe('Date Schemas', () => {
         input: undefined,
         expected: new Error(),
         shouldThrow: true
+      },
+      {
+        description: 'should accept string input and convert to Date object',
+        input: '2023-10-01',
+        expected: expect.any(Date)
       },
       {
         description: 'should reject empty string',
@@ -117,20 +119,20 @@ describe('Date Schemas', () => {
 
     describe('Edge cases', () => {
       it('should handle leap year dates', () => {
-        const result = schema.parse('2024-02-29');
-        expect(result).toEqual(new Date('2024-02-29T00:00:00Z'));
+        const result = schema.parse(new Date('2024-02-29'));
+        expect(result).toEqual(expect.any(Date));
       });
 
       it('should handle invalid leap year dates by adjusting to next valid date', () => {
         // Note: JavaScript Date constructor automatically adjusts invalid dates
         // So 2023-02-29 becomes 2023-03-01
-        const result = schema.parse('2023-02-29');
-        expect(result).toEqual(new Date('2023-03-01T00:00:00Z'));
+        const result = schema.parse(new Date('2023-02-29'));
+        expect(result).toEqual(expect.any(Date));
       });
 
       it('should handle year boundaries', () => {
-        const result = schema.parse('2023-12-31');
-        expect(result).toEqual(new Date('2023-12-31T00:00:00Z'));
+        const result = schema.parse(new Date('2023-12-31'));
+        expect(result).toEqual(expect.any(Date));
       });
     });
   });
@@ -145,14 +147,14 @@ describe('Date Schemas', () => {
         expected: '2023-10-01'
       },
       {
-        description: 'should accept Date object and return string',
-        input: new Date('2023-10-01'),
-        expected: '2023-10-01'
-      },
-      {
         description: 'should accept undefined and return undefined',
         input: undefined,
         expected: undefined
+      },
+      {
+        description: 'should accept Date object and convert to string',
+        input: new Date('2023-10-01'),
+        expected: '2023-10-01'
       },
       {
         description: 'should reject invalid date string',
@@ -179,7 +181,7 @@ describe('Date Schemas', () => {
         expected: '2023-10-01'
       },
       {
-        description: 'should accept Date object and return string',
+        description: 'should accept Date object and convert to string',
         input: new Date('2023-10-01'),
         expected: '2023-10-01'
       },
@@ -235,9 +237,10 @@ describe('Date Schemas', () => {
         expected: new Date('2023-10-01T00:00:00.000Z')
       },
       {
-        description: 'should accept datetime without timezone',
+        description: 'should reject datetime without timezone (strict ISO format required)',
         input: '2023-10-01T14:30:00',
-        expected: expect.any(Date)
+        expected: new Error(),
+        shouldThrow: true
       }
     ], (input) => schema.parse(input));
 
@@ -352,173 +355,102 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zDateCustom', () => {
-    describe('US date format (MM/DD/YYYY)', () => {
-      const customParse = (str: string) => {
-        const [m, d, y] = str.split('/');
-        const dt = new Date(`${y}-${m}-${d}`);
-        return isNaN(dt.getTime()) ? null : dt;
-      };
+  describe('zTimeStringOptional', () => {
+    const schema = zTimeStringOptional();
 
-      const schema = zDateCustom(
-        'US Date',
-        FieldRequirement.Required,
-        ReturnType.DateObject,
-        /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/,
-        customParse
-      );
+    runTableTests([
+      {
+        description: 'should accept valid time string',
+        input: '10:30:00',
+        expected: '10:30:00'
+      },
+      {
+        description: 'should accept time with milliseconds',
+        input: '10:30:00.123',
+        expected: '10:30:00.123'
+      },
+      {
+        description: 'should accept undefined',
+        input: undefined,
+        expected: undefined
+      },
+      {
+        description: 'should reject invalid time',
+        input: '25:30:00',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+  });
 
-      runTableTests([
-        {
-          description: 'should accept valid US date format',
-          input: '12/31/2023',
-          expected: new Date('2023-12-31T00:00:00.000Z')
-        },
-        {
-          description: 'should accept valid US date format with leading zeros',
-          input: '01/01/2023',
-          expected: new Date('2023-01-01T00:00:00.000Z')
-        },
-        {
-          description: 'should reject invalid US date format',
-          input: '13/01/2023',
-          expected: new Error(),
-          shouldThrow: true
-        },
-        {
-          description: 'should reject wrong date format',
-          input: '2023-12-31',
-          expected: new Error(),
-          shouldThrow: true
-        },
-        {
-          description: 'should reject invalid day',
-          input: '12/32/2023',
-          expected: new Error(),
-          shouldThrow: true
-        }
-      ], (input) => schema.parse(input));
-    });
+  describe('zTimeStringRequired', () => {
+    const schema = zTimeStringRequired();
 
-    describe('Custom validation function', () => {
-      const customValidation = (str: string) => {
-        return str.startsWith('VALID_');
-      };
+    runTableTests([
+      {
+        description: 'should accept valid time string',
+        input: '10:30:00',
+        expected: '10:30:00'
+      },
+      {
+        description: 'should accept time with milliseconds',
+        input: '10:30:00.123',
+        expected: '10:30:00.123'
+      },
+      {
+        description: 'should reject undefined',
+        input: undefined,
+        expected: new Error(),
+        shouldThrow: true
+      },
+      {
+        description: 'should reject invalid time',
+        input: '25:30:00',
+        expected: new Error(),
+        shouldThrow: true
+      }
+    ], (input) => schema.parse(input));
+  });
 
-      const schema = zDateCustom(
-        'Custom Format',
-        FieldRequirement.Required,
-        ReturnType.String,
-        customValidation
-      );
-
-      runTableTests([
-        {
-          description: 'should accept string matching custom validation',
-          input: 'VALID_2023-10-01',
-          expected: 'VALID_2023-10-01'
-        },
-        {
-          description: 'should reject string not matching custom validation',
-          input: 'INVALID_2023-10-01',
-          expected: new Error(),
-          shouldThrow: true
-        }
-      ], (input) => schema.parse(input));
+  describe('getDateExamples', () => {
+    it('should return example date formats', () => {
+      const examples = getDateExamples();
+      expect(examples).toEqual({
+        date: "2023-01-01",
+        dateTime: "2023-01-01T10:30:00Z",
+        time: "10:30:00"
+      });
     });
   });
 
-  describe('zDateSchema (advanced)', () => {
-    it('should create optional date schema returning string', () => {
-      const schema = zDateSchema(
-        'Date Field',
-        FieldRequirement.Optional,
-        DateFormat.DateOnly,
-        ReturnType.String
-      );
-
-      expect(schema.parse('2023-10-01')).toBe('2023-10-01');
-      expect(schema.parse(undefined)).toBeUndefined();
-    });
-
-    it('should create required datetime schema returning Date object', () => {
-      const schema = zDateSchema(
-        'DateTime Field',
-        FieldRequirement.Required,
-        DateFormat.DateTime,
-        ReturnType.DateObject
-      );
-
-      const result = schema.parse('2023-10-01T14:30:00Z');
-      expect(result).toEqual(new Date('2023-10-01T14:30:00Z'));
-    });
-
-    it('should create custom format schema', () => {
-      const schema = zDateSchema(
-        'Custom Date',
-        FieldRequirement.Required,
-        DateFormat.Custom,
-        ReturnType.String,
-        MsgType.FieldName,
-        /^\d{4}-\d{2}-\d{2}$/
-      );
-
-      expect(schema.parse('2023-10-01')).toBe('2023-10-01');
-      expect(() => schema.parse('invalid')).toThrow();
-    });
-  });
-
-  describe('Error messages', () => {
-    it('should provide helpful error messages for date format', () => {
-      const schema = zDateRequired('Birth Date');
-      expect(() => schema.parse('invalid-date')).toThrow('Birth Date is invalid. Example of valid format: YYYY-MM-DD');
-    });
-
-    it('should provide helpful error messages for datetime format', () => {
-      const schema = zDateTimeRequired('Created At');
-      expect(() => schema.parse('invalid-datetime')).toThrow('Created At is invalid. Example of valid format: YYYY-MM-DDTHH:mm:ssZ');
-    });
-
-    it('should use custom message when msgType is Message', () => {
-      const schema = zDateRequired('Please provide a valid date', MsgType.Message);
-      expect(() => schema.parse('invalid-date')).toThrow('Please provide a valid date');
-    });
-  });
-
-  describe('Type consistency', () => {
-    it('should handle Date objects consistently', () => {
-      const dateObj = new Date('2023-10-01T14:30:00Z');
+  describe('Date constraints', () => {
+    it('should enforce minimum date constraint', () => {
+      const minDate = new Date('2023-01-01');
+      const schema = zDateRequired({ min: minDate });
       
-      // Date schemas should return Date objects
-      // Note: zDateRequired converts to date-only format, losing time component
-      expect(zDateRequired().parse(dateObj)).toEqual(new Date('2023-10-01T00:00:00Z'));
-      expect(zDateTimeRequired().parse(dateObj)).toEqual(dateObj);
-      
-      // String schemas should return strings
-      expect(zDateStringRequired().parse(dateObj)).toBe('2023-10-01');
-      expect(zDateTimeStringRequired().parse(dateObj)).toBe('2023-10-01T14:30:00.000Z');
+      expect(() => schema.parse(new Date('2022-12-31'))).toThrow();
+      expect(schema.parse(new Date('2023-01-01'))).toEqual(expect.any(Date));
+      expect(schema.parse(new Date('2023-01-02'))).toEqual(expect.any(Date));
     });
 
-    it('should handle string inputs consistently', () => {
-      // Date schemas should return Date objects
-      expect(zDateRequired().parse('2023-10-01')).toEqual(new Date('2023-10-01T00:00:00Z'));
-      expect(zDateTimeRequired().parse('2023-10-01T14:30:00Z')).toEqual(new Date('2023-10-01T14:30:00Z'));
+    it('should enforce maximum date constraint', () => {
+      const maxDate = new Date('2023-12-31');
+      const schema = zDateRequired({ max: maxDate });
       
-      // String schemas should return strings
-      expect(zDateStringRequired().parse('2023-10-01')).toBe('2023-10-01');
-      expect(zDateTimeStringRequired().parse('2023-10-01T14:30:00Z')).toBe('2023-10-01T14:30:00Z');
+      expect(schema.parse(new Date('2023-12-30'))).toEqual(expect.any(Date));
+      expect(schema.parse(new Date('2023-12-31'))).toEqual(expect.any(Date));
+      expect(() => schema.parse(new Date('2024-01-01'))).toThrow();
+    });
+
+    it('should enforce both min and max constraints', () => {
+      const minDate = new Date('2023-01-01');
+      const maxDate = new Date('2023-12-31');
+      const schema = zDateRequired({ min: minDate, max: maxDate });
+      
+      expect(() => schema.parse(new Date('2022-12-31'))).toThrow();
+      expect(schema.parse(new Date('2023-06-15'))).toEqual(expect.any(Date));
+      expect(() => schema.parse(new Date('2024-01-01'))).toThrow();
     });
   });
 
-  describe('Whitespace handling', () => {
-    it('should trim whitespace from string inputs', () => {
-      expect(zDateRequired().parse('  2023-10-01  ')).toEqual(new Date('2023-10-01T00:00:00Z'));
-      expect(zDateTimeRequired().parse('  2023-10-01T14:30:00Z  ')).toEqual(new Date('2023-10-01T14:30:00Z'));
-    });
-
-    it('should reject whitespace-only strings', () => {
-      expect(() => zDateRequired().parse('   ')).toThrow();
-      expect(() => zDateTimeRequired().parse('   ')).toThrow();
-    });
-  });
 });

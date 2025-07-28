@@ -1,274 +1,231 @@
 import { z } from "zod";
-
-import { formatErrorMessage } from "../common/message-handler";
-import { MsgType } from "./msg-type";
-import { zPostalCodeRequired } from "./postal-code-schemas";
-import { zStringOptional, zStringRequired } from "./string-schemas";
-
-// --- Address Schema Types ---
-
-/**
- * Type for an optional address.
- */
-export type AddressOptional = z.infer<ReturnType<typeof zAddressOptional>>;
-
-/**
- * Type for a required address.
- */
-export type AddressRequired = z.infer<ReturnType<typeof zAddressRequired>>;
+import { MsgType } from "../common/types/msg-type";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createPostalCodeSchemas } from "./postal-code-schemas";
+import { createStringSchemas } from "./string-schemas";
+import {
+  makeOptionalSimple,
+  removeEmptyStringFields,
+} from "../common/utils/zod-utils";
 
 // --- US State Codes ---
 export const US_STATE_CODES = [
-  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
 ];
 
-// --- Address Schemas ---
-
 /**
- * Optional address schema with all fields.
- * Includes street, city, state, postal code, and country validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for an optional address object.
- * 
+ * Creates a factory function for address schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing address schema creation functions
+ */
+/**
+ * Creates a set of Zod schemas for validating address objects with various levels of strictness and formats.
+ *
+ * @param messageHandler - An error message formatter used to customize validation error messages.
+ * @returns An object containing the following address schemas:
+ * - `zAddressOptional`: Validates an optional address object with all fields, allowing `undefined`.
+ * - `zAddressRequired`: Validates a required address object with all fields.
+ * - `zAddressSimple`: Validates a simple address object with minimal required fields (street, city, country).
+ * - `zAddressUS`: Validates a US-specific address object, including state and ZIP code validation.
+ *
+ * Each schema removes empty string fields (e.g., `street2`) from the result and supports custom error messages.
+ *
  * @example
- * const addressSchema = zAddressOptional("Shipping Address");
- * const result = addressSchema.parse({
+ * const schemas = createAddressSchemas(messageHandler);
+ * const result = schemas.zAddressRequired().safeParse({
  *   street: "123 Main St",
- *   city: "New York",
- *   state: "NY",
- *   postalCode: "10001",
+ *   street2: "",
+ *   city: "Springfield",
+ *   state: "IL",
+ *   postalCode: "62704",
  *   country: "US"
  * });
+ * // result.success === true
+ * // result.data.street2 is undefined (empty string removed)
  */
-export const zAddressOptional = (
-  fieldName = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z
-    .union([
-      z.undefined(),
-      z.object({
-        street: zStringRequired(
-          msgType === MsgType.Message ? "Street address is required" : "Street",
-          msgType,
-        ),
-        street2: zStringOptional(
-          msgType === MsgType.Message ? "Street address line 2 is optional" : "Street 2",
-          msgType,
-        ),
-        city: zStringRequired(
-          msgType === MsgType.Message ? "City is required" : "City",
-          msgType,
-        ),
-        state: zStringRequired(
-          msgType === MsgType.Message ? "State is required" : "State",
-          msgType,
-        ),
-        postalCode: zPostalCodeRequired(
-          msgType === MsgType.Message ? "Postal code is required" : "Postal Code",
-          msgType,
-        ),
-        country: zStringRequired(
-          msgType === MsgType.Message ? "Country is required" : "Country",
-          msgType,
-        ),
-      })
-      .transform((val) => {
-        // Remove empty string fields
-        const result = { ...val } as Partial<typeof val>;
-        if (result.street2 === "") {
-          delete result.street2;
-        }
-        return result;
-      })
-    ], {
-      message: formatErrorMessage(
-        fieldName,
+export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
+  const stringSchemas = createStringSchemas(messageHandler);
+  const postalCodeSchemas = createPostalCodeSchemas(messageHandler);
+
+  /**
+   * Optional address schema with all fields.
+   * Includes street, city, state, postal code, and country validation.
+   */
+  const zAddressOptional = (
+    msg = "Address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    makeOptionalSimple(
+      z
+        .object({
+          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
+          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
+          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
+          state: stringSchemas.zStringRequired({ msg: "State", msgType }),
+          postalCode: postalCodeSchemas.zPostalCodeRequired({
+            msg: "Postal Code",
+            msgType,
+          }),
+          country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+        })
+        .transform(removeEmptyStringFields(["street2"])),
+      messageHandler.formatErrorMessage({
+        group: "address",
+        messageKey: "mustBeValidAddress",
+        msg,
         msgType,
-        "must be a valid address object"
-      ),
-    });
+      }),
+    );
 
-/**
- * Required address schema with all fields.
- * Includes street, city, state, postal code, and country validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a required address object.
- * 
- * @example
- * const addressSchema = zAddressRequired("Billing Address");
- * const result = addressSchema.parse({
- *   street: "123 Main St",
- *   city: "New York",
- *   state: "NY",
- *   postalCode: "10001",
- *   country: "US"
- * });
- */
-export const zAddressRequired = (
-  fieldName = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    street: zStringRequired(
-      msgType === MsgType.Message ? "Street address is required" : "Street",
-      msgType,
-    ),
-    street2: zStringOptional(
-      msgType === MsgType.Message ? "Street address line 2 is optional" : "Street 2",
-      msgType,
-    ),
-    city: zStringRequired(
-      msgType === MsgType.Message ? "City is required" : "City",
-      msgType,
-    ),
-    state: zStringRequired(
-      msgType === MsgType.Message ? "State is required" : "State",
-      msgType,
-    ),
-    postalCode: zPostalCodeRequired(
-      msgType === MsgType.Message ? "Postal code is required" : "Postal Code",
-      msgType,
-    ),
-    country: zStringRequired(
-      msgType === MsgType.Message ? "Country is required" : "Country",
-      msgType,
-    ),
-  }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
-  })
-  .transform((val) => {
-    // Remove empty string fields
-    const result = { ...val } as Partial<typeof val>;
-    if (result.street2 === "") {
-      delete result.street2;
-    }
-    return result;
-  });
+  /**
+   * Required address schema with all fields.
+   * Includes street, city, state, postal code, and country validation.
+   */
+  const zAddressRequired = (
+    msg = "Address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z
+      .object(
+        {
+          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
+          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
+          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
+          state: stringSchemas.zStringRequired({ msg: "State", msgType }),
+          postalCode: postalCodeSchemas.zPostalCodeRequired({
+            msg: "Postal Code",
+            msgType,
+          }),
+          country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "address",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .transform(removeEmptyStringFields(["street2"]));
 
-/**
- * Simple address schema with minimal fields (street, city, country).
- * Useful for basic address validation.
- * @param fieldName - The field name for error messages.
- * @param msgType - Determines if 'fieldName' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a simple address object.
- * 
- * @example
- * const simpleAddressSchema = zAddressSimple("Contact Address");
- * const result = simpleAddressSchema.parse({
- *   street: "456 Elm St",
- *   city: "Los Angeles",
- *   country: "US"
- * });
- */
-export const zAddressSimple = (
-  fieldName = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    street: zStringRequired(
-      msgType === MsgType.Message ? "Street address is required" : "Street",
-      msgType,
-    ),
-    city: zStringRequired(
-      msgType === MsgType.Message ? "City is required" : "City",
-      msgType,
-    ),
-    country: zStringRequired(
-      msgType === MsgType.Message ? "Country is required" : "Country",
-      msgType,
-    ),
-  }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
-  });
-
-/**
- * Creates a Zod schema for validating US addresses.
- *
- * @param fieldName - The display name for the address field, used in error messages. Defaults to "Address".
- * @param msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
- * @returns A Zod object schema for a US address, including validation for street, street2, city, state (2-letter code), postal code (ZIP), and country ("US").
- *
- * @remarks
- * - The `street` and `city` fields are required strings.
- * - The `street2` field is optional and will be omitted from the result if empty.
- * - The `state` field must be a valid 2-letter US state code.
- * - The `postalCode` field must match US ZIP code formats (e.g., 12345 or 12345-6789).
- * - The `country` field is always "US" and defaults to "US".
- * - Error messages are customizable based on the `msgType` parameter.
- * - The schema transforms the result to remove empty `street2` fields.
- *
- * @example
- * const usAddressSchema = zAddressUS("Shipping Address");
- * const result = usAddressSchema.parse({
- *   street: "1600 Pennsylvania Ave NW",
- *   city: "Washington",
- *   state: "DC",
- *   postalCode: "20500",
- *   country: "US"
- * });
- */
-export const zAddressUS = (
-  fieldName = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.object({
-    street: zStringRequired(
-      msgType === MsgType.Message ? "Street address is required" : "Street",
-      msgType,
-    ),
-    street2: zStringOptional(
-      msgType === MsgType.Message ? "Street address line 2 is optional" : "Street 2",
-      msgType,
-    ),
-    city: zStringRequired(
-      msgType === MsgType.Message ? "City is required" : "City",
-      msgType,
-    ),
-    state: z.enum(
-      US_STATE_CODES as [string, ...string[]],
+  /**
+   * Simple address schema with minimal fields (street, city, country).
+   * Useful for basic address validation.
+   */
+  const zAddressSimple = (
+    msg = "Address",
+    msgType: MsgType = MsgType.FieldName,
+  ) =>
+    z.object(
       {
-        message:
-          msgType === MsgType.Message
-            ? "State must be a valid 2-letter US state code"
-            : "State must be a valid 2-letter US state code",
-      }
-    ),
-    postalCode: z.string().regex(/^\d{5}(-\d{4})?$/, {
-      message:
-        msgType === MsgType.Message
-          ? "Postal code must be a valid US ZIP code"
-          : "Postal code must be a valid US ZIP code (e.g., 12345 or 12345-6789)",
-    }),
-    country: z.literal("US").default("US"),
-  }, {
-    message: formatErrorMessage(
-      fieldName,
-      msgType,
-      "is required"
-    ),
-  })
-  .transform((val) => {
-    // Remove empty string fields
-    const result = { ...val } as Partial<typeof val>;
-    if (result.street2 === "") {
-      delete result.street2;
-    }
-    return result;
-  });
+        street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
+        city: stringSchemas.zStringRequired({ msg: "City", msgType }),
+        country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "address",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
+  /**
+   * US address schema with state validation and ZIP code format.
+   * Includes validation for US-specific address formats.
+   */
+  const zAddressUS = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
+    z
+      .object(
+        {
+          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
+          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
+          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
+          state: z.enum(US_STATE_CODES as [string, ...string[]], {
+            message: messageHandler.formatErrorMessage({
+              group: "address",
+              messageKey: "invalidUSState",
+              msg: "State",
+              msgType,
+            }),
+          }),
+          postalCode: z.string().regex(/^\d{5}(-\d{4})?$/, {
+            message: messageHandler.formatErrorMessage({
+              group: "postalCode",
+              messageKey: "mustBeValidZipCode",
+              msg: "Postal Code",
+              msgType,
+            }),
+          }),
+          country: z.literal("US").default("US"),
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "address",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .transform(removeEmptyStringFields(["street2"]));
 
+  return {
+    zAddressOptional,
+    zAddressRequired,
+    zAddressSimple,
+    zAddressUS,
+  };
+};

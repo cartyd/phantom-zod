@@ -1,5 +1,19 @@
-import { zCurrencyCode, zMoneyAmount, zMoneyAmountFromString, zMoneyOptional, zMoneyRequired, zMoneyFromString, zPrice, zPriceRange, ISO_4217_CURRENCIES } from "../src/schemas/money-schemas";
-import { MsgType } from "../src/schemas/msg-type";
+import { createMoneySchemas, ISO_4217_CURRENCIES } from "../src/schemas/money-schemas";
+import { MsgType } from "../src/common/types/msg-type";
+import { createTestMessageHandler } from "../src/localization/types/message-handler.types";
+
+// Create schemas using the factory with test message handler
+const mockMessageHandler = createTestMessageHandler();
+const {
+  zCurrencyCode,
+  zMoneyAmount,
+  zMoneyAmountFromString,
+  zMoneyOptional,
+  zMoneyRequired,
+  zMoneyFromString,
+  zPrice,
+  zPriceRange,
+} = createMoneySchemas(mockMessageHandler);
 
 describe("Money Schemas", () => {
     describe("zCurrencyCode", () => {
@@ -50,7 +64,7 @@ describe("Money Schemas", () => {
         });
 
         it("should accept custom decimal places", () => {
-            const schema = zMoneyAmount("Amount", MsgType.FieldName, 4);
+            const schema = zMoneyAmount({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 4 });
             expect(schema.parse(10.9999)).toBe(10.9999);
             expect(() => schema.parse(10.99999)).toThrow(); // 5 decimal places
         });
@@ -93,7 +107,7 @@ describe("Money Schemas", () => {
         });
 
         it("should accept custom decimal places", () => {
-            const schema = zMoneyAmountFromString("Amount", MsgType.FieldName, 4);
+            const schema = zMoneyAmountFromString({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 4 });
             expect(schema.parse("10.9999")).toBe(10.9999);
             expect(() => schema.parse("10.99999")).toThrow(); // 5 decimal places
         });
@@ -131,7 +145,7 @@ describe("Money Schemas", () => {
         });
 
         it("should validate with custom decimal places", () => {
-            const schema = zMoneyOptional("Price", MsgType.FieldName, 4);
+            const schema = zMoneyOptional({ msg: "Price", msgType: MsgType.FieldName, maxDecimals: 4 });
             expect(schema.parse({ amount: 99.9999, currency: "USD" })).toEqual({ amount: 99.9999, currency: "USD" });
             expect(() => schema.parse({ amount: 99.99999, currency: "USD" })).toThrow();
         });
@@ -159,7 +173,7 @@ describe("Money Schemas", () => {
         });
 
         it("should validate with custom decimal places", () => {
-            const schema = zMoneyRequired("Price", MsgType.FieldName, 3);
+            const schema = zMoneyRequired({ msg: "Price", msgType: MsgType.FieldName, maxDecimals: 3 });
             expect(schema.parse({ amount: 99.999, currency: "USD" })).toEqual({ amount: 99.999, currency: "USD" });
             expect(() => schema.parse({ amount: 99.9999, currency: "USD" })).toThrow();
         });
@@ -211,7 +225,7 @@ describe("Money Schemas", () => {
         });
 
         it("should validate custom decimal places", () => {
-            const schema = zPrice("USD", "Price", MsgType.FieldName, 3);
+            const schema = zPrice("USD", { msg: "Price", msgType: MsgType.FieldName, maxDecimals: 3 });
             expect(schema.parse(99.999)).toEqual({ amount: 99.999, currency: "USD" });
             expect(() => schema.parse(99.9999)).toThrow();
         });
@@ -271,7 +285,7 @@ describe("Money Schemas", () => {
 
     describe("Custom Error Messages", () => {
         it("should use custom field name in error messages", () => {
-            const schema = zMoneyRequired("Product Price");
+            const schema = zMoneyRequired({ msg: "Product Price" });
             try {
                 schema.parse({ amount: -10, currency: "USD" });
                 fail("Should have thrown an error");
@@ -281,7 +295,7 @@ describe("Money Schemas", () => {
         });
 
         it("should use custom message when msgType is Message", () => {
-            const schema = zMoneyRequired("Custom error message", MsgType.Message);
+            const schema = zMoneyRequired({ msg: "Custom error message", msgType: MsgType.Message });
             try {
                 schema.parse(undefined);
                 fail("Should have thrown an error");
@@ -326,7 +340,7 @@ describe("Money Schemas", () => {
 
     describe("Edge Cases", () => {
         it("should handle very small amounts", () => {
-            const schema = zMoneyAmount("Amount", MsgType.FieldName, 8);
+            const schema = zMoneyAmount({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 8 });
             expect(schema.parse(0.00000001)).toBe(0.00000001);
         });
 
@@ -337,10 +351,10 @@ describe("Money Schemas", () => {
 
         it("should handle different decimal place requirements", () => {
             const schemas = [
-                zMoneyAmount("Amount", MsgType.FieldName, 0),
-                zMoneyAmount("Amount", MsgType.FieldName, 1),
-                zMoneyAmount("Amount", MsgType.FieldName, 2),
-                zMoneyAmount("Amount", MsgType.FieldName, 4),
+                zMoneyAmount({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 0 }),
+                zMoneyAmount({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 1 }),
+                zMoneyAmount({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 2 }),
+                zMoneyAmount({ msg: "Amount", msgType: MsgType.FieldName, maxDecimals: 4 }),
             ];
 
             expect(schemas[0].parse(10)).toBe(10);

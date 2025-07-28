@@ -2,7 +2,7 @@ import {
   US_PHONE_E164_PATTERN,
   US_PHONE_NATIONAL_PATTERN,
   US_PHONE_11_DIGIT_PATTERN,
-  NON_DIGITS
+  NON_DIGITS,
 } from "../regex-patterns";
 import { PhoneFormat } from "../../schemas/phone-schemas";
 import { trimOrUndefined } from "./string-utils";
@@ -21,8 +21,10 @@ export function normalizeUSPhone(
   const digits = input.replace(NON_DIGITS, "");
   const isE164 = format === PhoneFormat.E164;
 
-  if (US_PHONE_NATIONAL_PATTERN.test(digits)) return isE164 ? `+1${digits}` : digits;
-  if (US_PHONE_11_DIGIT_PATTERN.test(digits)) return isE164 ? `+${digits}` : digits.slice(1);
+  if (US_PHONE_NATIONAL_PATTERN.test(digits))
+    return isE164 ? `+1${digits}` : digits;
+  if (US_PHONE_11_DIGIT_PATTERN.test(digits))
+    return isE164 ? `+${digits}` : digits.slice(1);
   if (US_PHONE_E164_PATTERN.test(input))
     return isE164 ? input : input.replace(/^\+1/, "");
   return null;

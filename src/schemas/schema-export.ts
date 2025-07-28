@@ -1,28 +1,27 @@
 /**
  * Validation schema barrel export for test files
- * Provides commonly used validation schemas in a single import
+ * Provides commonly used validation schema factory functions in a single import
+ *
+ * Note: All schemas are now factory functions that require a message handler.
+ * For direct usage in tests, import the factory functions and create instances.
  */
 export {
-  zStringRequired,
-  zStringOptional,
-  zEmailRequired,
-  zEmailOptional,
-  zPhoneRequired,
-  zPhoneOptional,
-  zNumberRequired,
-  zNumberOptional,
-  zDateRequired,
-  zDateOptional,
-  zDateTimeOptional,
-  zBooleanRequired,
-  zBooleanOptional,
-  zUuidV4Required,
-  zUuidV4Optional,
-  zEnumRequired,
-  zStringArrayRequired,
-  zStringArrayOptional,
-  zUrlRequired,
-  zUrlOptional,
-  zPostalCodeRequired,
-  zPostalCodeOptional,
+  createStringSchemas,
+  createEmailSchemas,
+  createPhoneSchemas,
+  createNumberSchemas,
+  createDateSchemas,
+  createBooleanSchemas,
+  createUuidSchemas,
+  createEnumSchemas,
+  createArraySchemas,
+  createUrlSchemas,
+  createPostalCodeSchemas,
+  createAddressSchemas,
+  createMoneySchemas,
+  createPaginationSchemas,
+  createFileUploadSchemas,
+  createUserSchemas,
+  createIdListSchemas,
+  createNetworkSchemas,
 } from "./index";

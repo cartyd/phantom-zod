@@ -1,68 +1,95 @@
 import { z } from "zod";
 
-import { MsgType } from "./msg-type";
-import { formatErrorMessage } from "../common/message-handler";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { MsgType } from "../common/types/msg-type";
+import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
-
-export type EnumOptional<TValue extends [string, ...string[]]> = z.infer<
-  ReturnType<typeof zEnumOptional<TValue>>
->;
-export type EnumRequired<TValue extends [string, ...string[]]> = z.infer<
-  ReturnType<typeof zEnumRequired<TValue>>
->;
-
-// --- Enum Schemas ---
+// --- Types ---
+// Note: These types are simplified since they rely on the factory functions
+export type EnumOptional<TEnum extends readonly [string, ...string[]]> =
+  | TEnum[number]
+  | undefined;
+export type EnumRequired<TEnum extends readonly [string, ...string[]]> =
+  TEnum[number];
 
 /**
- * Creates an optional Zod enum schema from a list of string values.
- *
- * @template TEnum - A tuple type representing the allowed string values for the enum.
- * @param values - An array of string values to be used as the enum options.
- * @param msg - An optional custom message to use in validation errors. Defaults to "Value".
- * @param msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
- * @returns A Zod schema that validates an optional value matching one of the provided enum options.
- *
- * @example
- * const statusSchema = zEnumOptional(["active", "inactive"], "Status");
- * statusSchema.parse("active"); // "active"
- * statusSchema.parse(undefined); // undefined
- * statusSchema.parse("other"); // throws ZodError
+ * Creates a factory function for enum schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing enum schema creation functions
  */
-export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
-  values: TEnum,
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z
-    .enum(values as unknown as [string, ...string[]], {
-      message: formatErrorMessage(
+export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
+  /**
+   * Creates an optional Zod enum schema from a list of string values.
+   *
+   * @template TEnum - A tuple type representing the allowed string values for the enum.
+   * @param values - An array of string values to be used as the enum options.
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+   * @returns A Zod schema that validates an optional value matching one of the provided enum options.
+   *
+   * @example
+   * const { zEnumOptional } = createEnumSchemas(messageHandler);
+   * const statusSchema = zEnumOptional(["active", "inactive"], { msg: "Status" });
+   * statusSchema.parse("active"); // "active"
+   * statusSchema.parse(undefined); // undefined
+   * statusSchema.parse("other"); // throws ZodError
+   */
+  const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
+    values: TEnum,
+    options: BaseSchemaOptions = {},
+  ) => {
+    const { msg = "Value", msgType = MsgType.FieldName } = options;
+
+    return z
+      .enum(values as unknown as [string, ...string[]], {
+        message: messageHandler.formatErrorMessage({
+          group: "enum",
+          messageKey: "mustBeOneOf",
+          params: { options: [...values] },
+          msg,
+          msgType,
+        }),
+      })
+      .optional();
+  };
+
+  /**
+   * Creates a required Zod enum schema from a list of string values.
+   * Accepts only values from the provided string literal array.
+   *
+   * @template TEnum - A tuple type representing the allowed string values for the enum.
+   * @param values - The allowed string values for the enum.
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use for error messages. Defaults to `MsgType.FieldName`.
+   * @returns Zod schema for a required enum value.
+   *
+   * @example
+   * const { zEnumRequired } = createEnumSchemas(messageHandler);
+   * const statusSchema = zEnumRequired(["active", "inactive"], { msg: "Status" });
+   * statusSchema.parse("active"); // "active"
+   * statusSchema.parse("other"); // throws ZodError
+   */
+  const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
+    values: TEnum,
+    options: BaseSchemaOptions = {},
+  ) => {
+    const { msg = "Value", msgType = MsgType.FieldName } = options;
+
+    return z.enum(values as unknown as [string, ...string[]], {
+      message: messageHandler.formatErrorMessage({
+        group: "enum",
+        messageKey: "mustBeOneOf",
+        params: { options: [...values] },
         msg,
         msgType,
-        `must be one of: ${values.join(", ")}`
-      ),
-    })
-    .optional();
+      }),
+    });
+  };
 
-/**
- * Required enum schema.
- * Accepts only values from the provided string literal array.
- * @param values - The allowed string values for the enum.
- * @param msg - The field name or custom message for error output.
- * @param msgType - Determines if 'msg' is a field name or a custom message. Defaults to MsgType.FieldName.
- * @returns Zod schema for a required enum value.
- *
- * @example
- * const statusSchema = zEnumRequired(["active", "inactive"], "Status");
- */
-export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
-  values: TEnum,
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  z.enum(values as unknown as [string, ...string[]], {
-    message: formatErrorMessage(
-      msg,
-      msgType,
-      `must be one of: ${values.join(", ")}`
-    ),
-  });
+  return {
+    zEnumOptional,
+    zEnumRequired,
+  };
+};

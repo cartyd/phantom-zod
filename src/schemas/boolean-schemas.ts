@@ -1,134 +1,159 @@
 import { z } from "zod";
 
-import { formatErrorMessage } from "../common/message-handler";
-import { MsgType } from "./msg-type";
+import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { MsgType } from "../common/types/msg-type";
+import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
 // --- Types ---
-export type BooleanOptional = z.infer<ReturnType<typeof zBooleanOptional>>;
-
-export type BooleanRequired = z.infer<ReturnType<typeof zBooleanRequired>>;
-
+// Note: These types reference the factory functions, so they need to be created from the factory
+type BooleanSchemasFactory = ReturnType<typeof createBooleanSchemas>;
+export type BooleanOptional = z.infer<
+  ReturnType<BooleanSchemasFactory["zBooleanOptional"]>
+>;
+export type BooleanRequired = z.infer<
+  ReturnType<BooleanSchemasFactory["zBooleanRequired"]>
+>;
 export type BooleanStringOptional = z.infer<
-ReturnType<typeof zBooleanStringOptional>
+  ReturnType<BooleanSchemasFactory["zBooleanStringOptional"]>
 >;
-
 export type BooleanStringRequired = z.infer<
-  ReturnType<typeof zBooleanStringRequired>
+  ReturnType<BooleanSchemasFactory["zBooleanStringRequired"]>
 >;
 
 /**
- * Creates a Zod schema that validates an optional boolean value.
- *
- * The schema accepts `undefined` or a boolean value. If the value is not a boolean or `undefined`,
- * it returns a formatted error message. If the value is `undefined`, it remains `undefined` after transformation;
- * otherwise, it is coerced to a boolean.
- *
- * @param msg - The label or field name to use in the error message. Defaults to "Value".
- * @param msgType - The type of message formatting to use, based on the `MsgType` enum. Defaults to `MsgType.FieldName`.
- * @returns A Zod schema that validates and transforms an optional boolean value.
- *
- * @example
- * const schema = zBooleanOptional("Active", MsgType.FieldName);
- * schema.parse(true); // true
- * schema.parse(undefined); // undefined
- * schema.parse(false); // false
- * schema.parse("yes"); // throws ZodError
+ * Creates a factory function for boolean schemas with injected message handler
+ * @param messageHandler - The message handler to use for error messages
+ * @returns An object containing boolean schema creation functions
  */
-export const zBooleanOptional = (
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return z.unknown()
-    .refine(
-      val => val === undefined || typeof val === "boolean",
-      { message: formatErrorMessage(msg, msgType, "must be a boolean value") }
-    )
-    .transform(val => val === undefined ? undefined : Boolean(val));
-};
+export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
+  /**
+   * Creates a Zod schema that validates an optional boolean value.
+   *
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @returns A Zod schema that validates an optional boolean value.
+   *
+   * @example
+   * const { zBooleanOptional } = createBooleanSchemas(messageHandler);
+   * const schema = zBooleanOptional({ msg: "Is Active" });
+   * schema.parse(true);      // true
+   * schema.parse(false);     // false
+   * schema.parse(undefined); // undefined
+   */
+  const zBooleanOptional = (options: BaseSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName } = options;
+    return z
+      .unknown()
+      .refine((val) => val === undefined || typeof val === "boolean", {
+        message: messageHandler.formatErrorMessage({
+          group: "boolean",
+          messageKey: "mustBeBoolean",
+          msg,
+          msgType,
+        }),
+      })
+      .transform((val) => (val === undefined ? undefined : Boolean(val)));
+  };
 
-/**
- * Creates a Zod schema that validates if the input is a boolean value.
- * 
- * @param msg - The field name or custom message to include in the error message (default: "Value").
- * @param msgType - The type of message formatting to use, based on the `MsgType` enum (default: `MsgType.FieldName`).
- * @returns A Zod schema that refines the input to ensure it is a boolean and transforms the value to a boolean.
- * 
- * @remarks
- * - If the input is not a boolean, the schema will fail validation and return a formatted error message.
- * - The transformation step ensures the output is always a boolean value.
- * 
- * @example
- * const schema = zBooleanRequired("Active", MsgType.FieldName);
- * schema.parse(true); // true
- * schema.parse(false); // false
- * schema.parse("yes"); // throws ZodError
- */
-export const zBooleanRequired = (
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return z.unknown()
-    .refine(
-      val => typeof val === "boolean",
-      { message: formatErrorMessage(msg, msgType, "must be a boolean value") }
-    )
-    .transform(val => Boolean(val));
-};
+  /**
+   * Creates a Zod schema that validates if the input is a boolean value.
+   *
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @returns A Zod schema that validates a required boolean value.
+   *
+   * @example
+   * const { zBooleanRequired } = createBooleanSchemas(messageHandler);
+   * const schema = zBooleanRequired({ msg: "Agreed to Terms" });
+   * schema.parse(true);  // true
+   * schema.parse(false); // false
+   * schema.parse(null);  // throws ZodError
+   */
+  const zBooleanRequired = (options: BaseSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName } = options;
+    return z
+      .unknown()
+      .refine((val) => typeof val === "boolean", {
+        message: messageHandler.formatErrorMessage({
+          group: "boolean",
+          messageKey: "mustBeBoolean",
+          msg,
+          msgType,
+        }),
+      })
+      .transform((val) => Boolean(val));
+  };
 
-/**
- * Creates a Zod schema that validates if the input is a boolean or a string "true"/"false".
- * 
- * @param msg - The field name or custom message to include in the error message (default: "Value").
- * @param msgType - The type of message formatting to use, based on the `MsgType` enum (default: `MsgType.FieldName`).
- * @returns A Zod schema that refines the input to ensure it is a boolean or a string "true"/"false" and transforms the value to a string "true" or "false".
- * 
- * @example
- * const schema = zBooleanStringRequired("Active", MsgType.FieldName);
- * schema.parse(true); // "true"
- * schema.parse(false); // "false"
- * schema.parse("true"); // "true"
- * schema.parse("FALSE"); // "false"
- * schema.parse("yes"); // throws ZodError
- */
-export const zBooleanStringRequired = (
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return baseBooleanStringSchema
-    .refine(
-      val =>
-        (typeof val === "boolean") ||
-        (typeof val === "string" && ["true", "false"].includes(val.trim().toLowerCase())),
-      { message: formatErrorMessage(msg, msgType, "must be a boolean value (\"true\" or \"false\")") }
-    )
-    .transform(val =>
-      typeof val === "boolean"
-        ? val ? "true" : "false"
-        : val.trim().toLowerCase()
-    );
-};
+  /**
+   * Creates a Zod schema that validates if the input is a boolean or a string "true"/"false".
+   *
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @returns A Zod schema that validates a boolean or string representation and returns a string.
+   *
+   * @example
+   * const { zBooleanStringRequired } = createBooleanSchemas(messageHandler);
+   * const schema = zBooleanStringRequired({ msg: "Feature Flag" });
+   * schema.parse(true);     // "true"
+   * schema.parse(false);    // "false"
+   * schema.parse("true");   // "true"
+   * schema.parse("false");  // "false"
+   * schema.parse("yes");    // throws ZodError
+   */
+  const zBooleanStringRequired = (options: BaseSchemaOptions = {}) => {
+    const { msg = "Value", msgType = MsgType.FieldName } = options;
+    return baseBooleanStringSchema
+      .refine(
+        (val) =>
+          typeof val === "boolean" ||
+          (typeof val === "string" &&
+            ["true", "false"].includes(val.trim().toLowerCase())),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "boolean",
+            messageKey: "mustBeBooleanString",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .transform((val) =>
+        typeof val === "boolean"
+          ? val
+            ? "true"
+            : "false"
+          : val.trim().toLowerCase(),
+      );
+  };
 
-/**
- * Creates a Zod schema that validates an optional boolean value represented as a string.
- * 
- * @param msg - The label or message to use for validation errors (default: "Value").
- * @param msgType - The type of message formatting to use (defaults to MsgType.FieldName).
- * @returns A Zod schema that accepts a string representing a boolean ("true" or "false") or undefined.
- *
- * @see zBooleanStringRequired for the required version of this schema.
- *
- * @example
- * const schema = zBooleanStringOptional("Active", MsgType.FieldName);
- * schema.parse("true"); // "true"
- * schema.parse("FALSE"); // "false"
- * schema.parse(undefined); // undefined
- * schema.parse("yes"); // throws ZodError
- */
-export const zBooleanStringOptional = (
-  msg = "Value",
-  msgType: MsgType = MsgType.FieldName,
-) => {
-  return zBooleanStringRequired(msg, msgType).optional();
+  /**
+   * Creates a Zod schema that validates an optional boolean value represented as a string.
+   *
+   * @param options - Configuration options for the schema
+   * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
+   * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
+   * @returns A Zod schema that validates an optional boolean string value.
+   *
+   * @example
+   * const { zBooleanStringOptional } = createBooleanSchemas(messageHandler);
+   * const schema = zBooleanStringOptional({ msg: "Newsletter Subscription" });
+   * schema.parse(true);      // "true"
+   * schema.parse("false");   // "false"
+   * schema.parse(undefined); // undefined
+   */
+  const zBooleanStringOptional = (options: BaseSchemaOptions = {}) => {
+    return zBooleanStringRequired(options).optional();
+  };
+
+  return {
+    zBooleanOptional,
+    zBooleanRequired,
+    zBooleanStringRequired,
+    zBooleanStringOptional,
+  };
 };
 
 const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
