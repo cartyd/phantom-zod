@@ -1,67 +1,55 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
-import { IPV4_PATTERN } from "../common/regex-patterns";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+import type { BaseSchemaOptions } from "../common/types/schema-options.types";
+import type { UrlMessageParams } from "../localization/types/message-params.types";
 
+type UrlMessageKey = keyof UrlMessageParams;
 
-
-// Enhanced URL validator to return error info for contract keys
-function getUrlValidationError(url: string):
-  | { key: 'mustBeValidUrl'; params: { receivedValue: string } }
-  | { key: 'invalidProtocol'; params: { protocol: string } }
-  | { key: 'invalidDomain'; params: { domain: string } }
-  | { key: 'missingProtocol'; params: { suggestedProtocols?: string[] } }
-  | { key: 'invalid'; params: { reason: string } }
-  | null {
-  if (typeof url !== 'string') {
-    return { key: 'invalid', params: { reason: 'Not a string' } };
-  }
-  if (!url.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:/)) {
-    // No protocol
-    return { key: 'missingProtocol', params: { suggestedProtocols: ['https', 'http'] } };
-  }
-  try {
-    const parsedUrl = new URL(url);
-    const allowedProtocols = ["http:", "https:", "ftp:", "mailto:", "file:", "data:"];
-    if (!allowedProtocols.includes(parsedUrl.protocol)) {
-      return { key: 'invalidProtocol', params: { protocol: parsedUrl.protocol.replace(':', '') } };
-    }
-    if (parsedUrl.protocol === "mailto:") {
-      if (!url.includes("@")) {
-        return { key: 'mustBeValidUrl', params: { receivedValue: url } };
-      }
-      return null;
-    }
-    if (parsedUrl.protocol === "file:") {
-      if (parsedUrl.pathname.length === 0) {
-        return { key: 'mustBeValidUrl', params: { receivedValue: url } };
-      }
-      return null;
-    }
-    if (parsedUrl.protocol === "data:") {
-      if (url.length <= 5) {
-        return { key: 'mustBeValidUrl', params: { receivedValue: url } };
-      }
-      return null;
-    }
-    // For HTTP/HTTPS/FTP protocols, check domains
-    const domainPart = parsedUrl.hostname;
-    if (domainPart.startsWith("[") && domainPart.endsWith("]")) {
-      return null; // IPv6
-    }
-    if (IPV4_PATTERN.test(domainPart)) {
-      return null; // IPv4
-    }
-    if (!domainPart.includes(".")) {
-      return { key: 'invalidDomain', params: { domain: domainPart } };
-    }
-    if (domainPart.split(".").some((part) => part === "")) {
-      return { key: 'invalidDomain', params: { domain: domainPart } };
-    }
-    return null;
-  } catch (e) {
-    return { key: 'mustBeValidUrl', params: { receivedValue: url } };
-  }
+/**
+ * Options for URL schema validation
+ * 
+ * @example
+ * ```typescript
+ * // Basic usage
+ * const schema = zUrlRequired();
+ * 
+ * // Protocol validation
+ * const httpsOnly = zUrlRequired({ protocol: /^https$/ });
+ * 
+ * // Hostname validation
+ * const specificDomain = zUrlRequired({ hostname: /^api\.example\.com$/ });
+ * 
+ * // Combined validation
+ * const secureApi = zUrlRequired({ 
+ *   protocol: /^https$/, 
+ *   hostname: /^api\.company\.com$/ 
+ * });
+ * 
+ * // Custom error messages
+ * const customSchema = zUrlRequired({ 
+ *   msg: 'API Endpoint',
+ *   protocol: /^https$/,
+ *   hostname: /^api\.example\.com$/
+ * });
+ * ```
+ */
+interface UrlSchemaOptions extends BaseSchemaOptions {
+  /** 
+   * Protocol regex pattern for validating URL protocols
+   * @example /^https$/ - Only HTTPS URLs
+   * @example /^https?$/ - HTTP or HTTPS URLs
+   * @example /^(ftp|ftps)$/ - FTP or FTPS URLs
+   */
+  protocol?: RegExp;
+  /** 
+   * Hostname regex pattern for validating URL hostnames/domains
+   * @example /^example\.com$/ - Only example.com domain
+   * @example /^(api|admin)\.company\.com$/ - Specific subdomains
+   * @example /\.example\.com$/ - Any subdomain of example.com
+   */
+  hostname?: RegExp;
 }
 
 /**
@@ -69,66 +57,135 @@ function getUrlValidationError(url: string):
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing URL schema creation functions
  */
-
-// Default message handler for direct use (for tests and convenience)
-import { createTestMessageHandler } from "../localization/types/message-handler.types";
-
-/**
- * Creates a Zod schema for an optional URL string with customizable error messages.
- * @param msg - The field name or custom message for error messages
- * @param msgType - The type of message formatting to use
- */
-// Factory for handler-injected URL schemas
 export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
-  function zUrlOptional(
-    msg: string = "URL",
-    msgType: MsgType = MsgType.FieldName
-  ) {
-    return z
-      .string()
-      .refine((val) => {
-        const error = getUrlValidationError(val);
-        return !error;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "url",
-          messageKey: "missingProtocol",
-          params: {},
-          msg,
-          msgType,
-        }),
-      })
-      .optional();
-  }
+  /**
+   * Helper function to create error message
+   */
+  const createErrorMessage = (messageKey: UrlMessageKey, options: UrlSchemaOptions = {}, params: any = {}) => {
+    const { msg = "URL", msgType = MsgType.FieldName } = options;
+    return messageHandler.formatErrorMessage({
+      group: "url" as const,
+      msg,
+      msgType,
+      messageKey,
+      params,
+    });
+  };
 
-  function zUrlRequired(
-    msg: string = "URL",
-    msgType: MsgType = MsgType.FieldName
-  ) {
-    return z
-      .string()
-      .nonempty({
-        message: messageHandler.formatErrorMessage({
-          group: "url",
-          messageKey: "required",
-          params: {},
-          msg,
-          msgType,
-        }),
-      })
-      .refine((val) => {
-        const error = getUrlValidationError(val);
-        return !error;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "url",
-          messageKey: "missingProtocol",
-          params: {},
-          msg,
-          msgType,
-        }),
-      });
-  }
+  /**
+   * Helper function to determine appropriate error message based on validation options
+   */
+  const getErrorMessage = (options: UrlSchemaOptions) => {
+    const { protocol, hostname } = options;
+    
+    if (protocol && hostname) {
+      return createErrorMessage("invalid", options, { reason: "protocol or hostname mismatch" });
+    } else if (protocol) {
+      return createErrorMessage("invalidProtocol", options, { protocol: "expected protocol" });
+    } else if (hostname) {
+      return createErrorMessage("invalidDomain", options, { domain: "expected hostname" });
+    } else {
+      return createErrorMessage("mustBeValidUrl", options);
+    }
+  };
+
+  /**
+   * Creates an optional URL schema that accepts valid URLs or undefined
+   * 
+   * @param options - Configuration options for URL validation
+   * @param options.protocol - RegExp to validate URL protocol (e.g., /^https$/ for HTTPS only)
+   * @param options.hostname - RegExp to validate URL hostname (e.g., /^api\.example\.com$/ for specific domain)
+   * @param options.msg - Custom field name or error message for validation errors
+   * @param options.msgType - Whether msg is a field name or complete message
+   * @returns Zod schema that accepts valid URLs matching the criteria or undefined
+   * 
+   * @example
+   * ```typescript
+   * // Accept any valid URL or undefined
+   * const anyUrl = zUrlOptional();
+   * 
+   * // Accept only HTTPS URLs or undefined
+   * const httpsUrl = zUrlOptional({ protocol: /^https$/ });
+   * 
+   * // Accept URLs from specific domain or undefined
+   * const domainUrl = zUrlOptional({ hostname: /^api\.company\.com$/ });
+   * 
+   * // Combined validation with custom error message
+   * const secureApi = zUrlOptional({
+   *   protocol: /^https$/,
+   *   hostname: /^api\.company\.com$/,
+   *   msg: 'Secure API URL'
+   * });
+   * ```
+   */
+  const zUrlOptional = (options: UrlSchemaOptions = {}) => {
+    const { protocol, hostname } = options;
+    
+    const urlConfig: any = {
+      message: getErrorMessage(options)
+    };
+    
+    if (protocol) {
+      urlConfig.protocol = protocol;
+    }
+    
+    if (hostname) {
+      urlConfig.hostname = hostname;
+    }
+    
+    return z.union([
+      z.url(urlConfig),
+      z.undefined()
+    ]);
+  };
+
+  /**
+   * Creates a required URL schema that accepts only valid URLs
+   * 
+   * @param options - Configuration options for URL validation
+   * @param options.protocol - RegExp to validate URL protocol (e.g., /^https$/ for HTTPS only)
+   * @param options.hostname - RegExp to validate URL hostname (e.g., /^api\.example\.com$/ for specific domain)
+   * @param options.msg - Custom field name or error message for validation errors
+   * @param options.msgType - Whether msg is a field name or complete message
+   * @returns Zod schema that accepts only valid URLs matching the criteria
+   * 
+   * @example
+   * ```typescript
+   * // Accept any valid URL
+   * const anyUrl = zUrlRequired();
+   * 
+   * // Accept only HTTPS URLs
+   * const httpsUrl = zUrlRequired({ protocol: /^https$/ });
+   * 
+   * // Accept URLs from specific domain
+   * const domainUrl = zUrlRequired({ hostname: /^api\.company\.com$/ });
+   * 
+   * // Combined validation with custom error message
+   * const secureApi = zUrlRequired({
+   *   protocol: /^https$/,
+   *   hostname: /^api\.company\.com$/,
+   *   msg: 'Secure API URL'
+   * });
+   * ```
+   */
+  const zUrlRequired = (options: UrlSchemaOptions = {}) => {
+    const { protocol, hostname } = options;
+    
+    const urlConfig: any = {
+      message: getErrorMessage(options)
+    };
+    
+    if (protocol) {
+      urlConfig.protocol = protocol;
+    }
+    
+    if (hostname) {
+      urlConfig.hostname = hostname;
+    }
+    
+    return z.url(urlConfig);
+  };
+
   return { zUrlOptional, zUrlRequired };
 };
 
@@ -157,6 +214,229 @@ const urlMessageHandler = createTestMessageHandler((options) => {
   }
 });
 
-// Export default handler-bound versions for test imports
-export const { zUrlOptional, zUrlRequired } = createUrlSchemas(urlMessageHandler);
+// Create schemas with default handler
+const { zUrlOptional: baseZUrlOptional, zUrlRequired: baseZUrlRequired } = createUrlSchemas(urlMessageHandler);
+
+// Export schemas with new API pattern
+
+/**
+ * Creates an optional URL schema that accepts valid URLs or undefined
+ * 
+ * This is the base URL validation schema that accepts any valid URL format.
+ * For protocol or hostname restrictions, use the options parameter or the
+ * specialized convenience functions.
+ * 
+ * @param options - Configuration options for URL validation
+ * @returns Zod schema that accepts valid URLs or undefined
+ * 
+ * @example
+ * ```typescript
+ * const schema = zUrlOptional();
+ * schema.parse('https://example.com'); // ✓ Valid
+ * schema.parse('http://example.com');  // ✓ Valid
+ * schema.parse('ftp://example.com');   // ✓ Valid
+ * schema.parse(undefined);             // ✓ Valid
+ * schema.parse('not-a-url');           // ✗ Throws error
+ * ```
+ */
+export const zUrlOptional = baseZUrlOptional;
+
+/**
+ * Creates a required URL schema that accepts only valid URLs
+ * 
+ * This is the base URL validation schema that accepts any valid URL format.
+ * For protocol or hostname restrictions, use the options parameter or the
+ * specialized convenience functions.
+ * 
+ * @param options - Configuration options for URL validation
+ * @returns Zod schema that accepts only valid URLs
+ * 
+ * @example
+ * ```typescript
+ * const schema = zUrlRequired();
+ * schema.parse('https://example.com'); // ✓ Valid
+ * schema.parse('http://example.com');  // ✓ Valid
+ * schema.parse('ftp://example.com');   // ✓ Valid
+ * schema.parse(undefined);             // ✗ Throws error
+ * schema.parse('not-a-url');           // ✗ Throws error
+ * ```
+ */
+export const zUrlRequired = baseZUrlRequired;
+
+// Export the options interface for external use
+export type { UrlSchemaOptions };
+
+// Convenience functions for common protocol validations
+
+/**
+ * Creates a required URL schema that only accepts HTTPS URLs
+ * 
+ * This is a convenience function that pre-configures the protocol validation
+ * to only accept HTTPS URLs. All other URL validation rules still apply.
+ * 
+ * @param options - Configuration options (protocol is pre-set to HTTPS)
+ * @param options.hostname - RegExp to validate URL hostname
+ * @param options.msg - Custom field name or error message
+ * @param options.msgType - Whether msg is a field name or complete message
+ * @returns Zod schema that accepts only valid HTTPS URLs
+ * 
+ * @example
+ * ```typescript
+ * const schema = zHttpsUrlRequired();
+ * schema.parse('https://example.com'); // ✓ Valid
+ * schema.parse('http://example.com');  // ✗ Throws error
+ * 
+ * // With hostname validation
+ * const apiSchema = zHttpsUrlRequired({ 
+ *   hostname: /^api\.company\.com$/ 
+ * });
+ * apiSchema.parse('https://api.company.com'); // ✓ Valid
+ * apiSchema.parse('https://example.com');     // ✗ Throws error
+ * ```
+ */
+export const zHttpsUrlRequired = (options: Omit<UrlSchemaOptions, 'protocol'> = {}) => {
+  return baseZUrlRequired({ ...options, protocol: /^https$/ });
+};
+
+/**
+ * Creates an optional URL schema that only accepts HTTPS URLs or undefined
+ * 
+ * This is a convenience function that pre-configures the protocol validation
+ * to only accept HTTPS URLs. Undefined values are also accepted.
+ * 
+ * @param options - Configuration options (protocol is pre-set to HTTPS)
+ * @param options.hostname - RegExp to validate URL hostname
+ * @param options.msg - Custom field name or error message
+ * @param options.msgType - Whether msg is a field name or complete message
+ * @returns Zod schema that accepts valid HTTPS URLs or undefined
+ * 
+ * @example
+ * ```typescript
+ * const schema = zHttpsUrlOptional();
+ * schema.parse('https://example.com'); // ✓ Valid
+ * schema.parse(undefined);             // ✓ Valid
+ * schema.parse('http://example.com');  // ✗ Throws error
+ * 
+ * // With hostname validation
+ * const apiSchema = zHttpsUrlOptional({ 
+ *   hostname: /^api\.company\.com$/ 
+ * });
+ * ```
+ */
+export const zHttpsUrlOptional = (options: Omit<UrlSchemaOptions, 'protocol'> = {}) => {
+  return baseZUrlOptional({ ...options, protocol: /^https$/ });
+};
+
+/**
+ * Creates a required URL schema that only accepts HTTP URLs
+ * 
+ * This is a convenience function that pre-configures the protocol validation
+ * to only accept HTTP URLs. This is typically used for legacy systems or
+ * internal services that don't require encryption.
+ * 
+ * @param options - Configuration options (protocol is pre-set to HTTP)
+ * @param options.hostname - RegExp to validate URL hostname
+ * @param options.msg - Custom field name or error message
+ * @param options.msgType - Whether msg is a field name or complete message
+ * @returns Zod schema that accepts only valid HTTP URLs
+ * 
+ * @example
+ * ```typescript
+ * const schema = zHttpUrlRequired();
+ * schema.parse('http://example.com');  // ✓ Valid
+ * schema.parse('https://example.com'); // ✗ Throws error
+ * 
+ * // With hostname validation for internal services
+ * const internalSchema = zHttpUrlRequired({ 
+ *   hostname: /^internal\.company\.local$/ 
+ * });
+ * ```
+ */
+export const zHttpUrlRequired = (options: Omit<UrlSchemaOptions, 'protocol'> = {}) => {
+  return baseZUrlRequired({ ...options, protocol: /^http$/ });
+};
+
+/**
+ * Creates an optional URL schema that only accepts HTTP URLs or undefined
+ * 
+ * This is a convenience function that pre-configures the protocol validation
+ * to only accept HTTP URLs. Undefined values are also accepted.
+ * 
+ * @param options - Configuration options (protocol is pre-set to HTTP)
+ * @param options.hostname - RegExp to validate URL hostname
+ * @param options.msg - Custom field name or error message
+ * @param options.msgType - Whether msg is a field name or complete message
+ * @returns Zod schema that accepts valid HTTP URLs or undefined
+ * 
+ * @example
+ * ```typescript
+ * const schema = zHttpUrlOptional();
+ * schema.parse('http://example.com');  // ✓ Valid
+ * schema.parse(undefined);             // ✓ Valid
+ * schema.parse('https://example.com'); // ✗ Throws error
+ * ```
+ */
+export const zHttpUrlOptional = (options: Omit<UrlSchemaOptions, 'protocol'> = {}) => {
+  return baseZUrlOptional({ ...options, protocol: /^http$/ });
+};
+
+/**
+ * Creates a required URL schema that accepts both HTTP and HTTPS URLs
+ * 
+ * This is a convenience function for web URLs that accepts both HTTP and HTTPS
+ * protocols. This is the most common validation for general web URLs.
+ * 
+ * @param options - Configuration options (protocol is pre-set to HTTP/HTTPS)
+ * @param options.hostname - RegExp to validate URL hostname
+ * @param options.msg - Custom field name or error message
+ * @param options.msgType - Whether msg is a field name or complete message
+ * @returns Zod schema that accepts valid HTTP or HTTPS URLs
+ * 
+ * @example
+ * ```typescript
+ * const schema = zWebUrlRequired();
+ * schema.parse('http://example.com');  // ✓ Valid
+ * schema.parse('https://example.com'); // ✓ Valid
+ * schema.parse('ftp://example.com');   // ✗ Throws error
+ * 
+ * // With hostname validation for specific websites
+ * const websiteSchema = zWebUrlRequired({ 
+ *   hostname: /^(www\.)?company\.com$/ 
+ * });
+ * ```
+ */
+export const zWebUrlRequired = (options: Omit<UrlSchemaOptions, 'protocol'> = {}) => {
+  return baseZUrlRequired({ ...options, protocol: /^https?$/ });
+};
+
+/**
+ * Creates an optional URL schema that accepts both HTTP and HTTPS URLs or undefined
+ * 
+ * This is a convenience function for optional web URLs that accepts both HTTP 
+ * and HTTPS protocols. Undefined values are also accepted.
+ * 
+ * @param options - Configuration options (protocol is pre-set to HTTP/HTTPS)
+ * @param options.hostname - RegExp to validate URL hostname
+ * @param options.msg - Custom field name or error message
+ * @param options.msgType - Whether msg is a field name or complete message
+ * @returns Zod schema that accepts valid HTTP/HTTPS URLs or undefined
+ * 
+ * @example
+ * ```typescript
+ * const schema = zWebUrlOptional();
+ * schema.parse('http://example.com');  // ✓ Valid
+ * schema.parse('https://example.com'); // ✓ Valid
+ * schema.parse(undefined);             // ✓ Valid
+ * schema.parse('ftp://example.com');   // ✗ Throws error
+ * 
+ * // For optional website fields
+ * const profileSchema = z.object({
+ *   name: z.string(),
+ *   website: zWebUrlOptional({ msg: 'Website URL' })
+ * });
+ * ```
+ */
+export const zWebUrlOptional = (options: Omit<UrlSchemaOptions, 'protocol'> = {}) => {
+  return baseZUrlOptional({ ...options, protocol: /^https?$/ });
+};
 

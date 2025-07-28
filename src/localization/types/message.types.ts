@@ -124,6 +124,9 @@ export interface PhoneMessages extends Pick<CommonMessages, 'required' | 'invali
 export interface UuidMessages extends Pick<CommonMessages, 'required' | 'invalid'> {
   mustBeValidUuid: string;
   mustBeValidUuidV4: string;
+  mustBeValidUuidV6: string;
+  mustBeValidUuidV7: string;
+  mustBeValidNanoid: string;
   invalidFormat: string;
 }
 

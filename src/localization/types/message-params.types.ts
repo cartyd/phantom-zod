@@ -227,6 +227,9 @@ export type PhoneMessageParams = {
  *   - `receivedVersion`: The UUID version that was detected, if any.
  * @property mustBeValidUuidV7 - Indicates that the value must be a valid UUID version 7.
  *   - `receivedVersion`: The UUID version that was detected, if any.
+ * @property mustBeValidNanoid - Indicates that the value must be a valid nanoid.
+ *   - `receivedValue`: The invalid nanoid value that was provided.
+ *   - `receivedLength`: The length of the received value, if relevant.
  * @property invalidFormat - Indicates that the UUID format is invalid.
  *   - `expectedFormat`: Description of the expected UUID format.
  */
@@ -237,6 +240,7 @@ export type UuidMessageParams = {
   mustBeValidUuidV4: { receivedVersion?: string };
   mustBeValidUuidV6: { receivedVersion?: string };
   mustBeValidUuidV7: { receivedVersion?: string };
+  mustBeValidNanoid: { receivedValue?: string; receivedLength?: number };
   invalidFormat: { expectedFormat?: string };
 };
 

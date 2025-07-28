@@ -222,7 +222,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   ) =>
     z.object({
       username: zUsername("Username", msgType),
-      email: emailSchemas.zEmailRequired("Email", msgType),
+      email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
       password: zPassword("Password", msgType),
       confirmPassword: stringSchemas.zStringRequired({ msg: "Confirm Password", msgType }),
       displayName: zDisplayName("Display Name", msgType),
@@ -295,7 +295,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
       .object({
         id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
         username: zUsername("Username", msgType),
-        email: emailSchemas.zEmailRequired("Email", msgType),
+        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
         displayName: zDisplayName("Display Name", msgType),
         firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
         lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
@@ -333,7 +333,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     z.object({
       id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
       username: zUsername("Username", msgType),
-      email: emailSchemas.zEmailRequired("Email", msgType),
+      email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
       displayName: zDisplayName("Display Name", msgType),
       firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
       lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
@@ -430,7 +430,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.object({
-      email: emailSchemas.zEmailRequired("Email", msgType),
+      email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
     }, {
       message: messageHandler.formatErrorMessage({
         group: "user",
@@ -525,7 +525,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
     existingEmails: string[] = [],
   ) =>
-    emailSchemas.zEmailRequired(msg, msgType)
+    emailSchemas.zEmailRequired({ msg, msgType })
       .refine(
         (email) => !existingEmails.includes(email.toLowerCase()),
         {
