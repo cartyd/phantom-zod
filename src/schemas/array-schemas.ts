@@ -52,7 +52,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
   const zStringArrayOptional = (options: ArraySchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName, minItems, maxItems } = options;
     // Start with a custom Zod type to allow for full contract coverage
-    const schema = z.custom<any[]>((val) => {
+    let schema = z.custom<any[]>((val) => {
       if (val === undefined) return true;
       if (!Array.isArray(val)) return false;
       return true;
@@ -64,23 +64,12 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
         msg,
         msgType,
       }),
-    }).optional().superRefine((val, ctx) => {
-      if (val === undefined) return;
-      if (!Array.isArray(val)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "mustBeArray",
-            params: { receivedType: typeof val },
-            msg,
-            msgType,
-          }),
-        });
-        return;
-      }
-      // Required (empty array is allowed for optional)
-      // Type check for string elements
+    }).optional();
+
+    // Type check for string elements
+    schema = schema.refine((val) => {
+      if (val === undefined) return true;
+      if (!Array.isArray(val)) return false;
       const receivedTypes: string[] = [];
       const invalidIndices: number[] = [];
       val.forEach((v, i) => {
@@ -89,59 +78,64 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
           invalidIndices.push(i);
         }
       });
-      if (invalidIndices.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "mustBeStringArray",
-            params: { receivedTypes, invalidIndices },
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // minItems/tooSmall
-      if (minItems !== undefined && val.length < minItems) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "tooSmall",
-            params: { min: minItems },
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // maxItems/tooBig
-      if (maxItems !== undefined && val.length > maxItems) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "tooBig",
-            params: { max: maxItems },
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // duplicateItems
-      const { values: duplicateValues, indices } = findDuplicates(val);
-      if (duplicateValues.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "duplicateItems",
-            params: { duplicateValues, indices },
-            msg,
-            msgType,
-          }),
-        });
-      }
+      return invalidIndices.length === 0;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "mustBeStringArray",
+        params: { receivedTypes: [], invalidIndices: [] },
+        msg,
+        msgType,
+      }),
     });
+
+    // minItems/tooSmall
+    if (minItems !== undefined) {
+      schema = schema.refine((val) => {
+        if (val === undefined) return true;
+        return val.length >= minItems;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "tooSmall",
+          params: { min: minItems },
+          msg,
+          msgType,
+        }),
+      });
+    }
+
+    // maxItems/tooBig
+    if (maxItems !== undefined) {
+      schema = schema.refine((val) => {
+        if (val === undefined) return true;
+        return val.length <= maxItems;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "tooBig",
+          params: { max: maxItems },
+          msg,
+          msgType,
+        }),
+      });
+    }
+
+    // duplicateItems
+    schema = schema.refine((val) => {
+      if (val === undefined) return true;
+      const { values: duplicateValues } = findDuplicates(val);
+      return duplicateValues.length === 0;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "duplicateItems",
+        params: { duplicateValues: [], indices: [] },
+        msg,
+        msgType,
+      }),
+    });
+
     return schema;
   };
 
@@ -165,7 +159,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zStringArrayRequired = (options: ArraySchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName, minItems = 1, maxItems } = options;
-    const schema = z.custom<any[]>((val) => {
+    let schema = z.custom<any[]>((val) => {
       return Array.isArray(val);
     }, {
       message: messageHandler.formatErrorMessage({
@@ -175,34 +169,25 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
         msg,
         msgType,
       }),
-    }).superRefine((val, ctx) => {
-      if (!Array.isArray(val)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "mustBeArray",
-            params: { receivedType: typeof val },
-            msg,
-            msgType,
-          }),
-        });
-        return;
-      }
-      // Required
-      if (val.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "mustNotBeEmpty",
-            params: {},
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // Type check for string elements
+    });
+
+    // Required
+    schema = schema.refine((val) => {
+      if (!Array.isArray(val)) return false;
+      return val.length > 0;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "mustNotBeEmpty",
+        params: {},
+        msg,
+        msgType,
+      }),
+    });
+
+    // Type check for string elements
+    schema = schema.refine((val) => {
+      if (!Array.isArray(val)) return false;
       const receivedTypes: string[] = [];
       const invalidIndices: number[] = [];
       val.forEach((v, i) => {
@@ -211,59 +196,64 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
           invalidIndices.push(i);
         }
       });
-      if (invalidIndices.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "mustBeStringArray",
-            params: { receivedTypes, invalidIndices },
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // minItems/tooSmall
-      if (minItems !== undefined && val.length < minItems) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "tooSmall",
-            params: { min: minItems },
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // maxItems/tooBig
-      if (maxItems !== undefined && val.length > maxItems) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "tooBig",
-            params: { max: maxItems },
-            msg,
-            msgType,
-          }),
-        });
-      }
-      // duplicateItems
-      const { values: duplicateValues, indices } = findDuplicates(val);
-      if (duplicateValues.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "duplicateItems",
-            params: { duplicateValues, indices },
-            msg,
-            msgType,
-          }),
-        });
-      }
+      return invalidIndices.length === 0;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "mustBeStringArray",
+        params: { receivedTypes: [], invalidIndices: [] },
+        msg,
+        msgType,
+      }),
     });
+
+    // minItems/tooSmall
+    if (minItems !== undefined) {
+      schema = schema.refine((val) => {
+        if (!Array.isArray(val)) return false;
+        return val.length >= minItems;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "tooSmall",
+          params: { min: minItems },
+          msg,
+          msgType,
+        }),
+      });
+    }
+
+    // maxItems/tooBig
+    if (maxItems !== undefined) {
+      schema = schema.refine((val) => {
+        if (!Array.isArray(val)) return false;
+        return val.length <= maxItems;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "tooBig",
+          params: { max: maxItems },
+          msg,
+          msgType,
+        }),
+      });
+    }
+
+    // duplicateItems
+    schema = schema.refine((val) => {
+      if (!Array.isArray(val)) return false;
+      const { values: duplicateValues } = findDuplicates(val);
+      return duplicateValues.length === 0;
+    }, {
+      message: messageHandler.formatErrorMessage({
+        group: "array",
+        messageKey: "duplicateItems",
+        params: { duplicateValues: [], indices: [] },
+        msg,
+        msgType,
+      }),
+    });
+
     return schema;
   };
 

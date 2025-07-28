@@ -144,6 +144,10 @@ export function createTestMessageHandler(
         return `${options.msg} must be a valid UUID`;
       case "mustBeValidUuidV4":
         return `${options.msg} must be a valid UUIDv4`;
+      case "mustBeValidUuidV6":
+        return `${options.msg} must be a valid UUIDv6`;
+      case "mustBeValidUuidV7":
+        return `${options.msg} must be a valid UUIDv7`;
       // User-specific error messages
       case "passwordTooShort":
         return `${options.msg} password is too short (minimum: ${options.params?.min} characters)`;

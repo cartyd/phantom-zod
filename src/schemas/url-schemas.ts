@@ -86,19 +86,17 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
   ) {
     return z
       .string()
-      .superRefine((val, ctx) => {
+      .refine((val) => {
         const error = getUrlValidationError(val);
-        if (!error) return;
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "url",
-            messageKey: error.key,
-            params: error.params,
-            msg,
-            msgType,
-          }),
-        });
+        return !error;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "url",
+          messageKey: "missingProtocol",
+          params: {},
+          msg,
+          msgType,
+        }),
       })
       .optional();
   }
@@ -118,19 +116,17 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .superRefine((val, ctx) => {
+      .refine((val) => {
         const error = getUrlValidationError(val);
-        if (!error) return;
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "url",
-            messageKey: error.key,
-            params: error.params,
-            msg,
-            msgType,
-          }),
-        });
+        return !error;
+      }, {
+        message: messageHandler.formatErrorMessage({
+          group: "url",
+          messageKey: "missingProtocol",
+          params: {},
+          msg,
+          msgType,
+        }),
       });
   }
   return { zUrlOptional, zUrlRequired };

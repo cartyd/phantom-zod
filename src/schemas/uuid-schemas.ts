@@ -2,8 +2,10 @@ import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
-import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
+import type { UuidMessageParams } from "../localization/types/message-params.types";
 
+type UuidVersion = "v4" | "v6" | "v7";
+type UuidMessageKey = keyof UuidMessageParams;
 
 /**
  * Creates a factory function for UUID schemas with injected message handler
@@ -12,172 +14,59 @@ import { UUID_PATTERN, UUID_V4_PATTERN } from "../common/regex-patterns";
  */
 export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
-   * Optional UUID schema.
-   * Accepts a string that matches any UUID version (1-5) or undefined/empty.
+   * Helper function to create error message
    */
-  const zUuidOptional = (
-    options: BaseSchemaOptions = {}
-  ) => {
+  const createErrorMessage = (messageKey: UuidMessageKey, options: BaseSchemaOptions = {}) => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
-    return z.union([
-      z.string().superRefine((val, ctx) => {
-        if (val === "") return; // Allow empty strings
-        if (!UUID_PATTERN.test(val)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: messageHandler.formatErrorMessage({
-              group: "uuid",
-              msg,
-              msgType,
-              messageKey: "mustBeValidUuid",
-              params: { receivedValue: val },
-            }),
-          });
-        }
-      }),
-      z.undefined()
-    ]);
-  };
-
-  /**
-   * Required UUID schema.
-   * Accepts a non-empty string that matches any UUID version (1-5).
-   */
-  const zUuidRequired = (
-    options: BaseSchemaOptions = {}
-  ) => {
-    const { msg = "ID", msgType = MsgType.FieldName } = options;
-    return z.string({
-      message: messageHandler.formatErrorMessage({ 
-        group: "uuid", 
-        msg, 
-        msgType, 
-        messageKey: "required",
-        params: {}
-      }),
-    })
-    .min(1, {
-      message: messageHandler.formatErrorMessage({ 
-        group: "uuid", 
-        msg, 
-        msgType, 
-        messageKey: "required",
-        params: {}
-      }),
-    })
-    .superRefine((val, ctx) => {
-      if (!UUID_PATTERN.test(val)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "uuid",
-            msg,
-            msgType,
-            messageKey: "mustBeValidUuid",
-            params: { receivedValue: val },
-          }),
-        });
-      }
+    return messageHandler.formatErrorMessage({
+      group: "uuid" as const,
+      msg,
+      msgType,
+      messageKey,
+      params: {},
     });
   };
 
   /**
-   * Optional UUIDv4 schema.
-   * Accepts a string that matches UUID version 4 or undefined/empty.
+   * Helper function to create required UUID schema
    */
-  const zUuidV4Optional = (
-    options: BaseSchemaOptions = {}
-  ) => {
-    const { msg = "ID", msgType = MsgType.FieldName } = options;
-    return z.union([
-      z.string().superRefine((val, ctx) => {
-        if (val === "") return; // Allow empty strings
-        if (!UUID_V4_PATTERN.test(val)) {
-          if (UUID_PATTERN.test(val)) {
-            const version = val.split('-')[2]?.charAt(0);
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: messageHandler.formatErrorMessage({
-                group: "uuid",
-                msg,
-                msgType,
-                messageKey: "mustBeValidUuidV4",
-                params: { receivedVersion: version },
-              }),
-            });
-          } else {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: messageHandler.formatErrorMessage({
-                group: "uuid",
-                msg,
-                msgType,
-                messageKey: "mustBeValidUuidV4",
-                params: { receivedVersion: undefined },
-              }),
-            });
-          }
-        }
-      }),
-      z.undefined()
-    ]);
+  const createRequiredUuid = (version?: UuidVersion, messageKey: UuidMessageKey = "mustBeValidUuid") => {
+    return (options: BaseSchemaOptions = {}) => {
+      const zodOptions: any = {
+        message: createErrorMessage(messageKey, options),
+      };
+      if (version) {
+        zodOptions.version = version;
+      }
+      return z.uuid(zodOptions);
+    };
   };
 
   /**
-   * Required UUIDv4 schema.
-   * Accepts a non-empty string that matches UUID version 4.
+   * Helper function to create optional UUID schema
    */
-  const zUuidV4Required = (
-    options: BaseSchemaOptions = {}
-  ) => {
-    const { msg = "ID", msgType = MsgType.FieldName } = options;
-    return z.string({
-      message: messageHandler.formatErrorMessage({ 
-        group: "uuid", 
-        msg, 
-        msgType, 
-        messageKey: "required",
-        params: {}
-      }),
-    })
-    .min(1, {
-      message: messageHandler.formatErrorMessage({ 
-        group: "uuid", 
-        msg, 
-        msgType, 
-        messageKey: "required",
-        params: {}
-      }),
-    })
-    .superRefine((val, ctx) => {
-      if (!UUID_V4_PATTERN.test(val)) {
-        if (UUID_PATTERN.test(val)) {
-          const version = val.split('-')[2]?.charAt(0);
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: messageHandler.formatErrorMessage({
-              group: "uuid",
-              msg,
-              msgType,
-              messageKey: "mustBeValidUuidV4",
-              params: { receivedVersion: version },
-            }),
-          });
-        } else {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: messageHandler.formatErrorMessage({
-              group: "uuid",
-              msg,
-              msgType,
-              messageKey: "mustBeValidUuidV4",
-              params: { receivedVersion: undefined },
-            }),
-          });
-        }
-      }
-    });
+  const createOptionalUuid = (version?: UuidVersion, messageKey: UuidMessageKey = "mustBeValidUuid") => {
+    return (options: BaseSchemaOptions = {}) => {
+      const validator = version ? z.uuid({ version }) : z.uuid();
+      return z.union([
+        z.string().refine(
+          (val) => val === "" || validator.safeParse(val).success,
+          { message: createErrorMessage(messageKey, options) }
+        ),
+        z.undefined()
+      ]);
+    };
   };
+
+  // Generate schemas using helpers
+  const zUuidOptional = createOptionalUuid();
+  const zUuidRequired = createRequiredUuid();
+  const zUuidV4Optional = createOptionalUuid("v4", "mustBeValidUuidV4");
+  const zUuidV4Required = createRequiredUuid("v4", "mustBeValidUuidV4");
+  const zUuidV6Optional = createOptionalUuid("v6", "mustBeValidUuidV6");
+  const zUuidV6Required = createRequiredUuid("v6", "mustBeValidUuidV6");
+  const zUuidV7Optional = createOptionalUuid("v7", "mustBeValidUuidV7");
+  const zUuidV7Required = createRequiredUuid("v7", "mustBeValidUuidV7");
 
   /**
    * Validates UUID format and returns a formatted error message using invalidFormat.
@@ -203,33 +92,14 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
     options: BaseSchemaOptions = {}
   ) => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
-    return z.string().superRefine((val, ctx) => {
-      if (!val || val.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "uuid",
-            msg,
-            msgType,
-            messageKey: "required",
-            params: {},
-          }),
-        });
-        return;
-      }
-      
-      if (!UUID_PATTERN.test(val)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: messageHandler.formatErrorMessage({
-            group: "uuid",
-            msg,
-            msgType,
-            messageKey: "invalidFormat",
-            params: { expectedFormat: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" },
-          }),
-        });
-      }
+    return z.uuid({
+      message: messageHandler.formatErrorMessage({
+        group: "uuid",
+        msg,
+        msgType,
+        messageKey: "invalidFormat",
+        params: { expectedFormat: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" },
+      }),
     });
   };
 
@@ -238,6 +108,10 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
     zUuidRequired,
     zUuidV4Optional,
     zUuidV4Required,
+    zUuidV6Optional,
+    zUuidV6Required,
+    zUuidV7Optional,
+    zUuidV7Required,
     getUuidFormatErrorMessage,
     zUuidWithFormatError,
   };
