@@ -133,11 +133,9 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zMacAddressOptional = (options: NetworkSchemaOptions = {}) => {
     return makeOptional(
-      z
-        .string()
-        .refine((val) => MAC_ADDRESS_PATTERN.test(val), {
-          message: createErrorMessage("mustBeValidMacAddress", options),
-        }),
+      z.string().refine((val) => MAC_ADDRESS_PATTERN.test(val), {
+        message: createErrorMessage("mustBeValidMacAddress", options),
+      }),
     );
   };
 
@@ -157,11 +155,9 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * ```
    */
   const zMacAddressRequired = (options: NetworkSchemaOptions = {}) => {
-    return z
-      .string()
-      .refine((val) => MAC_ADDRESS_PATTERN.test(val), {
-        message: createErrorMessage("mustBeValidMacAddress", options),
-      });
+    return z.string().refine((val) => MAC_ADDRESS_PATTERN.test(val), {
+      message: createErrorMessage("mustBeValidMacAddress", options),
+    });
   };
 
   /**
