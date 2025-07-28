@@ -11,6 +11,11 @@
   - [Email Schemas](#email-schemas)
   - [Phone Schemas](#phone-schemas)
   - [String Schemas](#string-schemas)
+  - [Additional Schemas](#additional-schemas)
+- [Localization Support](#localization-support)
+  - [Basic Usage](#basic-localization-usage)
+  - [Custom Locales](#custom-locales)
+  - [Advanced Localization](#advanced-localization)
 - [Error Message Customization](#error-message-customization)
 - [Phone Number Formats](#phone-number-formats)
   - [E.164 Format (Default)](#e164-format-default)
@@ -153,6 +158,104 @@ schema.parse('  John Doe  '); // ✅ 'John Doe'
 schema.parse(''); // ❌ Throws: "Name is required"
 schema.parse('   '); // ❌ Throws: "Name is required"
 ```
+
+### Additional Schemas
+
+Phantom Zod provides many additional schema types for comprehensive validation:
+
+- **Date Schemas**: `zDateOptional()`, `zDateRequired()` - Date validation with customizable formats
+- **Number Schemas**: `zNumberOptional()`, `zNumberRequired()` - Number validation with range checks
+- **UUID Schemas**: `zUuidOptional()`, `zUuidRequired()` - UUID validation with version support (v4, v6, v7)
+- **Boolean Schemas**: `zBooleanOptional()`, `zBooleanRequired()` - Boolean validation
+- **Enum Schemas**: `zEnumOptional()`, `zEnumRequired()` - Enum validation with custom values
+- **Array Schemas**: `zArrayOptional()`, `zArrayRequired()` - Array validation with element type checking
+- **URL Schemas**: `zUrlOptional()`, `zUrlRequired()` - URL validation with protocol restrictions
+- **Postal Code Schemas**: `zPostalCodeOptional()`, `zPostalCodeRequired()` - Postal code validation
+- **Address Schemas**: `zAddressOptional()`, `zAddressRequired()` - Address validation
+- **Money Schemas**: `zMoneyOptional()`, `zMoneyRequired()` - Currency and amount validation
+- **Network Schemas**: `zIPv4Optional()`, `zIPv6Optional()`, `zMacAddressOptional()` - Network address validation
+- **User Schemas**: `zUsernameOptional()`, `zPasswordRequired()` - User credential validation
+- **File Upload Schemas**: `zFileUploadOptional()`, `zFileUploadRequired()` - File validation
+- **Pagination Schemas**: `zPaginationOptional()`, `zPaginationRequired()` - Pagination parameter validation
+
+```typescript
+import { 
+  zUuidRequired, 
+  zUrlRequired, 
+  zDateRequired,
+  zNumberRequired,
+  zIPv4Optional 
+} from 'phantom-zod';
+
+// UUID validation
+const idSchema = zUuidRequired({ msg: 'User ID' });
+idSchema.parse('123e4567-e89b-12d3-a456-426614174000'); // ✅ Valid
+
+// URL validation with HTTPS requirement
+const urlSchema = zUrlRequired({ msg: 'Website URL' });
+urlSchema.parse('https://example.com'); // ✅ Valid
+
+// Date validation
+const dateSchema = zDateRequired({ msg: 'Birth Date' });
+dateSchema.parse('2023-12-25'); // ✅ Valid
+
+// Number validation with range
+const ageSchema = zNumberRequired({ msg: 'Age', min: 0, max: 120 });
+ageSchema.parse(25); // ✅ Valid
+
+// IP address validation
+const ipSchema = zIPv4Optional({ msg: 'Server IP' });
+ipSchema.parse('192.168.1.1'); // ✅ Valid
+```
+
+## Localization Support
+
+Localization in Phantom Zod allows you to customize validation messages based on locale, offering dynamic translation and cultural adaptation of message content.
+
+### Basic Usage
+
+Initialize the localization system by registering default messages (e.g., English) and set a fallback locale.
+
+```typescript
+import { initializeLocalization, getMessage } from 'phantom-zod/localization';
+
+// Initialize with default locale
+initializeLocalization();
+
+// Retrieve message with default fallback
+const message = getMessage('someMessageKey');
+console.log(message);
+```
+
+### Custom Locales
+
+You can add custom locales by creating new message JSON files and registering them with the localization manager.
+
+```typescript
+import { localizationManager, LocalizationMessages } from 'phantom-zod/localization';
+
+// Example: Adding Spanish locale
+const esMessages: LocalizationMessages = {
+  locale: 'es',
+  common: {
+    required: 'El campo es obligatorio.',
+  },
+  // Add more categories and messages as needed
+};
+
+localizationManager.registerMessages(esMessages);
+localizationManager.setLocale('es');
+
+// Retrieve Spanish message
+const requiredMessage = getMessage('common.required');
+console.log(requiredMessage); // "El campo es obligatorio."
+```
+
+### Advanced Localization
+
+- **Dynamic Parameters**: Inject dynamic values into messages using parameterized keys.
+- **Locale Switching**: Easily switch between locales with the `setLocale` method.
+- **Fallback Handling**: Configure a fallback locale for missing translations.
 
 ## Error Message Customization
 
@@ -299,6 +402,21 @@ npm run test:watch
 ISC License - see LICENSE file for details.
 
 ## Changelog
+
+### Version 1.1.0
+- **🌐 Localization Support**: Added comprehensive internationalization system
+  - Multi-language error message support
+  - Dynamic locale switching
+  - Fallback locale handling
+  - Type-safe message parameter injection
+- **📋 Extended Schema Library**: Added comprehensive validation schemas
+  - Date, Number, UUID, Boolean, Enum schemas
+  - Array, URL, Postal Code, Address schemas
+  - Money, Network (IP/MAC), User credential schemas
+  - File upload and Pagination schemas
+- **🏗️ Enhanced Architecture**: Improved factory pattern for schema creation
+- **📚 Comprehensive Documentation**: Updated with localization examples and new schema usage
+- **🧪 Extended Test Coverage**: Added tests for localization and new schemas
 
 ### Version 1.0.0
 - Initial release
