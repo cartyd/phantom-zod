@@ -1,6 +1,6 @@
 /**
  * Validation schema barrel export for test files
- * Provides commonly used validation schemas in a single import
+ * Provides commonly used validation schema factory functions in a single import
  *
  * Note: All schemas are now factory functions that require a message handler.
  * For direct usage in tests, import the factory functions and create instances.
@@ -17,21 +17,11 @@ export {
   createArraySchemas,
   createUrlSchemas,
   createPostalCodeSchemas,
-  // Type exports
-  StringRequired,
-  StringOptional,
-  EmailRequired,
-  EmailOptional,
-  PhoneRequired,
-  PhoneOptional,
-  NumberRequired,
-  NumberOptional,
-  BooleanRequired,
-  BooleanOptional,
-  EnumRequired,
-  EnumOptional,
-  StringArrayRequired,
-  StringArrayOptional,
-  PostalCodeRequired,
-  PostalCodeOptional,
+  createAddressSchemas,
+  createMoneySchemas,
+  createPaginationSchemas,
+  createFileUploadSchemas,
+  createUserSchemas,
+  createIdListSchemas,
+  createNetworkSchemas,
 } from "./index";
