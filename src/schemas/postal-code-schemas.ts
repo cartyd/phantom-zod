@@ -7,8 +7,12 @@ import { US_ZIP_CODE_PATTERN } from "../common/regex-patterns";
 // --- Types ---
 // Note: These types reference the factory functions, so they need to be created from the factory
 type PostalCodeSchemasFactory = ReturnType<typeof createPostalCodeSchemas>;
-export type PostalCodeOptional = z.infer<ReturnType<PostalCodeSchemasFactory['zPostalCodeOptional']>>;
-export type PostalCodeRequired = z.infer<ReturnType<PostalCodeSchemasFactory['zPostalCodeRequired']>>;
+export type PostalCodeOptional = z.infer<
+  ReturnType<PostalCodeSchemasFactory["zPostalCodeOptional"]>
+>;
+export type PostalCodeRequired = z.infer<
+  ReturnType<PostalCodeSchemasFactory["zPostalCodeRequired"]>
+>;
 
 /**
  * Helper function to validate postal code format and business rules
@@ -19,19 +23,19 @@ function isValidPostalCode(val: string): boolean {
   // Reject reserved/invalid codes
   if (val === "00000" || val.startsWith("00000-")) return false;
   if (val === "99999" || val.startsWith("99999-")) return false;
-  
+
   // Reject codes that end with incomplete extension
-  if (val.endsWith('-')) return false;
-  
+  if (val.endsWith("-")) return false;
+
   // Reject codes with spaces (like international codes)
-  if (val.includes(' ')) return false;
-  
+  if (val.includes(" ")) return false;
+
   // Reject specific known non-US postal codes that happen to match US format
-  const knownNonUsCodes = ['75001', '10117']; // France, Germany
-  if (knownNonUsCodes.includes(val.split('-')[0])) {
+  const knownNonUsCodes = ["75001", "10117"]; // France, Germany
+  if (knownNonUsCodes.includes(val.split("-")[0])) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -40,7 +44,9 @@ function isValidPostalCode(val: string): boolean {
  * @param messageHandler - The message handler to use for error messages
  * @returns An object containing postal code schema creation functions
  */
-export const createPostalCodeSchemas = (messageHandler: ErrorMessageFormatter) => {
+export const createPostalCodeSchemas = (
+  messageHandler: ErrorMessageFormatter,
+) => {
   /**
    * Creates a base string schema for postal code validation with consistent error messaging.
    * @param msg - The field name or custom message for error messages
@@ -83,7 +89,7 @@ export const createPostalCodeSchemas = (messageHandler: ErrorMessageFormatter) =
    */
   const zPostalCodeOptional = (options: PostalCodeSchemaOptions = {}) => {
     const { msg = "Postal Code", msgType = MsgType.FieldName } = options;
-    
+
     return createBasePostalCodeSchema(msg, msgType)
       .regex(US_ZIP_CODE_PATTERN, {
         message: messageHandler.formatErrorMessage({
@@ -130,7 +136,7 @@ export const createPostalCodeSchemas = (messageHandler: ErrorMessageFormatter) =
    */
   const zPostalCodeRequired = (options: PostalCodeSchemaOptions = {}) => {
     const { msg = "Postal Code", msgType = MsgType.FieldName } = options;
-    
+
     return createBasePostalCodeSchema(msg, msgType)
       .refine((val) => val.trim().length > 0, {
         message: messageHandler.formatErrorMessage({

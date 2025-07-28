@@ -1,17 +1,17 @@
 /**
  * Supported locale codes following BCP 47 standard
  */
-export type LocaleCode = 
-  | 'en'   // English
-  | 'es'   // Spanish
-  | 'fr'   // French
-  | 'de'   // German
-  | 'it'   // Italian
-  | 'pt'   // Portuguese
-  | 'ru'   // Russian
-  | 'zh'   // Chinese
-  | 'ja'   // Japanese
-  | 'ko';  // Korean
+export type LocaleCode =
+  | "en" // English
+  | "es" // Spanish
+  | "fr" // French
+  | "de" // German
+  | "it" // Italian
+  | "pt" // Portuguese
+  | "ru" // Russian
+  | "zh" // Chinese
+  | "ja" // Japanese
+  | "ko"; // Korean
 
 /**
  * Locale configuration

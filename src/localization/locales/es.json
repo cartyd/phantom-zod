@@ -48,6 +48,9 @@
     "invalid": "es inválido",
     "mustBeValidUuid": "debe ser un UUID válido",
     "mustBeValidUuidV4": "debe ser un UUIDv4 válido",
+    "mustBeValidUuidV6": "debe ser un UUIDv6 válido",
+    "mustBeValidUuidV7": "debe ser un UUIDv7 válido",
+    "mustBeValidNanoid": "debe ser un nanoid válido (ID de 21 caracteres URL-safe)",
     "invalidFormat": "tiene formato UUID inválido"
   },
   "number": {

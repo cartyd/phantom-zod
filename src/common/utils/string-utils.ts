@@ -6,7 +6,7 @@ export function trimOrUndefined(value: string | undefined): string | undefined {
     return undefined;
   }
   const trimmed = value.trim();
-  return trimmed === '' ? undefined : trimmed;
+  return trimmed === "" ? undefined : trimmed;
 }
 
 /**
@@ -14,7 +14,7 @@ export function trimOrUndefined(value: string | undefined): string | undefined {
  */
 export function trimOrEmpty(value: string | undefined): string {
   if (value === undefined || value === null) {
-    return '';
+    return "";
   }
   return value.trim();
 }

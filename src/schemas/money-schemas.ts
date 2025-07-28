@@ -19,24 +19,132 @@ export type PriceRequired = { amount: number; currency: string };
  * This is a subset of the full ISO 4217 standard for common currencies.
  */
 export const ISO_4217_CURRENCIES = [
-  "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "CNY", "INR",
-  "BRL", "RUB", "KRW", "MXN", "ZAR", "SEK", "NOK", "DKK", "PLN", "CZK",
-  "HUF", "BGN", "RON", "HRK", "ISK", "TRY", "ILS", "AED", "SAR", "QAR",
-  "KWD", "BHD", "OMR", "JOD", "LBP", "EGP", "MAD", "TND", "DZD", "LYD",
-  "NGN", "GHS", "KES", "UGX", "TZS", "ZMW", "BWP", "MUR", "SCR", "ETB",
-  "MGA", "XOF", "XAF", "THB", "VND", "IDR", "MYR", "SGD", "PHP", "TWD",
-  "HKD", "MOP", "BND", "LAK", "KHR", "MMK", "NPR", "PKR", "LKR", "BDT",
-  "BTN", "MVR", "AFN", "IRR", "IQD", "SYP", "YER", "UZS", "KZT", "KGS",
-  "TJS", "TMT", "AZN", "GEL", "AMD", "MDL", "UAH", "BYN", "MKD", "ALL",
-  "BAM", "RSD", "EUR", "CLP", "COP", "PEN", "UYU", "PYG", "BOB", "VES",
-  "GYD", "SRD", "FKP", "TTD", "BBD", "JMD", "BSD", "KYD", "XCD", "AWG",
-  "ANG", "CUP", "DOP", "GTQ", "HNL", "NIO", "CRC", "PAB", "BZD", "SVC"
+  "USD",
+  "EUR",
+  "GBP",
+  "JPY",
+  "CHF",
+  "CAD",
+  "AUD",
+  "NZD",
+  "CNY",
+  "INR",
+  "BRL",
+  "RUB",
+  "KRW",
+  "MXN",
+  "ZAR",
+  "SEK",
+  "NOK",
+  "DKK",
+  "PLN",
+  "CZK",
+  "HUF",
+  "BGN",
+  "RON",
+  "HRK",
+  "ISK",
+  "TRY",
+  "ILS",
+  "AED",
+  "SAR",
+  "QAR",
+  "KWD",
+  "BHD",
+  "OMR",
+  "JOD",
+  "LBP",
+  "EGP",
+  "MAD",
+  "TND",
+  "DZD",
+  "LYD",
+  "NGN",
+  "GHS",
+  "KES",
+  "UGX",
+  "TZS",
+  "ZMW",
+  "BWP",
+  "MUR",
+  "SCR",
+  "ETB",
+  "MGA",
+  "XOF",
+  "XAF",
+  "THB",
+  "VND",
+  "IDR",
+  "MYR",
+  "SGD",
+  "PHP",
+  "TWD",
+  "HKD",
+  "MOP",
+  "BND",
+  "LAK",
+  "KHR",
+  "MMK",
+  "NPR",
+  "PKR",
+  "LKR",
+  "BDT",
+  "BTN",
+  "MVR",
+  "AFN",
+  "IRR",
+  "IQD",
+  "SYP",
+  "YER",
+  "UZS",
+  "KZT",
+  "KGS",
+  "TJS",
+  "TMT",
+  "AZN",
+  "GEL",
+  "AMD",
+  "MDL",
+  "UAH",
+  "BYN",
+  "MKD",
+  "ALL",
+  "BAM",
+  "RSD",
+  "EUR",
+  "CLP",
+  "COP",
+  "PEN",
+  "UYU",
+  "PYG",
+  "BOB",
+  "VES",
+  "GYD",
+  "SRD",
+  "FKP",
+  "TTD",
+  "BBD",
+  "JMD",
+  "BSD",
+  "KYD",
+  "XCD",
+  "AWG",
+  "ANG",
+  "CUP",
+  "DOP",
+  "GTQ",
+  "HNL",
+  "NIO",
+  "CRC",
+  "PAB",
+  "BZD",
+  "SVC",
 ] as const;
 
 /**
  * Type for ISO 4217 currency codes.
  */
-export type CurrencyCode = typeof ISO_4217_CURRENCIES[number];
+export type CurrencyCode = (typeof ISO_4217_CURRENCIES)[number];
 
 // --- Money Schemas ---
 
@@ -46,22 +154,22 @@ export type CurrencyCode = typeof ISO_4217_CURRENCIES[number];
  * @returns An object containing money schema creation functions
  */
 export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
-
   /**
    * Currency code schema that validates against ISO 4217 currency codes.
    * @param options - Options to configure field name and message type
    */
   const zCurrencyCode = (options: MoneySchemaOptions = {}) => {
     const { msg = "Currency", msgType = MsgType.FieldName } = options;
-    return z.string({
-      message: messageHandler.formatErrorMessage({
-        group: "money",
-        messageKey: "required",
-        params: {},
-        msg,
-        msgType,
-      }),
-    })
+    return z
+      .string({
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "required",
+          params: {},
+          msg,
+          msgType,
+        }),
+      })
       .refine((val) => ISO_4217_CURRENCIES.includes(val as any), {
         message: messageHandler.formatErrorMessage({
           group: "money",
@@ -78,16 +186,21 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param options - Options to configure field name, message type, and max decimals
    */
   const zMoneyAmount = (options: MoneySchemaOptions = {}) => {
-    const { msg = "Amount", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
-    return z.number({
-      message: messageHandler.formatErrorMessage({
-        group: "money",
-        messageKey: "required",
-        params: {},
-        msg,
-        msgType,
-      }),
-    })
+    const {
+      msg = "Amount",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
+    return z
+      .number({
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "required",
+          params: {},
+          msg,
+          msgType,
+        }),
+      })
       .refine((value) => typeof value === "number" && !isNaN(value), {
         message: messageHandler.formatErrorMessage({
           group: "money",
@@ -97,7 +210,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .refine(value => value > 0, {
+      .refine((value) => value > 0, {
         message: messageHandler.formatErrorMessage({
           group: "money",
           messageKey: "mustBePositiveAmount",
@@ -106,18 +219,21 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .refine(value => {
-        const decimals = value.toString().split('.')[1]?.length || 0;
-        return decimals <= maxDecimals;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "money",
-          messageKey: "invalidDecimalPlaces",
-          params: { max: maxDecimals },
-          msg,
-          msgType,
-        }),
-      });
+      .refine(
+        (value) => {
+          const decimals = value.toString().split(".")[1]?.length || 0;
+          return decimals <= maxDecimals;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "money",
+            messageKey: "invalidDecimalPlaces",
+            params: { max: maxDecimals },
+            msg,
+            msgType,
+          }),
+        },
+      );
   };
 
   /**
@@ -125,16 +241,21 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param options - Options to configure field name, message type, and max decimals
    */
   const zMoneyAmountFromString = (options: MoneySchemaOptions = {}) => {
-    const { msg = "Amount", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
-    return z.string({
-      message: messageHandler.formatErrorMessage({
-        group: "money",
-        messageKey: "required",
-        params: {},
-        msg,
-        msgType,
-      }),
-    })
+    const {
+      msg = "Amount",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
+    return z
+      .string({
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "required",
+          params: {},
+          msg,
+          msgType,
+        }),
+      })
       .regex(MONEY_DECIMAL_PATTERN, {
         message: messageHandler.formatErrorMessage({
           group: "money",
@@ -144,8 +265,8 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .transform(val => parseFloat(val))
-      .refine(value => value > 0, {
+      .transform((val) => parseFloat(val))
+      .refine((value) => value > 0, {
         message: messageHandler.formatErrorMessage({
           group: "money",
           messageKey: "mustBePositiveAmount",
@@ -154,18 +275,21 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .refine(value => {
-        const decimals = value.toString().split('.')[1]?.length || 0;
-        return decimals <= maxDecimals;
-      }, {
-        message: messageHandler.formatErrorMessage({
-          group: "money",
-          messageKey: "invalidDecimalPlaces",
-          params: { max: maxDecimals },
-          msg,
-          msgType,
-        }),
-      });
+      .refine(
+        (value) => {
+          const decimals = value.toString().split(".")[1]?.length || 0;
+          return decimals <= maxDecimals;
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "money",
+            messageKey: "invalidDecimalPlaces",
+            params: { max: maxDecimals },
+            msg,
+            msgType,
+          }),
+        },
+      );
   };
 
   /**
@@ -173,7 +297,11 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param options - Options to configure field name, message type, and max decimals
    */
   const zMoneyOptional = (options: MoneySchemaOptions = {}) => {
-    const { msg = "Money", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    const {
+      msg = "Money",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
     return z
       .object({
         amount: zMoneyAmount({
@@ -182,7 +310,8 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
           maxDecimals,
         }),
         currency: zCurrencyCode({
-          msg: msgType === MsgType.Message ? "Currency is required" : "Currency",
+          msg:
+            msgType === MsgType.Message ? "Currency is required" : "Currency",
           msgType,
         }),
       })
@@ -206,26 +335,34 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param options - Options to configure field name, message type, and max decimals
    */
   const zMoneyRequired = (options: MoneySchemaOptions = {}) => {
-    const { msg = "Money", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
-    return z.object({
-      amount: zMoneyAmount({
-        msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
-        msgType,
-        maxDecimals,
-      }),
-      currency: zCurrencyCode({
-        msg: msgType === MsgType.Message ? "Currency is required" : "Currency",
-        msgType,
-      }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "money",
-        messageKey: "required",
-        params: {},
-        msg,
-        msgType,
-      }),
-    });
+    const {
+      msg = "Money",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
+    return z.object(
+      {
+        amount: zMoneyAmount({
+          msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
+          msgType,
+          maxDecimals,
+        }),
+        currency: zCurrencyCode({
+          msg:
+            msgType === MsgType.Message ? "Currency is required" : "Currency",
+          msgType,
+        }),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "required",
+          params: {},
+          msg,
+          msgType,
+        }),
+      },
+    );
   };
 
   /**
@@ -233,26 +370,34 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param options - Options to configure field name, message type, and max decimals
    */
   const zMoneyFromString = (options: MoneySchemaOptions = {}) => {
-    const { msg = "Money", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
-    return z.object({
-      amount: zMoneyAmountFromString({
-        msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
-        msgType,
-        maxDecimals,
-      }),
-      currency: zCurrencyCode({
-        msg: msgType === MsgType.Message ? "Currency is required" : "Currency",
-        msgType,
-      }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "money",
-        messageKey: "required",
-        params: {},
-        msg,
-        msgType,
-      }),
-    });
+    const {
+      msg = "Money",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
+    return z.object(
+      {
+        amount: zMoneyAmountFromString({
+          msg: msgType === MsgType.Message ? "Amount is required" : "Amount",
+          msgType,
+          maxDecimals,
+        }),
+        currency: zCurrencyCode({
+          msg:
+            msgType === MsgType.Message ? "Currency is required" : "Currency",
+          msgType,
+        }),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "required",
+          params: {},
+          msg,
+          msgType,
+        }),
+      },
+    );
   };
 
   /**
@@ -260,17 +405,21 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param currency - The fixed currency code to use.
    * @param options - Options to configure field name, message type, and max decimals
    * @returns Zod schema for a price with fixed currency.
-   * 
+   *
    * @example
    * const priceSchema = zPrice("USD", { msg: "Price" });
    * const result = priceSchema.parse(99.99);
    */
-  const zPrice = (
-    currency: CurrencyCode,
-    options: MoneySchemaOptions = {},
-  ) => {
-    const { msg = "Price", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
-    return zMoneyAmount({ msg, msgType, maxDecimals }).transform((amount) => ({ amount, currency }));
+  const zPrice = (currency: CurrencyCode, options: MoneySchemaOptions = {}) => {
+    const {
+      msg = "Price",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
+    return zMoneyAmount({ msg, msgType, maxDecimals }).transform((amount) => ({
+      amount,
+      currency,
+    }));
   };
 
   /**
@@ -278,7 +427,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param currency - The fixed currency code to use.
    * @param options - Options to configure field name, message type, and max decimals
    * @returns Zod schema for a price range.
-   * 
+   *
    * @example
    * const priceRangeSchema = zPriceRange("USD", { msg: "Price Range" });
    * const result = priceRangeSchema.parse({ min: 10.00, max: 100.00 });
@@ -287,33 +436,40 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
     currency: CurrencyCode,
     options: MoneySchemaOptions = {},
   ) => {
-    const { msg = "Price Range", msgType = MsgType.FieldName, maxDecimals = 2 } = options;
+    const {
+      msg = "Price Range",
+      msgType = MsgType.FieldName,
+      maxDecimals = 2,
+    } = options;
     return z
       .object({
         min: zMoneyAmount({
-          msg: msgType === MsgType.Message ? "Minimum price is required" : "Minimum Price",
+          msg:
+            msgType === MsgType.Message
+              ? "Minimum price is required"
+              : "Minimum Price",
           msgType,
           maxDecimals,
         }),
         max: zMoneyAmount({
-          msg: msgType === MsgType.Message ? "Maximum price is required" : "Maximum Price",
+          msg:
+            msgType === MsgType.Message
+              ? "Maximum price is required"
+              : "Maximum Price",
           msgType,
           maxDecimals,
         }),
       })
-      .refine(
-        (data) => data.min <= data.max,
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "money",
-            messageKey: "invalid",
-            params: {},
-            msg,
-            msgType,
-          }),
-          path: ["min"],
-        },
-      )
+      .refine((data) => data.min <= data.max, {
+        message: messageHandler.formatErrorMessage({
+          group: "money",
+          messageKey: "invalid",
+          params: {},
+          msg,
+          msgType,
+        }),
+        path: ["min"],
+      })
       .transform((data) => ({
         min: { amount: data.min, currency },
         max: { amount: data.max, currency },

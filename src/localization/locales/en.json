@@ -49,6 +49,9 @@
     "invalid": "is invalid",
     "mustBeValidUuid": "must be a valid UUID",
     "mustBeValidUuidV4": "must be a valid UUIDv4",
+    "mustBeValidUuidV6": "must be a valid UUIDv6",
+    "mustBeValidUuidV7": "must be a valid UUIDv7",
+    "mustBeValidNanoid": "must be a valid nanoid (21-character URL-safe ID)",
     "invalidFormat": "has invalid UUID format"
   },
   "url": {

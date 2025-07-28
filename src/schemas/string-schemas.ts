@@ -8,8 +8,12 @@ import type { StringSchemaOptions } from "../common/types/schema-options.types";
 // --- Types ---
 // Note: These types reference the factory functions, so they need to be created from the factory
 type StringSchemasFactory = ReturnType<typeof createStringSchemas>;
-export type StringOptional = z.infer<ReturnType<StringSchemasFactory['zStringOptional']>>;
-export type StringRequired = z.infer<ReturnType<StringSchemasFactory['zStringRequired']>>;
+export type StringOptional = z.infer<
+  ReturnType<StringSchemasFactory["zStringOptional"]>
+>;
+export type StringRequired = z.infer<
+  ReturnType<StringSchemasFactory["zStringRequired"]>
+>;
 
 /**
  * Adds minimum and/or maximum length constraints to a Zod schema for strings.
@@ -33,36 +37,42 @@ function addLengthConstraints<TSchema extends z.ZodTypeAny>(
   msg: string,
   msgType: MsgType,
   minLength?: number,
-  maxLength?: number
+  maxLength?: number,
 ): TSchema {
   let result = schema;
   if (minLength !== undefined) {
-    result = result.refine((val: unknown) => {
-      if (!val || typeof val !== 'string') return true;
-      return val.length >= minLength;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "tooShort",
-        params: { min: minLength },
-        msg,
-        msgType,
-      }),
-    }) as TSchema;
+    result = result.refine(
+      (val: unknown) => {
+        if (!val || typeof val !== "string") return true;
+        return val.length >= minLength;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "tooShort",
+          params: { min: minLength },
+          msg,
+          msgType,
+        }),
+      },
+    ) as TSchema;
   }
   if (maxLength !== undefined) {
-    result = result.refine((val: unknown) => {
-      if (!val || typeof val !== 'string') return true;
-      return val.length <= maxLength;
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "tooLong",
-        params: { max: maxLength },
-        msg,
-        msgType,
-      }),
-    }) as TSchema;
+    result = result.refine(
+      (val: unknown) => {
+        if (!val || typeof val !== "string") return true;
+        return val.length <= maxLength;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "tooLong",
+          params: { max: maxLength },
+          msg,
+          msgType,
+        }),
+      },
+    ) as TSchema;
   }
   return result;
 }
@@ -117,13 +127,25 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("This name is too long"); // throws ZodError (too long)
    */
   const zStringOptional = (options: StringSchemaOptions = {}) => {
-    const { msg = "Value", msgType = MsgType.FieldName, minLength, maxLength } = options;
+    const {
+      msg = "Value",
+      msgType = MsgType.FieldName,
+      minLength,
+      maxLength,
+    } = options;
 
     let schema = createBaseStringSchema(msg, msgType)
       .optional()
       .transform(trimOrEmpty);
 
-    schema = addLengthConstraints(schema, messageHandler, msg, msgType, minLength, maxLength);
+    schema = addLengthConstraints(
+      schema,
+      messageHandler,
+      msg,
+      msgType,
+      minLength,
+      maxLength,
+    );
     return schema;
   };
 
@@ -148,7 +170,12 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("   ");       // throws ZodError
    */
   const zStringRequired = (options: StringSchemaOptions = {}) => {
-    const { msg = "Value", msgType = MsgType.FieldName, minLength = 1, maxLength } = options;
+    const {
+      msg = "Value",
+      msgType = MsgType.FieldName,
+      minLength = 1,
+      maxLength,
+    } = options;
     let schema = createBaseStringSchema(msg, msgType)
       .transform(trimOrEmpty)
       // 'required' error if empty after trim
@@ -173,7 +200,14 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
         path: [],
       });
 
-    schema = addLengthConstraints(schema, messageHandler, msg, msgType, minLength, maxLength);
+    schema = addLengthConstraints(
+      schema,
+      messageHandler,
+      msg,
+      msgType,
+      minLength,
+      maxLength,
+    );
     return schema;
   };
 

@@ -50,17 +50,17 @@ export const ACCOUNT_TYPES = [
  */
 function calculatePasswordStrength(password: string): number {
   let score = 0;
-  
+
   // Length check
   if (password.length >= 8) score++;
   if (password.length >= 12) score++;
-  
+
   // Character type checks
   if (/[a-z]/.test(password)) score++; // lowercase
   if (/[A-Z]/.test(password)) score++; // uppercase
   if (/\d/.test(password)) score++; // numbers
   if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++; // special chars
-  
+
   // Cap at 4 for maximum strength
   return Math.min(score, 4);
 }
@@ -88,54 +88,44 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     requireNumbers = true,
     requireSpecialChars = true,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType })
+    stringSchemas
+      .zStringRequired({ msg, msgType })
+      .refine((password) => password.length >= minLength, {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordTooShort",
+          msg,
+          msgType,
+          params: { min: minLength },
+        }),
+      })
+      .refine((password) => !requireUppercase || /[A-Z]/.test(password), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordMissingUppercase",
+          msg,
+          msgType,
+        }),
+      })
+      .refine((password) => !requireLowercase || /[a-z]/.test(password), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordMissingLowercase",
+          msg,
+          msgType,
+        }),
+      })
+      .refine((password) => !requireNumbers || /\d/.test(password), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordMissingNumbers",
+          msg,
+          msgType,
+        }),
+      })
       .refine(
-        (password) => password.length >= minLength,
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "passwordTooShort",
-            msg,
-            msgType,
-            params: { min: minLength },
-          }),
-        },
-      )
-      .refine(
-        (password) => !requireUppercase || /[A-Z]/.test(password),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "passwordMissingUppercase",
-            msg,
-            msgType,
-          }),
-        },
-      )
-      .refine(
-        (password) => !requireLowercase || /[a-z]/.test(password),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "passwordMissingLowercase",
-            msg,
-            msgType,
-          }),
-        },
-      )
-      .refine(
-        (password) => !requireNumbers || /\d/.test(password),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "passwordMissingNumbers",
-            msg,
-            msgType,
-          }),
-        },
-      )
-      .refine(
-        (password) => !requireSpecialChars || /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        (password) =>
+          !requireSpecialChars || /[!@#$%^&*(),.?":{}|<>]/.test(password),
         {
           message: messageHandler.formatErrorMessage({
             group: "user",
@@ -156,18 +146,16 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     minLength = 3,
     maxLength = 30,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType, minLength, maxLength })
-      .refine(
-        (username) => /^[a-zA-Z0-9_-]+$/.test(username),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "usernameInvalid",
-            msg,
-            msgType,
-          }),
-        },
-      )
+    stringSchemas
+      .zStringRequired({ msg, msgType, minLength, maxLength })
+      .refine((username) => /^[a-zA-Z0-9_-]+$/.test(username), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "usernameInvalid",
+          msg,
+          msgType,
+        }),
+      })
       .refine(
         (username) => !username.startsWith("_") && !username.endsWith("_"),
         {
@@ -200,18 +188,16 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
     maxLength = 50,
   ) =>
-    stringSchemas.zStringOptional({ msg, msgType, maxLength })
-      .refine(
-        (name) => !name || name.trim().length > 0,
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "string",
-            messageKey: "cannotBeEmpty",
-            msg,
-            msgType,
-          }),
-        },
-      );
+    stringSchemas
+      .zStringOptional({ msg, msgType, maxLength })
+      .refine((name) => !name || name.trim().length > 0, {
+        message: messageHandler.formatErrorMessage({
+          group: "string",
+          messageKey: "cannotBeEmpty",
+          msg,
+          msgType,
+        }),
+      });
 
   /**
    * Basic user registration schema.
@@ -220,40 +206,53 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "User Registration",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      username: zUsername("Username", msgType),
-      email: emailSchemas.zEmailRequired("Email", msgType),
-      password: zPassword("Password", msgType),
-      confirmPassword: stringSchemas.zStringRequired({ msg: "Confirm Password", msgType }),
-      displayName: zDisplayName("Display Name", msgType),
-      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
-      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-      acceptTerms: z.boolean({
-        message: messageHandler.formatErrorMessage({
-          group: "user",
-          messageKey: "termsNotAccepted",
-          msg,
-          msgType,
-        }),
-      }).refine(val => val === true, {
-        message: messageHandler.formatErrorMessage({
-          group: "user",
-          messageKey: "termsNotAccepted",
-          msg,
-          msgType,
-        }),
-      }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    })
-    .refine(
-      (data) => data.password === data.confirmPassword,
-      {
+    z
+      .object(
+        {
+          username: zUsername("Username", msgType),
+          email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
+          password: zPassword("Password", msgType),
+          confirmPassword: stringSchemas.zStringRequired({
+            msg: "Confirm Password",
+            msgType,
+          }),
+          displayName: zDisplayName("Display Name", msgType),
+          firstName: stringSchemas.zStringOptional({
+            msg: "First Name",
+            msgType,
+          }),
+          lastName: stringSchemas.zStringOptional({
+            msg: "Last Name",
+            msgType,
+          }),
+          acceptTerms: z
+            .boolean({
+              message: messageHandler.formatErrorMessage({
+                group: "user",
+                messageKey: "termsNotAccepted",
+                msg,
+                msgType,
+              }),
+            })
+            .refine((val) => val === true, {
+              message: messageHandler.formatErrorMessage({
+                group: "user",
+                messageKey: "termsNotAccepted",
+                msg,
+                msgType,
+              }),
+            }),
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine((data) => data.password === data.confirmPassword, {
         message: messageHandler.formatErrorMessage({
           group: "user",
           messageKey: "passwordsDoNotMatch",
@@ -261,8 +260,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
         path: ["confirmPassword"],
-      },
-    );
+      });
 
   /**
    * User login schema.
@@ -271,37 +269,52 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "User Login",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      identifier: stringSchemas.zStringRequired({ msg: "Username/Email", msgType }),
-      password: stringSchemas.zStringRequired({ msg: "Password", msgType }),
-      rememberMe: z.boolean().optional(),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        identifier: stringSchemas.zStringRequired({
+          msg: "Username/Email",
+          msgType,
+        }),
+        password: stringSchemas.zStringRequired({ msg: "Password", msgType }),
+        rememberMe: z.boolean().optional(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Optional user profile schema.
    */
-  const zUserOptional = (
-    msg = "User",
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
+  const zUserOptional = (msg = "User", msgType: MsgType = MsgType.FieldName) =>
     z
       .object({
         id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
         username: zUsername("Username", msgType),
-        email: emailSchemas.zEmailRequired("Email", msgType),
+        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
         displayName: zDisplayName("Display Name", msgType),
-        firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
+        firstName: stringSchemas.zStringOptional({
+          msg: "First Name",
+          msgType,
+        }),
         lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-        role: enumSchemas.zEnumRequired([...USER_ROLES], { msg: "Role", msgType }),
-        status: enumSchemas.zEnumRequired([...USER_STATUS], { msg: "Status", msgType }),
-        accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], { msg: "Account Type", msgType }),
+        role: enumSchemas.zEnumRequired([...USER_ROLES], {
+          msg: "Role",
+          msgType,
+        }),
+        status: enumSchemas.zEnumRequired([...USER_STATUS], {
+          msg: "Status",
+          msgType,
+        }),
+        accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], {
+          msg: "Account Type",
+          msgType,
+        }),
         avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
         bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
         createdAt: z.date().optional(),
@@ -326,35 +339,47 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Required user profile schema.
    */
-  const zUserRequired = (
-    msg = "User",
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
-    z.object({
-      id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
-      username: zUsername("Username", msgType),
-      email: emailSchemas.zEmailRequired("Email", msgType),
-      displayName: zDisplayName("Display Name", msgType),
-      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
-      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-      role: enumSchemas.zEnumRequired([...USER_ROLES], { msg: "Role", msgType }),
-      status: enumSchemas.zEnumRequired([...USER_STATUS], { msg: "Status", msgType }),
-      accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], { msg: "Account Type", msgType }),
-      avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
-      bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
-      createdAt: z.date().optional(),
-      updatedAt: z.date().optional(),
-      lastLoginAt: z.date().optional(),
-      emailVerified: z.boolean().optional(),
-      phoneVerified: z.boolean().optional(),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+  const zUserRequired = (msg = "User", msgType: MsgType = MsgType.FieldName) =>
+    z.object(
+      {
+        id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
+        username: zUsername("Username", msgType),
+        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
+        displayName: zDisplayName("Display Name", msgType),
+        firstName: stringSchemas.zStringOptional({
+          msg: "First Name",
+          msgType,
+        }),
+        lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
+        role: enumSchemas.zEnumRequired([...USER_ROLES], {
+          msg: "Role",
+          msgType,
+        }),
+        status: enumSchemas.zEnumRequired([...USER_STATUS], {
+          msg: "Status",
+          msgType,
+        }),
+        accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], {
+          msg: "Account Type",
+          msgType,
+        }),
+        avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
+        bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+        createdAt: z.date().optional(),
+        updatedAt: z.date().optional(),
+        lastLoginAt: z.date().optional(),
+        emailVerified: z.boolean().optional(),
+        phoneVerified: z.boolean().optional(),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * User profile update schema (allows partial updates).
@@ -363,20 +388,26 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "User Update",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      displayName: zDisplayName("Display Name", msgType),
-      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
-      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-      avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
-      bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        displayName: zDisplayName("Display Name", msgType),
+        firstName: stringSchemas.zStringOptional({
+          msg: "First Name",
+          msgType,
+        }),
+        lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
+        avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
+        bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Password change schema.
@@ -385,21 +416,29 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Password Change",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      currentPassword: stringSchemas.zStringRequired({ msg: "Current Password", msgType }),
-      newPassword: zPassword("New Password", msgType),
-      confirmPassword: stringSchemas.zStringRequired({ msg: "Confirm Password", msgType }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    })
-    .refine(
-      (data) => data.newPassword === data.confirmPassword,
-      {
+    z
+      .object(
+        {
+          currentPassword: stringSchemas.zStringRequired({
+            msg: "Current Password",
+            msgType,
+          }),
+          newPassword: zPassword("New Password", msgType),
+          confirmPassword: stringSchemas.zStringRequired({
+            msg: "Confirm Password",
+            msgType,
+          }),
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine((data) => data.newPassword === data.confirmPassword, {
         message: messageHandler.formatErrorMessage({
           group: "user",
           messageKey: "passwordsDoNotMatch",
@@ -407,11 +446,8 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
         path: ["confirmPassword"],
-      },
-    )
-    .refine(
-      (data) => data.currentPassword !== data.newPassword,
-      {
+      })
+      .refine((data) => data.currentPassword !== data.newPassword, {
         message: messageHandler.formatErrorMessage({
           group: "user",
           messageKey: "passwordMustBeDifferent",
@@ -419,8 +455,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
         path: ["newPassword"],
-      },
-    );
+      });
 
   /**
    * Password reset request schema.
@@ -429,16 +464,19 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Password Reset",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      email: emailSchemas.zEmailRequired("Email", msgType),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Admin user management schema.
@@ -447,19 +485,28 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Admin User Management",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z.object({
-      userId: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
-      role: enumSchemas.zEnumOptional([...USER_ROLES], { msg: "Role", msgType }),
-      status: enumSchemas.zEnumOptional([...USER_STATUS], { msg: "Status", msgType }),
-      reason: stringSchemas.zStringOptional({ msg: "Reason", msgType }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    });
+    z.object(
+      {
+        userId: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
+        role: enumSchemas.zEnumOptional([...USER_ROLES], {
+          msg: "Role",
+          msgType,
+        }),
+        status: enumSchemas.zEnumOptional([...USER_STATUS], {
+          msg: "Status",
+          msgType,
+        }),
+        reason: stringSchemas.zStringOptional({ msg: "Reason", msgType }),
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "required",
+          msg,
+          msgType,
+        }),
+      },
+    );
 
   /**
    * Enhanced password validation with weakness detection.
@@ -469,26 +516,25 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Password",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType })
-      .refine(
-        (password) => {
-          const score = calculatePasswordStrength(password);
-          return score >= 4; // Require "strong" password
-        },
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "passwordWeak",
-            msg,
-            msgType,
-            params: {
-              score: 2, // Example score
-              missingRequirements: ["uppercase", "numbers"],
-              suggestions: ["Add uppercase letters", "Include numbers"]
-            },
-          }),
-        },
-      );
+    stringSchemas.zStringRequired({ msg, msgType }).refine(
+      (password) => {
+        const score = calculatePasswordStrength(password);
+        return score >= 4; // Require "strong" password
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "passwordWeak",
+          msg,
+          msgType,
+          params: {
+            score: 2, // Example score
+            missingRequirements: ["uppercase", "numbers"],
+            suggestions: ["Add uppercase letters", "Include numbers"],
+          },
+        }),
+      },
+    );
 
   /**
    * User validation with invalid message.
@@ -498,23 +544,21 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "User",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    z
-      .any()
-      .refine(
-        (val) => {
-          // Basic validation - must be an object with id
-          return val && typeof val === "object" && "id" in val && val.id;
-        },
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "invalid",
-            msg,
-            msgType,
-            params: { reason: "User object must contain a valid ID" },
-          }),
-        },
-      );
+    z.any().refine(
+      (val) => {
+        // Basic validation - must be an object with id
+        return val && typeof val === "object" && "id" in val && val.id;
+      },
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "invalid",
+          msg,
+          msgType,
+          params: { reason: "User object must contain a valid ID" },
+        }),
+      },
+    );
 
   /**
    * Email uniqueness validation schema.
@@ -525,19 +569,17 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
     existingEmails: string[] = [],
   ) =>
-    emailSchemas.zEmailRequired(msg, msgType)
-      .refine(
-        (email) => !existingEmails.includes(email.toLowerCase()),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "emailAlreadyExists",
-            msg,
-            msgType,
-            params: { email: "example@domain.com" }, // Will be replaced with actual email
-          }),
-        },
-      );
+    emailSchemas
+      .zEmailRequired({ msg, msgType })
+      .refine((email) => !existingEmails.includes(email.toLowerCase()), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "emailAlreadyExists",
+          msg,
+          msgType,
+          params: { email: "example@domain.com" }, // Will be replaced with actual email
+        }),
+      });
 
   /**
    * Username uniqueness validation schema.
@@ -548,19 +590,18 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
     existingUsernames: string[] = [],
   ) =>
-    zUsername(msg, msgType)
-      .refine(
-        (username) => !existingUsernames.includes(username.toLowerCase()),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "usernameAlreadyExists",
-            msg,
-            msgType,
-            params: { username: "example_user" }, // Will be replaced with actual username
-          }),
-        },
-      );
+    zUsername(msg, msgType).refine(
+      (username) => !existingUsernames.includes(username.toLowerCase()),
+      {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "usernameAlreadyExists",
+          msg,
+          msgType,
+          params: { username: "example_user" }, // Will be replaced with actual username
+        }),
+      },
+    );
 
   /**
    * Role validation schema with invalid role detection.
@@ -579,18 +620,15 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .refine(
-        (role) => USER_ROLES.includes(role as any),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "invalidRole",
-            msg,
-            msgType,
-            params: { role: "invalid_role" }, // Will be replaced with actual role
-          }),
-        },
-      );
+      .refine((role) => USER_ROLES.includes(role as any), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "invalidRole",
+          msg,
+          msgType,
+          params: { role: "invalid_role" }, // Will be replaced with actual role
+        }),
+      });
 
   /**
    * Account type validation schema with invalid type detection.
@@ -609,18 +647,15 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
       })
-      .refine(
-        (type) => ACCOUNT_TYPES.includes(type as any),
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "user",
-            messageKey: "invalidAccountType",
-            msg,
-            msgType,
-            params: { type: "invalid_type" }, // Will be replaced with actual type
-          }),
-        },
-      );
+      .refine((type) => ACCOUNT_TYPES.includes(type as any), {
+        message: messageHandler.formatErrorMessage({
+          group: "user",
+          messageKey: "invalidAccountType",
+          msg,
+          msgType,
+          params: { type: "invalid_type" }, // Will be replaced with actual type
+        }),
+      });
 
   /**
    * Enhanced user registration with uniqueness checks.
@@ -631,45 +666,58 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     existingEmails: string[] = [],
     existingUsernames: string[] = [],
   ) =>
-    z.object({
-      username: zUsernameUniqueness("Username", msgType, existingUsernames),
-      email: zEmailUniqueness("Email", msgType, existingEmails),
-      password: zPasswordWithWeaknessCheck("Password", msgType),
-      confirmPassword: stringSchemas.zStringRequired({ msg: "Confirm Password", msgType }),
-      displayName: zDisplayName("Display Name", msgType),
-      firstName: stringSchemas.zStringOptional({ msg: "First Name", msgType }),
-      lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-      accountType: zAccountTypeValidation("Account Type", msgType),
-      acceptTerms: z.boolean({
-        message: messageHandler.formatErrorMessage({
-          group: "user",
-          messageKey: "termsNotAccepted",
-          msg,
-          msgType,
-        }),
-      }).refine(val => val === true, {
-        message: messageHandler.formatErrorMessage({
-          group: "user",
-          messageKey: "termsNotAccepted",
-          msg,
-          msgType,
-          params: {
-            termsVersion: "v1.0",
-            requiredSections: ["privacy", "terms_of_service"]
-          },
-        }),
-      }),
-    }, {
-      message: messageHandler.formatErrorMessage({
-        group: "user",
-        messageKey: "required",
-        msg,
-        msgType,
-      }),
-    })
-    .refine(
-      (data) => data.password === data.confirmPassword,
-      {
+    z
+      .object(
+        {
+          username: zUsernameUniqueness("Username", msgType, existingUsernames),
+          email: zEmailUniqueness("Email", msgType, existingEmails),
+          password: zPasswordWithWeaknessCheck("Password", msgType),
+          confirmPassword: stringSchemas.zStringRequired({
+            msg: "Confirm Password",
+            msgType,
+          }),
+          displayName: zDisplayName("Display Name", msgType),
+          firstName: stringSchemas.zStringOptional({
+            msg: "First Name",
+            msgType,
+          }),
+          lastName: stringSchemas.zStringOptional({
+            msg: "Last Name",
+            msgType,
+          }),
+          accountType: zAccountTypeValidation("Account Type", msgType),
+          acceptTerms: z
+            .boolean({
+              message: messageHandler.formatErrorMessage({
+                group: "user",
+                messageKey: "termsNotAccepted",
+                msg,
+                msgType,
+              }),
+            })
+            .refine((val) => val === true, {
+              message: messageHandler.formatErrorMessage({
+                group: "user",
+                messageKey: "termsNotAccepted",
+                msg,
+                msgType,
+                params: {
+                  termsVersion: "v1.0",
+                  requiredSections: ["privacy", "terms_of_service"],
+                },
+              }),
+            }),
+        },
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "required",
+            msg,
+            msgType,
+          }),
+        },
+      )
+      .refine((data) => data.password === data.confirmPassword, {
         message: messageHandler.formatErrorMessage({
           group: "user",
           messageKey: "passwordsDoNotMatch",
@@ -677,12 +725,11 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
           params: {
             field1: "password",
-            field2: "confirmPassword"
+            field2: "confirmPassword",
           },
         }),
         path: ["confirmPassword"],
-      },
-    );
+      });
 
   return {
     zPassword,

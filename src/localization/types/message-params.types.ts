@@ -1,7 +1,6 @@
-
 /**
  * Unified mapping of message group names to their corresponding parameter types.
- * 
+ *
  * This type provides a centralized registry that maps each validation category
  * (such as string, number, email, etc.) to its specific parameter interface.
  * It enables type-safe message formatting by ensuring the correct parameter
@@ -71,7 +70,7 @@ export type MessageGroupMap = {
  */
 export function formatMessage<
   TGroup extends keyof MessageGroupMap,
-  TKey extends keyof MessageGroupMap[TGroup]
+  TKey extends keyof MessageGroupMap[TGroup],
 >(opts: {
   group: TGroup;
   messageKey: TKey;
@@ -223,6 +222,13 @@ export type PhoneMessageParams = {
  *   - `receivedValue`: The invalid value that was provided.
  * @property mustBeValidUuidV4 - Indicates that the value must be a valid UUID version 4.
  *   - `receivedVersion`: The UUID version that was detected, if any.
+ * @property mustBeValidUuidV6 - Indicates that the value must be a valid UUID version 6.
+ *   - `receivedVersion`: The UUID version that was detected, if any.
+ * @property mustBeValidUuidV7 - Indicates that the value must be a valid UUID version 7.
+ *   - `receivedVersion`: The UUID version that was detected, if any.
+ * @property mustBeValidNanoid - Indicates that the value must be a valid nanoid.
+ *   - `receivedValue`: The invalid nanoid value that was provided.
+ *   - `receivedLength`: The length of the received value, if relevant.
  * @property invalidFormat - Indicates that the UUID format is invalid.
  *   - `expectedFormat`: Description of the expected UUID format.
  */
@@ -231,6 +237,9 @@ export type UuidMessageParams = {
   invalid: { receivedValue?: string; reason?: string };
   mustBeValidUuid: { receivedValue?: string };
   mustBeValidUuidV4: { receivedVersion?: string };
+  mustBeValidUuidV6: { receivedVersion?: string };
+  mustBeValidUuidV7: { receivedVersion?: string };
+  mustBeValidNanoid: { receivedValue?: string; receivedLength?: number };
   invalidFormat: { expectedFormat?: string };
 };
 
@@ -622,7 +631,11 @@ export type UserMessageParams = {
   required: {};
   invalid: { reason?: string };
   usernameInvalid: { violations?: string[]; requirements?: string[] };
-  passwordWeak: { score?: number; missingRequirements?: string[]; suggestions?: string[] };
+  passwordWeak: {
+    score?: number;
+    missingRequirements?: string[];
+    suggestions?: string[];
+  };
   passwordTooShort: { min: number };
   passwordMissingUppercase: { minRequired?: number };
   passwordMissingLowercase: { minRequired?: number };
@@ -637,5 +650,8 @@ export type UserMessageParams = {
   termsNotAccepted: { termsVersion?: string; requiredSections?: string[] };
   invalidUnderscorePosition: { position?: number; allowedPositions?: string };
   invalidHyphenPosition: { position?: number; allowedPositions?: string };
-  mustBeValidUserObject: { requiredFields?: string[]; invalidFields?: string[] };
+  mustBeValidUserObject: {
+    requiredFields?: string[];
+    invalidFields?: string[];
+  };
 };
