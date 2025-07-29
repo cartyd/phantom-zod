@@ -33,151 +33,128 @@ A TypeScript-first schema validation library built on top of Zod, providing pre-
 
 ## Features
 
-- 🛡️ **Type-safe validation** with full TypeScript support
-- 📱 **Phone number validation** with E.164 and national format support
-- 📧 **Email validation** with customizable error messages
-- 📝 **String validation** with automatic trimming
-- 🌐 **Internationalization** support for error messages
-- 🔄 **Data transformation** during validation
-- 🎯 **Pre-built schemas** for common use cases
-- 📋 **Comprehensive testing** with 190+ test cases
-
-## Installation
-
-```bash
-npm install phantom-zod
-```
-
-## Quick Start
-
-```typescript
-import { zEmailRequired, zPhoneOptional, zStringRequired } from 'phantom-zod';
-
-// Email validation
-const emailSchema = zEmailRequired('Email');
-const result = emailSchema.parse('user@example.com'); // ✅ Valid
-
-// Phone validation
-const phoneSchema = zPhoneOptional('Phone');
-const phone = phoneSchema.parse('(123) 456-7890'); // ✅ Transforms to '+11234567890'
-
-// String validation
-const nameSchema = zStringRequired('Name');
-const name = nameSchema.parse('  John Doe  '); // ✅ Transforms to 'John Doe'
-```
-
-## Available Schemas
-
-### Email Schemas
-
-#### `zEmailOptional(msg?, msgType?)`
-Validates optional email addresses with automatic trimming.
-
-```typescript
-import { zEmailOptional, MsgType } from 'phantom-zod';
-
-const schema = zEmailOptional('Email Address');
-schema.parse('user@example.com'); // ✅ 'user@example.com'
-schema.parse('  user@example.com  '); // ✅ 'user@example.com' (trimmed)
-schema.parse(undefined); // ✅ undefined
-schema.parse('invalid-email'); // ❌ Throws: "Email Address must be a valid email address"
-
-// Custom error message
-const customSchema = zEmailOptional('Invalid email format', MsgType.Message);
-customSchema.parse('invalid'); // ❌ Throws: "Invalid email format"
-```
-
-#### `zEmailRequired(msg?, msgType?)`
-Validates required email addresses.
-
-```typescript
-import { zEmailRequired } from 'phantom-zod';
-
-const schema = zEmailRequired('Email');
-schema.parse('user@example.com'); // ✅ 'user@example.com'
-schema.parse(''); // ❌ Throws: "Email is required"
-schema.parse('invalid'); // ❌ Throws: "Email must be a valid email address"
-```
-
-### Phone Schemas
-
-#### `zPhoneOptional(msg?, format?, msgType?)`
-Validates and normalizes optional US phone numbers.
-
-```typescript
-import { zPhoneOptional, PhoneFormat } from 'phantom-zod';
-
-// E.164 format (default)
-const e164Schema = zPhoneOptional('Phone');
-e164Schema.parse('1234567890'); // ✅ '+11234567890'
-e164Schema.parse('(123) 456-7890'); // ✅ '+11234567890'
-e164Schema.parse('+11234567890'); // ✅ '+11234567890'
-e164Schema.parse(undefined); // ✅ undefined
-
-// National format
-const nationalSchema = zPhoneOptional('Phone', PhoneFormat.National);
-nationalSchema.parse('+11234567890'); // ✅ '1234567890'
-nationalSchema.parse('11234567890'); // ✅ '1234567890'
-```
-
-#### `zPhoneRequired(msg?, format?, msgType?)`
-Validates required phone numbers.
-
-```typescript
-import { zPhoneRequired, PhoneFormat } from 'phantom-zod';
-
-const schema = zPhoneRequired('Mobile');
-schema.parse('1234567890'); // ✅ '+11234567890'
-schema.parse(''); // ❌ Throws: "Mobile is required"
-schema.parse('123'); // ❌ Throws: "Mobile is invalid. Example of valid format: +11234567890"
-```
-
-### String Schemas
-
-#### `zStringOptional(msg?, msgType?)`
-Validates optional strings with automatic trimming.
-
-```typescript
-import { zStringOptional } from 'phantom-zod';
-
-const schema = zStringOptional('Name');
-schema.parse('  John Doe  '); // ✅ 'John Doe'
-schema.parse(''); // ✅ ''
-schema.parse(undefined); // ✅ ''
-schema.parse('   '); // ✅ '' (whitespace trimmed to empty)
-```
-
-#### `zStringRequired(msg?, msgType?)`
-Validates required strings with trimming and non-empty validation.
-
-```typescript
-import { zStringRequired } from 'phantom-zod';
-
-const schema = zStringRequired('Name');
-schema.parse('  John Doe  '); // ✅ 'John Doe'
-schema.parse(''); // ❌ Throws: "Name is required"
-schema.parse('   '); // ❌ Throws: "Name is required"
-```
-
-### Additional Schemas
-
-Phantom Zod provides many additional schema types for comprehensive validation:
-
-- **Date Schemas**: `zDateOptional()`, `zDateRequired()` - Date validation with customizable formats
-- **Number Schemas**: `zNumberOptional()`, `zNumberRequired()` - Number validation with range checks
-- **UUID Schemas**: `zUuidOptional()`, `zUuidRequired()` - UUID validation with version support (v4, v6, v7)
-- **Boolean Schemas**: `zBooleanOptional()`, `zBooleanRequired()` - Boolean validation
-- **Enum Schemas**: `zEnumOptional()`, `zEnumRequired()` - Enum validation with custom values
-- **Array Schemas**: `zArrayOptional()`, `zArrayRequired()` - Array validation with element type checking
-- **URL Schemas**: `zUrlOptional()`, `zUrlRequired()` - URL validation with protocol restrictions
-- **Postal Code Schemas**: `zPostalCodeOptional()`, `zPostalCodeRequired()` - Postal code validation
-- **Address Schemas**: `zAddressOptional()`, `zAddressRequired()` - Address validation
 - **Money Schemas**: `zMoneyOptional()`, `zMoneyRequired()` - Currency and amount validation
-- **Network Schemas**: `zIPv4Optional()`, `zIPv6Optional()`, `zMacAddressOptional()` - Network address validation
+
+## Available Schemas & New Capabilities
+
+Phantom Zod now provides a rich set of schema factories with advanced features:
+
+- **Dynamic locale management** for error messages
+- **Parameter interpolation** in messages
+- **Convenience schema factories** for all common types
+- **Type-safe output and error handling**
+- **Utility methods for message keys, existence, and supported locales**
+
+### Example: Advanced Schema Usage
+```typescript
+import {
+  zEmailRequired,
+  zPhoneOptional,
+  zStringRequired,
+  zUuidRequired,
+  zUrlRequired,
+  zDateRequired,
+  zNumberRequired,
+  zIPv4Optional,
+  zBooleanRequired,
+  zEnumRequired,
+  zArrayRequired,
+  zMoneyRequired,
+  zPostalCodeRequired,
+  zAddressRequired,
+  zFileUploadRequired,
+  zPaginationRequired
+} from 'phantom-zod';
+
+// Email validation with custom message
+const emailSchema = zEmailRequired({ msg: 'Email Address' });
+emailSchema.parse('user@example.com'); // ✅ 'user@example.com'
+// Throws: "Email Address is required" if empty
+
+// Phone validation with format
+const phoneSchema = zPhoneOptional({ msg: 'Phone', format: 'national' });
+phoneSchema.parse('1234567890'); // ✅ '1234567890'
+
+// String validation with trimming
+const nameSchema = zStringRequired({ msg: 'Name' });
+nameSchema.parse('  John Doe  '); // ✅ 'John Doe'
+
+// UUID validation
+const idSchema = zUuidRequired({ msg: 'User ID' });
+idSchema.parse('123e4567-e89b-12d3-a456-426614174000'); // ✅ Valid
+
+// URL validation with protocol restriction
+const urlSchema = zUrlRequired({ msg: 'Website URL', protocol: /^https$/ });
+urlSchema.parse('https://example.com'); // ✅ Valid
+
+// Date validation
+const dateSchema = zDateRequired({ msg: 'Birth Date' });
+dateSchema.parse('2023-12-25'); // ✅ Valid
+
+// Number validation with range
+const ageSchema = zNumberRequired({ msg: 'Age', min: 0, max: 120 });
+ageSchema.parse(25); // ✅ Valid
+
+// Boolean validation
+const boolSchema = zBooleanRequired({ msg: 'Active' });
 - **User Schemas**: `zUsernameOptional()`, `zPasswordRequired()` - User credential validation
+
+// Enum validation
+const statusSchema = zEnumRequired(['active', 'inactive'], { msg: 'Status' });
+statusSchema.parse('active'); // ✅ 'active'
+
+// Array validation
+const tagsSchema = zArrayRequired(zStringRequired(), { msg: 'Tags' });
 - **File Upload Schemas**: `zFileUploadOptional()`, `zFileUploadRequired()` - File validation
+
+// Money validation
+const moneySchema = zMoneyRequired({ msg: 'Amount', currency: 'USD' });
 - **Pagination Schemas**: `zPaginationOptional()`, `zPaginationRequired()` - Pagination parameter validation
 
+// Postal code validation
+const postalSchema = zPostalCodeRequired({ msg: 'Postal Code' });
+postalSchema.parse('12345'); // ✅ '12345'
+
+// Address validation
+const addressSchema = zAddressRequired({ msg: 'Address' });
+addressSchema.parse({ street: '123 Main St', city: 'NYC', zip: '10001' }); // ✅ Valid
+
+// File upload validation
+const fileSchema = zFileUploadRequired({ msg: 'Resume' });
+fileSchema.parse({ name: 'resume.pdf', size: 102400 }); // ✅ Valid
+
+// Pagination validation
+const paginationSchema = zPaginationRequired({ msg: 'Pagination' });
+
+```
+
+### Utility Methods & Message Management
+```typescript
+import { localizationManager } from 'phantom-zod/localization';
+
+// Load and switch locales
+await localizationManager.loadLocale('es');
+localizationManager.setLocale('es');
+
+// Get a localized message
+const msg = localizationManager.getMessage('string.required');
+
+// Check if a message key exists
+const exists = localizationManager.isMessageDefined('string.required');
+
+// Get all message keys for a locale
+const keys = localizationManager.getMessageKeys('es');
+
+// Register custom messages
+localizationManager.registerMessages({
+  locale: 'fr',
+  common: { required: 'Ce champ est obligatoire.' },
+  // ...
+});
+
+// Set a custom logger
+localizationManager.setLogger(console);
+```
 ```typescript
 import { 
   zUuidRequired, 

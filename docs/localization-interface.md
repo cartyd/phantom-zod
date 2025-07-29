@@ -1,50 +1,138 @@
-# LocalizationManager Common Interface
 
-## ✅ Yes, there is now a common interface!
+# LocalizationManager – Updated Common Interface
 
-The `ILocalizationManager` interface provides a standardized contract for accessing localization functionality across the phantom-zod library.
+## Overview
 
-## Interface Definition
+The `LocalizationManager` is a robust, extensible service for managing localization in phantom-zod. It supports dynamic locale loading, message retrieval with parameter interpolation, fallback logic, and custom logging. It is designed for both global usage and dependency injection.
+
+---
+
+## Interface Summary
 
 ```typescript
-export interface ILocalizationManager {
+export class LocalizationManager {
   // Locale management
   setLocale(locale: LocaleCode): void;
   getLocale(): LocaleCode;
   setFallbackLocale(locale: LocaleCode): void;
   getFallbackLocale(): LocaleCode;
-  
+
   // Dynamic loading
   loadLocale(locale: LocaleCode): Promise<void>;
   loadLocales(locales: LocaleCode[]): Promise<void>;
   ensureLocaleLoaded(locale: LocaleCode): Promise<void>;
-  
+
   // Message operations
   getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string;
   getErrorMessage(fieldName: string, messageKey: MessageKeyPath, params?: MessageParams, locale?: LocaleCode): string;
   registerMessages(messages: LocalizationMessages): void;
-  
+
   // Utility methods
   hasLocale(locale: LocaleCode): boolean;
   getAvailableLocales(): LocaleCode[];
+  getSupportedLocales(): LocaleCode[];
+  isMessageDefined(key: string, locale?: LocaleCode): boolean;
+  getMessageKeys(locale?: LocaleCode): string[];
+  setLogger(logger: Logger): void;
 }
 ```
 
-## Access Patterns
+---
 
-### 1. **Direct Access (Global Instance)**
+## Usage Patterns
+
+### 1. **Global Instance**
+
 ```typescript
 import { localizationManager } from 'phantom-zod/localization';
 
-// Direct access to the global instance
+await localizationManager.loadLocale('es');
 localizationManager.setLocale('es');
-const currentLocale = localizationManager.getLocale();
-const message = localizationManager.getMessage('string.required');
+const msg = localizationManager.getMessage('string.required', { field: 'Email' });
 ```
 
-### 2. **Interface Access (Dependency Injection Friendly)**
+### 2. **Dependency Injection / Custom Instance**
+
 ```typescript
-import { getLocalizationManager, type ILocalizationManager } from 'phantom-zod/localization';
+import { createLocalizationManager } from 'phantom-zod/localization';
+
+const manager = createLocalizationManager();
+await manager.loadLocale('fr');
+manager.setLocale('fr');
+const msg = manager.getMessage('string.required');
+```
+
+### 3. **Testing and Reset**
+
+```typescript
+import { resetGlobalLocalizationManager } from 'phantom-zod/localization';
+
+resetGlobalLocalizationManager(); // Resets the global instance to default state
+```
+
+---
+
+## Key Features
+
+- **Dynamic Locale Loading:**  
+  Loads locale files on demand using static imports. Supports multiple locales and fallback logic.
+
+- **Message Retrieval & Interpolation:**  
+  Retrieves messages by key (dot notation supported) and interpolates parameters (e.g., `{field}`).
+
+- **Fallback Logic:**  
+  If a message or locale is missing, falls back to the default locale or the key itself.
+
+- **Custom Logger Support:**  
+  Allows injection of a custom logger for info, warn, error, and debug messages.
+
+- **Validation & Registration:**  
+  Validates message structure and allows manual registration of locale messages.
+
+- **Utility Methods:**  
+  Check available/supported locales, get all message keys, and verify message existence.
+
+---
+
+## Example: Advanced Usage
+
+```typescript
+import { LocalizationManager } from 'phantom-zod/localization';
+
+const manager = new LocalizationManager();
+await manager.loadLocales(['en', 'es']);
+manager.setLocale('es');
+
+const errorMsg = manager.getErrorMessage('Email', 'string.required', { fieldName: 'Email' });
+console.log(errorMsg);
+
+if (manager.isMessageDefined('string.required')) {
+  // Message exists
+}
+```
+
+---
+
+## Type Safety
+
+All methods are fully typed for maximum TypeScript safety and IntelliSense.
+
+---
+
+## Migration Notes
+
+- The manager now uses static imports for locale files.
+- Message retrieval supports dot notation and parameter interpolation.
+- Fallback and logger logic are customizable.
+- The global instance is provided for convenience, but custom instances are recommended for testing and advanced scenarios.
+
+---
+
+## Summary
+
+The new `LocalizationManager` provides a unified, extensible, and type-safe API for all localization needs in phantom-zod. It supports global usage, dependency injection, and custom implementations, ensuring consistent and reliable localization across your application.
+
+---
 
 // Get the interface - useful for dependency injection
 const manager: ILocalizationManager = getLocalizationManager();
