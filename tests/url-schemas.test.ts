@@ -326,8 +326,8 @@ describe('URL Schemas', () => {
       it('should accept HTTPS URLs', () => {
         expect(schema.parse('https://example.com')).toBe('https://example.com');
         expect(schema.parse('https://www.example.com/path')).toBe('https://www.example.com/path');
-        // Port 443 is default for HTTPS, so it gets normalized away
-        expect(schema.parse('https://api.example.com:443/v1/users')).toBe('https://api.example.com/v1/users');
+        // Port 443 is explicitly specified, so it's preserved
+        expect(schema.parse('https://api.example.com:443/v1/users')).toBe('https://api.example.com:443/v1/users');
       });
 
       it('should reject HTTP URLs', () => {
