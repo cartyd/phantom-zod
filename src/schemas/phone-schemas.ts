@@ -1,3 +1,7 @@
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+// Top-level exports for barrel usage
+export const zPhoneOptional = (options = {}) => createPhoneSchemas(createTestMessageHandler()).zPhoneOptional(options);
+export const zPhoneRequired = (options = {}) => createPhoneSchemas(createTestMessageHandler()).zPhoneRequired(options);
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../common/utils/string-utils";
