@@ -212,7 +212,6 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
     return schema;
   };
 
-
   return {
     zStringOptional,
     zStringRequired,
@@ -220,5 +219,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
 };
 
 // Top-level exports for barrel usage
-export const zStringOptional = (options = {}) => createStringSchemas(createTestMessageHandler()).zStringOptional(options);
-export const zStringRequired = (options = {}) => createStringSchemas(createTestMessageHandler()).zStringRequired(options);
+export const zStringOptional = (options = {}) =>
+  createStringSchemas(createTestMessageHandler()).zStringOptional(options);
+export const zStringRequired = (options = {}) =>
+  createStringSchemas(createTestMessageHandler()).zStringRequired(options);

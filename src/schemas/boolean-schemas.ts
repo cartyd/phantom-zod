@@ -1,6 +1,7 @@
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
 // Top-level export for barrel usage
-export const zBooleanRequired = (options = {}) => createBooleanSchemas(createTestMessageHandler()).zBooleanRequired(options);
+export const zBooleanRequired = (options = {}) =>
+  createBooleanSchemas(createTestMessageHandler()).zBooleanRequired(options);
 import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
