@@ -1,3 +1,9 @@
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+// Top-level exports for barrel usage
+export const zStringArrayOptional = (options = {}) =>
+  createArraySchemas(createTestMessageHandler()).zStringArrayOptional(options);
+export const zStringArrayRequired = (options = {}) =>
+  createArraySchemas(createTestMessageHandler()).zStringArrayRequired(options);
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";

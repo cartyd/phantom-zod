@@ -1,3 +1,14 @@
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+// Top-level export for barrel usage
+export const zUserOptional = (
+  options: { msg?: string; msgType?: MsgType } = {},
+) => {
+  const { msg = "User", msgType = MsgType.FieldName } = options;
+  return createUserSchemas(createTestMessageHandler()).zUserOptional(
+    msg,
+    msgType,
+  );
+};
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";

@@ -2,335 +2,370 @@
 
 # Phantom Zod
 
+A TypeScript-first schema validation library built on top of Zod, providing pre-built validators for common data types with comprehensive error handling and customizable messages.
+
 ## Table of Contents
 
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Using the `pz` Namespace](#using-the-pz-namespace)
+- [Object Schema Construction](#object-schema-construction)
+- [Complete Example](#complete-example)
 - [Available Schemas](#available-schemas)
-  - [Email Schemas](#email-schemas)
-  - [Phone Schemas](#phone-schemas)
-  - [String Schemas](#string-schemas)
-  - [Additional Schemas](#additional-schemas)
 - [Localization Support](#localization-support)
-  - [Basic Usage](#basic-localization-usage)
-  - [Custom Locales](#custom-locales)
-  - [Advanced Localization](#advanced-localization)
 - [Error Message Customization](#error-message-customization)
 - [Phone Number Formats](#phone-number-formats)
-  - [E.164 Format (Default)](#e164-format-default)
-  - [National Format](#national-format)
 - [Advanced Usage](#advanced-usage)
-  - [Form Validation](#form-validation)
-  - [Error Handling](#error-handling)
 - [TypeScript Support](#typescript-support)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
 - [Changelog](#changelog)
 
-A TypeScript-first schema validation library built on top of Zod, providing pre-built validators for common data types with comprehensive error handling and customizable messages.
-
 ## Features
 
-- **Money Schemas**: `zMoneyOptional()`, `zMoneyRequired()` - Currency and amount validation
+- 🚀 **Unified `pz` namespace** - Access all schemas from a single import
+- 🎯 **TypeScript-first** - Built with TypeScript for full type safety
+- 🌐 **Localization support** - Multi-language error messages
+- 📝 **Custom error messages** - Flexible message customization
+- ⚡ **Performance optimized** - Built on Zod with additional optimizations
+- 🧪 **Comprehensive testing** - 1300+ test cases covering edge cases
+- 📚 **Complete schema library** - Validation for all common data types
 
-## Available Schemas & New Capabilities
+## Installation
 
-Phantom Zod now provides a rich set of schema factories with advanced features:
+```bash
+npm install phantom-zod
+# or
+yarn add phantom-zod
+# or
+pnpm add phantom-zod
+```
 
-- **Dynamic locale management** for error messages
-- **Parameter interpolation** in messages
-- **Convenience schema factories** for all common types
-- **Type-safe output and error handling**
-- **Utility methods for message keys, existence, and supported locales**
+## Quick Start
 
-### Example: Advanced Schema Usage
 ```typescript
-import {
-  zEmailRequired,
-  zPhoneOptional,
-  zStringRequired,
-  zUuidRequired,
-  zUrlRequired,
-  zDateRequired,
-  zNumberRequired,
-  zIPv4Optional,
-  zBooleanRequired,
-  zEnumRequired,
-  zArrayRequired,
-  zMoneyRequired,
-  zPostalCodeRequired,
-  zAddressRequired,
-  zFileUploadRequired,
-  zPaginationRequired
-} from 'phantom-zod';
+import { pz } from 'phantom-zod';
 
-// Email validation with custom message
-const emailSchema = zEmailRequired({ msg: 'Email Address' });
-emailSchema.parse('user@example.com'); // ✅ 'user@example.com'
-// Throws: "Email Address is required" if empty
+// Simple validation
+const email = pz.zEmailRequired({ msg: 'Email' });
+const result = email.parse('user@example.com'); // ✅ 'user@example.com'
+```
 
-// Phone validation with format
-const phoneSchema = zPhoneOptional({ msg: 'Phone', format: 'national' });
-phoneSchema.parse('1234567890'); // ✅ '1234567890'
+## Using the `pz` Namespace
+
+Phantom Zod provides all schemas through a unified `pz` namespace, making it easy to access any validation schema from a single import:
+
+```typescript
+import { pz } from 'phantom-zod';
 
 // String validation with trimming
-const nameSchema = zStringRequired({ msg: 'Name' });
-nameSchema.parse('  John Doe  '); // ✅ 'John Doe'
+const name = pz.zStringRequired({ msg: 'Full Name' });
+name.parse('  John Doe  '); // ✅ 'John Doe'
 
-// UUID validation
-const idSchema = zUuidRequired({ msg: 'User ID' });
-idSchema.parse('123e4567-e89b-12d3-a456-426614174000'); // ✅ Valid
+// Email validation
+const email = pz.zEmailRequired({ msg: 'Email Address' });
+email.parse('user@example.com'); // ✅ 'user@example.com'
 
-// URL validation with protocol restriction
-const urlSchema = zUrlRequired({ msg: 'Website URL', protocol: /^https$/ });
-urlSchema.parse('https://example.com'); // ✅ Valid
+// Phone validation with format options
+const phone = pz.zPhoneOptional({ msg: 'Phone Number' });
+phone.parse('(555) 123-4567'); // ✅ '+15551234567' (E.164 format)
+
+// UUID validation (supports v4, v6, v7)
+const id = pz.zUuidV7Required({ msg: 'User ID' });
+id.parse('018f6d6e-f14d-7c2a-b732-c6d5730303e0'); // ✅ Valid UUIDv7
+
+// Number validation with constraints
+const age = pz.zNumberRequired({ msg: 'Age', min: 0, max: 120 });
+age.parse(25); // ✅ 25
+
+// URL validation with protocol restrictions
+const website = pz.zUrlOptional({ msg: 'Website' });
+website.parse('https://example.com'); // ✅ 'https://example.com'
 
 // Date validation
-const dateSchema = zDateRequired({ msg: 'Birth Date' });
-dateSchema.parse('2023-12-25'); // ✅ Valid
-
-// Number validation with range
-const ageSchema = zNumberRequired({ msg: 'Age', min: 0, max: 120 });
-ageSchema.parse(25); // ✅ Valid
+const birthDate = pz.zDateStringOptional({ msg: 'Birth Date' });
+birthDate.parse('1990-01-15'); // ✅ '1990-01-15'
 
 // Boolean validation
-const boolSchema = zBooleanRequired({ msg: 'Active' });
-- **User Schemas**: `zUsernameOptional()`, `zPasswordRequired()` - User credential validation
-
-// Enum validation
-const statusSchema = zEnumRequired(['active', 'inactive'], { msg: 'Status' });
-statusSchema.parse('active'); // ✅ 'active'
+const isActive = pz.zBooleanRequired({ msg: 'Active Status' });
+isActive.parse(true); // ✅ true
 
 // Array validation
-const tagsSchema = zArrayRequired(zStringRequired(), { msg: 'Tags' });
-- **File Upload Schemas**: `zFileUploadOptional()`, `zFileUploadRequired()` - File validation
+const tags = pz.zStringArrayOptional({ msg: 'Tags' });
+tags.parse(['javascript', 'typescript', 'react']); // ✅ ['javascript', 'typescript', 'react']
 
 // Money validation
-const moneySchema = zMoneyRequired({ msg: 'Amount', currency: 'USD' });
-- **Pagination Schemas**: `zPaginationOptional()`, `zPaginationRequired()` - Pagination parameter validation
-
-// Postal code validation
-const postalSchema = zPostalCodeRequired({ msg: 'Postal Code' });
-postalSchema.parse('12345'); // ✅ '12345'
-
-// Address validation
-const addressSchema = zAddressRequired({ msg: 'Address' });
-addressSchema.parse({ street: '123 Main St', city: 'NYC', zip: '10001' }); // ✅ Valid
-
-// File upload validation
-const fileSchema = zFileUploadRequired({ msg: 'Resume' });
-fileSchema.parse({ name: 'resume.pdf', size: 102400 }); // ✅ Valid
-
-// Pagination validation
-const paginationSchema = zPaginationRequired({ msg: 'Pagination' });
-
+const price = pz.zMoneyRequired({ msg: 'Price', currency: 'USD' });
+price.parse({ amount: 99.99, currency: 'USD' }); // ✅ Valid money object
 ```
 
-### Utility Methods & Message Management
+## Object Schema Construction
+
+The real power of Phantom Zod comes when building complex object schemas using the `pz` namespace with Zod's object construction:
+
 ```typescript
-import { localizationManager } from 'phantom-zod/localization';
+import { z } from 'zod';
+import { pz } from 'phantom-zod';
 
-// Load and switch locales
-await localizationManager.loadLocale('es');
-localizationManager.setLocale('es');
-
-// Get a localized message
-const msg = localizationManager.getMessage('string.required');
-
-// Check if a message key exists
-const exists = localizationManager.isMessageDefined('string.required');
-
-// Get all message keys for a locale
-const keys = localizationManager.getMessageKeys('es');
-
-// Register custom messages
-localizationManager.registerMessages({
-  locale: 'fr',
-  common: { required: 'Ce champ est obligatoire.' },
-  // ...
+// User profile schema
+const userProfileSchema = z.object({
+  // Personal information
+  id: pz.zUuidV7Required({ msg: 'User ID' }),
+  email: pz.zEmailRequired({ msg: 'Email Address' }),
+  firstName: pz.zStringRequired({ msg: 'First Name' }),
+  lastName: pz.zStringRequired({ msg: 'Last Name' }),
+  displayName: pz.zStringOptional({ msg: 'Display Name' }),
+  
+  // Contact information
+  phone: pz.zPhoneOptional({ msg: 'Phone Number' }),
+  website: pz.zUrlOptional({ msg: 'Personal Website' }),
+  
+  // Profile details
+  age: pz.zNumberOptional({ msg: 'Age', min: 13, max: 120 }),
+  isActive: pz.zBooleanRequired({ msg: 'Account Status' }),
+  role: pz.zEnumRequired(['admin', 'user', 'moderator'], { msg: 'User Role' }),
+  tags: pz.zStringArrayOptional({ msg: 'Profile Tags' }),
+  
+  // Address
+  address: pz.zAddressOptional({ msg: 'Home Address' }),
+  
+  // Timestamps
+  createdAt: pz.zDateStringRequired({ msg: 'Created Date' }),
+  lastLoginAt: pz.zDateTimeStringOptional({ msg: 'Last Login' }),
 });
 
-// Set a custom logger
-localizationManager.setLogger(console);
-```
-```typescript
-import { 
-  zUuidRequired, 
-  zUrlRequired, 
-  zDateRequired,
-  zNumberRequired,
-  zIPv4Optional 
-} from 'phantom-zod';
-
-// UUID validation
-const idSchema = zUuidRequired({ msg: 'User ID' });
-idSchema.parse('123e4567-e89b-12d3-a456-426614174000'); // ✅ Valid
-
-// URL validation with HTTPS requirement
-const urlSchema = zUrlRequired({ msg: 'Website URL' });
-urlSchema.parse('https://example.com'); // ✅ Valid
-
-// Date validation
-const dateSchema = zDateRequired({ msg: 'Birth Date' });
-dateSchema.parse('2023-12-25'); // ✅ Valid
-
-// Number validation with range
-const ageSchema = zNumberRequired({ msg: 'Age', min: 0, max: 120 });
-ageSchema.parse(25); // ✅ Valid
-
-// IP address validation
-const ipSchema = zIPv4Optional({ msg: 'Server IP' });
-ipSchema.parse('192.168.1.1'); // ✅ Valid
+// Product schema with money handling
+const productSchema = z.object({
+  id: pz.zUuidRequired({ msg: 'Product ID' }),
+  name: pz.zStringRequired({ msg: 'Product Name', minLength: 2, maxLength: 100 }),
+  description: pz.zStringOptional({ msg: 'Description', maxLength: 500 }),
+  price: pz.zMoneyRequired({ msg: 'Price' }),
+  category: pz.zEnumRequired(['electronics', 'clothing', 'books'], { msg: 'Category' }),
+  tags: pz.zStringArrayOptional({ msg: 'Product Tags', maxItems: 10 }),
+  isAvailable: pz.zBooleanRequired({ msg: 'Availability' }),
+  website: pz.zUrlOptional({ msg: 'Product URL' }),
+});
 ```
 
-## Localization Support
+## Complete Example
 
-Localization in Phantom Zod allows you to customize validation messages based on locale, offering dynamic translation and cultural adaptation of message content.
-
-### Basic Usage
-
-Initialize the localization system by registering default messages (e.g., English) and set a fallback locale.
+Here's a comprehensive example showing schema definition, validation, and error handling:
 
 ```typescript
-import { initializeLocalization, getMessage } from 'phantom-zod/localization';
+import { z } from 'zod';
+import { pz } from 'phantom-zod';
 
-// Initialize with default locale
-initializeLocalization();
+// Define a comprehensive user registration schema
+const userRegistrationSchema = z.object({
+  // Required fields
+  email: pz.zEmailRequired({ msg: 'Email Address' }),
+  password: pz.zStringRequired({ msg: 'Password', minLength: 8 }),
+  firstName: pz.zStringRequired({ msg: 'First Name' }),
+  lastName: pz.zStringRequired({ msg: 'Last Name' }),
+  
+  // Optional fields
+  phone: pz.zPhoneOptional({ msg: 'Phone Number' }),
+  website: pz.zUrlOptional({ msg: 'Personal Website' }),
+  age: pz.zNumberOptional({ msg: 'Age', min: 13, max: 120 }),
+  
+  // Complex fields
+  interests: pz.zStringArrayOptional({ msg: 'Interests' }),
+  address: z.object({
+    street: pz.zStringRequired({ msg: 'Street Address' }),
+    city: pz.zStringRequired({ msg: 'City' }),
+    state: pz.zStringRequired({ msg: 'State', minLength: 2, maxLength: 2 }),
+    zipCode: pz.zPostalCodeRequired({ msg: 'ZIP Code' }),
+  }).optional(),
+  
+  // Preferences
+  newsletter: pz.zBooleanRequired({ msg: 'Newsletter Subscription' }),
+  accountType: pz.zEnumRequired(['personal', 'business'], { msg: 'Account Type' }),
+});
 
-// Retrieve message with default fallback
-const message = getMessage('someMessageKey');
-console.log(message);
-```
+// Type inference
+type UserRegistration = z.infer<typeof userRegistrationSchema>;
 
-### Custom Locales
-
-You can add custom locales by creating new message JSON files and registering them with the localization manager.
-
-```typescript
-import { localizationManager, LocalizationMessages } from 'phantom-zod/localization';
-
-// Example: Adding Spanish locale
-const esMessages: LocalizationMessages = {
-  locale: 'es',
-  common: {
-    required: 'El campo es obligatorio.',
+// Example data
+const registrationData = {
+  email: '  user@example.com  ',  // Will be trimmed
+  password: 'securePassword123',
+  firstName: 'John',
+  lastName: 'Doe',
+  phone: '(555) 123-4567',        // Will be normalized to +15551234567
+  website: 'https://johndoe.com',
+  age: 25,
+  interests: ['programming', 'reading', 'hiking'],
+  address: {
+    street: '123 Main St',
+    city: 'New York',
+    state: 'NY',
+    zipCode: '10001'
   },
-  // Add more categories and messages as needed
+  newsletter: true,
+  accountType: 'personal' as const,
 };
 
-localizationManager.registerMessages(esMessages);
-localizationManager.setLocale('es');
+// Validation with error handling
+try {
+  const validatedUser = userRegistrationSchema.parse(registrationData);
+  console.log('Validation successful:', validatedUser);
+  
+  // The result will have:
+  // - Trimmed email: 'user@example.com'
+  // - Normalized phone: '+15551234567'
+  // - All other data validated and type-safe
+  
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    console.log('Validation errors:');
+    error.issues.forEach(issue => {
+      console.log(`- ${issue.path.join('.')}: ${issue.message}`);
+    });
+  }
+}
 
-// Retrieve Spanish message
-const requiredMessage = getMessage('common.required');
-console.log(requiredMessage); // "El campo es obligatorio."
-```
+// Safe parsing (doesn't throw)
+const result = userRegistrationSchema.safeParse(registrationData);
 
-### Advanced Localization
+if (result.success) {
+  console.log('User data:', result.data);
+} else {
+  console.log('Validation failed:', result.error.issues);
+}
 
-- **Dynamic Parameters**: Inject dynamic values into messages using parameterized keys.
-- **Locale Switching**: Easily switch between locales with the `setLocale` method.
-- **Fallback Handling**: Configure a fallback locale for missing translations.
-
-### Additional Schemas
-
-Phantom Zod provides many additional schema types for comprehensive validation:
-
-- **Date Schemas**: `zDateOptional()`, `zDateRequired()` - Date validation with customizable formats
-- **Number Schemas**: `zNumberOptional()`, `zNumberRequired()` - Number validation with range checks
-- **UUID Schemas**: `zUuidOptional()`, `zUuidRequired()` - UUID validation with version support (v4, v6, v7)
-- **Boolean Schemas**: `zBooleanOptional()`, `zBooleanRequired()` - Boolean validation
-- **Enum Schemas**: `zEnumOptional()`, `zEnumRequired()` - Enum validation with custom values
-- **Array Schemas**: `zArrayOptional()`, `zArrayRequired()` - Array validation with element type checking
-- **URL Schemas**: `zUrlOptional()`, `zUrlRequired()` - URL validation with protocol restrictions
-- **Postal Code Schemas**: `zPostalCodeOptional()`, `zPostalCodeRequired()` - Postal code validation
-- **Address Schemas**: `zAddressOptional()`, `zAddressRequired()` - Address validation
-- **Money Schemas**: `zMoneyOptional()`, `zMoneyRequired()` - Currency and amount validation
-- **Network Schemas**: `zIPv4Optional()`, `zIPv6Optional()`, `zMacAddressOptional()` - Network address validation
-- **User Schemas**: `zUsernameOptional()`, `zPasswordRequired()` - User credential validation
-- **File Upload Schemas**: `zFileUploadOptional()`, `zFileUploadRequired()` - File validation
-- **Pagination Schemas**: `zPaginationOptional()`, `zPaginationRequired()` - Pagination parameter validation
-
-```typescript
-import { 
-  zUuidRequired, 
-  zUrlRequired, 
-  zDateRequired,
-  zNumberRequired,
-  zIPv4Optional 
-} from 'phantom-zod';
-
-// UUID validation
-const idSchema = zUuidRequired({ msg: 'User ID' });
-idSchema.parse('123e4567-e89b-12d3-a456-426614174000'); // ✅ Valid
-
-// URL validation with HTTPS requirement
-const urlSchema = zUrlRequired({ msg: 'Website URL' });
-urlSchema.parse('https://example.com'); // ✅ Valid
-
-// Date validation
-const dateSchema = zDateRequired({ msg: 'Birth Date' });
-dateSchema.parse('2023-12-25'); // ✅ Valid
-
-// Number validation with range
-const ageSchema = zNumberRequired({ msg: 'Age', min: 0, max: 120 });
-ageSchema.parse(25); // ✅ Valid
-
-// IP address validation
-const ipSchema = zIPv4Optional({ msg: 'Server IP' });
-ipSchema.parse('192.168.1.1'); // ✅ Valid
-```
-
-## Localization Support
-
-Localization in Phantom Zod allows you to customize validation messages based on locale, offering dynamic translation and cultural adaptation of message content.
-
-### Basic Usage
-
-Initialize the localization system by registering default messages (e.g., English) and set a fallback locale.
-
-```typescript
-import { initializeLocalization, getMessage } from 'phantom-zod/localization';
-
-// Initialize with default locale
-initializeLocalization();
-
-// Retrieve message with default fallback
-const message = getMessage('someMessageKey');
-console.log(message);
-```
-
-### Custom Locales
-
-You can add custom locales by creating new message JSON files and registering them with the localization manager.
-
-```typescript
-import { localizationManager, LocalizationMessages } from 'phantom-zod/localization';
-
-// Example: Adding Spanish locale
-const esMessages: LocalizationMessages = {
-  locale: 'es',
-  common: {
-    required: 'El campo es obligatorio.',
-  },
-  // Add more categories and messages as needed
+// Example with invalid data
+const invalidData = {
+  email: 'not-an-email',        // Invalid email
+  password: '123',               // Too short
+  firstName: '',                 // Empty string
+  lastName: 'Doe',
+  age: 150,                      // Too high
+  phone: 'invalid-phone',        // Invalid phone
+  website: 'not-a-url',          // Invalid URL
+  accountType: 'invalid-type',   // Invalid enum value
+  newsletter: 'yes',             // Should be boolean
 };
 
-localizationManager.registerMessages(esMessages);
-localizationManager.setLocale('es');
+const invalidResult = userRegistrationSchema.safeParse(invalidData);
+console.log('Validation errors for invalid data:');
+invalidResult.error?.issues.forEach(issue => {
+  console.log(`- ${issue.path.join('.')}: ${issue.message}`);
+});
 
-// Retrieve Spanish message
-const requiredMessage = getMessage('common.required');
-console.log(requiredMessage); // "El campo es obligatorio."
+// Output will show specific, helpful error messages:
+// - email: Email Address must be a valid email address
+// - password: Password must be at least 8 characters
+// - firstName: First Name is required
+// - age: Age must be at most 120
+// - phone: Phone Number must be a valid phone number
+// - website: Personal Website must be a valid URL
+// - accountType: Account Type must be one of: personal, business
+// - newsletter: Newsletter Subscription must be a boolean
 ```
 
-### Advanced Localization
+## Available Schemas
 
-- **Dynamic Parameters**: Inject dynamic values into messages using parameterized keys.
-- **Locale Switching**: Easily switch between locales with the `setLocale` method.
-- **Fallback Handling**: Configure a fallback locale for missing translations.
+Phantom Zod provides a comprehensive set of validation schemas accessible through the `pz` namespace:
+
+### 📝 String Schemas
+- `pz.zStringRequired({ msg, minLength, maxLength })` - Required string with trimming
+- `pz.zStringOptional({ msg, minLength, maxLength })` - Optional string with trimming
+
+### 📧 Email Schemas
+- `pz.zEmailRequired({ msg })` - Required email validation
+- `pz.zEmailOptional({ msg })` - Optional email validation
+- `pz.zHtml5EmailRequired({ msg })` - HTML5-compliant email validation
+- `pz.zRfc5322EmailRequired({ msg })` - RFC 5322-compliant email validation
+- `pz.zUnicodeEmailRequired({ msg })` - Unicode-friendly email validation
+
+### 📱 Phone Schemas
+- `pz.zPhoneRequired({ msg, format })` - Required phone number (E.164/National)
+- `pz.zPhoneOptional({ msg, format })` - Optional phone number
+
+### 🆔 UUID Schemas
+- `pz.zUuidRequired({ msg })` - Any UUID version
+- `pz.zUuidOptional({ msg })` - Optional UUID
+- `pz.zUuidV4Required({ msg })` - Specific UUIDv4
+- `pz.zUuidV6Required({ msg })` - Specific UUIDv6
+- `pz.zUuidV7Required({ msg })` - Specific UUIDv7
+- `pz.zNanoidRequired({ msg })` - Nanoid validation
+
+### 🔢 Number Schemas
+- `pz.zNumberRequired({ msg, min, max })` - Required number with constraints
+- `pz.zNumberOptional({ msg, min, max })` - Optional number
+- `pz.zIntegerRequired({ msg, min, max })` - Integer validation
+- `pz.zPositiveRequired({ msg })` - Positive numbers only
+- `pz.zNonNegativeRequired({ msg })` - Non-negative numbers
+
+### 🗓️ Date Schemas
+- `pz.zDateRequired({ msg })` - Date object validation
+- `pz.zDateOptional({ msg })` - Optional date object
+- `pz.zDateStringRequired({ msg })` - ISO date string (YYYY-MM-DD)
+- `pz.zDateStringOptional({ msg })` - Optional ISO date string
+- `pz.zDateTimeStringRequired({ msg })` - ISO datetime string
+- `pz.zTimeStringRequired({ msg })` - ISO time string (HH:MM:SS)
+
+### ✅ Boolean Schemas
+- `pz.zBooleanRequired({ msg })` - Required boolean
+- `pz.zBooleanOptional({ msg })` - Optional boolean
+- `pz.zBooleanStringRequired({ msg })` - Boolean as string ("true"/"false")
+
+### 📋 Array Schemas
+- `pz.zStringArrayRequired({ msg, minItems, maxItems })` - Required string array
+- `pz.zStringArrayOptional({ msg, minItems, maxItems })` - Optional string array
+
+### 🔗 URL Schemas
+- `pz.zUrlRequired({ msg, protocol, hostname })` - Required URL validation
+- `pz.zUrlOptional({ msg, protocol, hostname })` - Optional URL validation
+- `pz.zHttpsUrlRequired({ msg })` - HTTPS-only URLs
+- `pz.zWebUrlRequired({ msg })` - HTTP/HTTPS URLs
+
+### 🏠 Address Schemas
+- `pz.zAddressRequired({ msg })` - Complete address validation
+- `pz.zAddressOptional({ msg })` - Optional address
+- `pz.zAddressUS({ msg })` - US-specific address validation
+- `pz.zPostalCodeRequired({ msg })` - US ZIP code validation
+
+### 💰 Money Schemas
+- `pz.zMoneyRequired({ msg, currency, decimalPlaces })` - Money object validation
+- `pz.zMoneyOptional({ msg, currency, decimalPlaces })` - Optional money
+- `pz.zCurrencyCode({ msg })` - ISO 4217 currency codes
+- `pz.zMoneyAmount({ msg, decimalPlaces })` - Money amount validation
+
+### 🌐 Network Schemas
+- `pz.zIPv4Required({ msg })` - IPv4 address validation
+- `pz.zIPv6Required({ msg })` - IPv6 address validation
+- `pz.zMacAddressRequired({ msg })` - MAC address validation
+- `pz.zNetworkAddressGeneric({ msg })` - Any network address type
+
+### 👤 User Schemas
+- `pz.zUserRequired({ msg })` - Complete user object
+- `pz.zUserOptional({ msg })` - Optional user object
+- `pz.zUsername({ msg, minLength, maxLength })` - Username validation
+- `pz.zPassword({ msg, minLength, requirements })` - Password validation
+- `pz.zUserRegistration({ msg })` - User registration schema
+
+### 📁 File Upload Schemas
+- `pz.zFileUploadRequired({ msg, maxSize, allowedTypes })` - File validation
+- `pz.zFileUploadOptional({ msg, maxSize, allowedTypes })` - Optional file
+- `pz.zImageUpload({ msg, maxSize })` - Image-specific validation
+- `pz.zDocumentUpload({ msg, maxSize })` - Document validation
+
+### 📄 Pagination Schemas
+- `pz.zPagination({ msg, maxLimit })` - Pagination parameters
+- `pz.zCursorPagination({ msg })` - Cursor-based pagination
+- `pz.zOffsetPagination({ msg })` - Offset-based pagination
+
+### 🏷️ Enum Schemas
+- `pz.zEnumRequired(values, { msg })` - Required enum validation
+- `pz.zEnumOptional(values, { msg })` - Optional enum validation
+
+### 🆔 ID List Schemas
+- `pz.zIdListRequired({ msg, minItems, maxItems })` - UUID list validation
+- `pz.zUniqueIdList({ msg })` - Unique ID list validation
+- `pz.zMongoIdRequired({ msg })` - MongoDB ObjectId validation
 
 ## Error Message Customization
 

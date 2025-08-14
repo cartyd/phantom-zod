@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "../common/types/msg-type";
 import type { StringSchemaOptions } from "../common/types/schema-options.types";
@@ -216,3 +217,9 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
     zStringRequired,
   };
 };
+
+// Top-level exports for barrel usage
+export const zStringOptional = (options = {}) =>
+  createStringSchemas(createTestMessageHandler()).zStringOptional(options);
+export const zStringRequired = (options = {}) =>
+  createStringSchemas(createTestMessageHandler()).zStringRequired(options);
