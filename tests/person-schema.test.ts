@@ -10,7 +10,7 @@ describe('Person Schema', () => {
     nickname: pz.zStringOptional({ msg: 'nickname' }),
     phone: pz.zPhoneOptional({ msg: 'phone' }),
     isActive: pz.zBooleanRequired({ msg: 'isActive' }),
-    roles: pz.zStringArrayOptional({ msg: 'roles' }),
+    roles: pz.zArrayOptional(pz.zStringOptional(), { msg: 'roles' }),
     website: pz.zUrlOptional({ msg: 'website' }),
     createdAt: pz.zDateStringOptional({ msg: 'createdAt' }),
     user: pz.zUserOptional({ msg: 'user' }), // Nested user schema if available
