@@ -43,29 +43,29 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Creates a Zod schema for an optional array of any type.
-   * 
+   *
    * @param elementSchema - The Zod schema for validating individual array elements
    * @param options - Configuration options for the array schema
    * @returns A Zod schema that validates an optional array of the specified type
-   * 
+   *
    * @example
    * const { zArrayOptional } = createArraySchemas(messageHandler);
-   * 
+   *
    * // String array
    * const stringArraySchema = zArrayOptional(z.string(), { msg: "Tags" });
-   * 
-   * // Number array  
+   *
+   * // Number array
    * const numberArraySchema = zArrayOptional(z.number(), { msg: "Scores" });
-   * 
+   *
    * // Object array
    * const userArraySchema = zArrayOptional(
-   *   z.object({ id: z.string(), name: z.string() }), 
+   *   z.object({ id: z.string(), name: z.string() }),
    *   { msg: "Users", maxItems: 10 }
    * );
    */
   const zArrayOptional = <T>(
     elementSchema: z.ZodType<T>,
-    options: GenericArraySchemaOptions = {}
+    options: GenericArraySchemaOptions = {},
   ) => {
     const {
       msg = "Value",
@@ -135,7 +135,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
           }),
-        }
+        },
       );
     }
 
@@ -154,7 +154,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
           }),
-        }
+        },
       );
     }
 
@@ -174,7 +174,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
           }),
-        }
+        },
       );
     }
 
@@ -183,32 +183,32 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Creates a Zod schema for a required array of any type with at least one item.
-   * 
+   *
    * @param elementSchema - The Zod schema for validating individual array elements
    * @param options - Configuration options for the array schema
    * @returns A Zod schema that validates a required array of the specified type
-   * 
+   *
    * @example
    * const { zArrayRequired } = createArraySchemas(messageHandler);
-   * 
+   *
    * // Required string array
-   * const categoriesSchema = zArrayRequired(z.string(), { 
-   *   msg: "Categories", 
-   *   maxItems: 5 
+   * const categoriesSchema = zArrayRequired(z.string(), {
+   *   msg: "Categories",
+   *   maxItems: 5
    * });
-   * 
+   *
    * // Required object array with custom validation
    * const usersSchema = zArrayRequired(
-   *   z.object({ 
-   *     id: z.string().uuid(), 
-   *     email: z.string().email() 
-   *   }), 
+   *   z.object({
+   *     id: z.string().uuid(),
+   *     email: z.string().email()
+   *   }),
    *   { msg: "Users", minItems: 1, allowDuplicates: false }
    * );
    */
   const zArrayRequired = <T>(
     elementSchema: z.ZodType<T>,
-    options: GenericArraySchemaOptions = {}
+    options: GenericArraySchemaOptions = {},
   ) => {
     const {
       msg = "Value",
@@ -248,7 +248,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
           msg,
           msgType,
         }),
-      }
+      },
     );
 
     // Type check for elements using the provided schema
@@ -277,34 +277,28 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
 
     // Apply minItems constraint
     if (minItems !== undefined && minItems > 1) {
-      schema = schema.refine(
-        (val) => val.length >= minItems,
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "tooSmall",
-            params: { min: minItems },
-            msg,
-            msgType,
-          }),
-        }
-      );
+      schema = schema.refine((val) => val.length >= minItems, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "tooSmall",
+          params: { min: minItems },
+          msg,
+          msgType,
+        }),
+      });
     }
 
     // Apply maxItems constraint
     if (maxItems !== undefined) {
-      schema = schema.refine(
-        (val) => val.length <= maxItems,
-        {
-          message: messageHandler.formatErrorMessage({
-            group: "array",
-            messageKey: "tooBig",
-            params: { max: maxItems },
-            msg,
-            msgType,
-          }),
-        }
-      );
+      schema = schema.refine((val) => val.length <= maxItems, {
+        message: messageHandler.formatErrorMessage({
+          group: "array",
+          messageKey: "tooBig",
+          params: { max: maxItems },
+          msg,
+          msgType,
+        }),
+      });
     }
 
     // Apply duplicate check if not allowed
@@ -322,13 +316,12 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
             msg,
             msgType,
           }),
-        }
+        },
       );
     }
 
     return schema;
   };
-
 
   const zNumberArrayOptional = (options: GenericArraySchemaOptions = {}) =>
     zArrayOptional(z.number(), options);
@@ -359,11 +352,11 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
     // Generic array functions
     zArrayOptional,
     zArrayRequired,
-    
+
     // String array convenience functions
     zStringArrayOptional,
     zStringArrayRequired,
-    
+
     // Common type convenience functions
     zNumberArrayOptional,
     zNumberArrayRequired,
@@ -382,7 +375,7 @@ export const {
   zArrayRequired,
   zStringArrayOptional,
   zStringArrayRequired,
-  zNumberArrayOptional, 
+  zNumberArrayOptional,
   zNumberArrayRequired,
   zBooleanArrayOptional,
   zBooleanArrayRequired,
