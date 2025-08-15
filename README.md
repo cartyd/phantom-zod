@@ -92,8 +92,12 @@ birthDate.parse('1990-01-15'); // ✅ '1990-01-15'
 const isActive = pz.zBooleanRequired({ msg: 'Active Status' });
 isActive.parse(true); // ✅ true
 
-// Array validation
-const tags = pz.zStringArrayOptional({ msg: 'Tags' });
+// Array validation with pz.zStringOptional for consistency
+const tags = pz.zArrayOptional(pz.zStringOptional(), { msg: 'Tags' });
+tags.parse(['javascript', 'typescript', 'react']); // ✅ ['javascript', 'typescript', 'react']
+
+// Or use the convenience function (equivalent)
+const tagsSimple = pz.zStringArrayOptional({ msg: 'Tags' });
 tags.parse(['javascript', 'typescript', 'react']); // ✅ ['javascript', 'typescript', 'react']
 
 // Money validation
