@@ -130,3 +130,9 @@ Localization messages are organized hierarchically by validation domain (string,
 **Error Messages**: Use the localization system for all error messages. Never hardcode error strings in schema definitions.
 
 **Build Process**: The build step copies localization JSON files from `src/localization/locales/` to `dist/localization/locales/` - ensure new locale files are included.
+
+**Auto-Publishing**: The repository is configured with GitHub Actions to automatically publish to npm when the version in `package.json` changes on the main branch. To trigger a release:
+1. Update the version in `package.json` (e.g., from `1.2.0` to `1.3.0`)
+2. Commit and merge to main
+3. GitHub Actions will automatically build, test, and publish to npm
+4. A git tag and GitHub release will be created automatically
