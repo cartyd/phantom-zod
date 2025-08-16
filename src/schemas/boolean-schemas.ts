@@ -163,7 +163,68 @@ const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
 const testMessageHandler = createTestMessageHandler();
 const booleanSchemas = createBooleanSchemas(testMessageHandler);
 
-export const BooleanOptional = booleanSchemas.BooleanOptional;
-export const BooleanRequired = booleanSchemas.BooleanRequired;
-export const BooleanStringOptional = booleanSchemas.BooleanStringOptional;
-export const BooleanStringRequired = booleanSchemas.BooleanStringRequired;
+// Helper functions with overloads to support both string and options object
+function createBooleanOptionalOverload(
+  msg: string,
+): ReturnType<typeof booleanSchemas.BooleanOptional>;
+function createBooleanOptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanOptional>;
+function createBooleanOptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanOptional> {
+  if (typeof msgOrOptions === "string") {
+    return booleanSchemas.BooleanOptional({ msg: msgOrOptions });
+  }
+  return booleanSchemas.BooleanOptional(msgOrOptions);
+}
+
+function createBooleanRequiredOverload(
+  msg: string,
+): ReturnType<typeof booleanSchemas.BooleanRequired>;
+function createBooleanRequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanRequired>;
+function createBooleanRequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanRequired> {
+  if (typeof msgOrOptions === "string") {
+    return booleanSchemas.BooleanRequired({ msg: msgOrOptions });
+  }
+  return booleanSchemas.BooleanRequired(msgOrOptions);
+}
+
+function createBooleanStringOptionalOverload(
+  msg: string,
+): ReturnType<typeof booleanSchemas.BooleanStringOptional>;
+function createBooleanStringOptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanStringOptional>;
+function createBooleanStringOptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanStringOptional> {
+  if (typeof msgOrOptions === "string") {
+    return booleanSchemas.BooleanStringOptional({ msg: msgOrOptions });
+  }
+  return booleanSchemas.BooleanStringOptional(msgOrOptions);
+}
+
+function createBooleanStringRequiredOverload(
+  msg: string,
+): ReturnType<typeof booleanSchemas.BooleanStringRequired>;
+function createBooleanStringRequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanStringRequired>;
+function createBooleanStringRequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof booleanSchemas.BooleanStringRequired> {
+  if (typeof msgOrOptions === "string") {
+    return booleanSchemas.BooleanStringRequired({ msg: msgOrOptions });
+  }
+  return booleanSchemas.BooleanStringRequired(msgOrOptions);
+}
+
+export const BooleanOptional = createBooleanOptionalOverload;
+export const BooleanRequired = createBooleanRequiredOverload;
+export const BooleanStringOptional = createBooleanStringOptionalOverload;
+export const BooleanStringRequired = createBooleanStringRequiredOverload;

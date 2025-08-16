@@ -174,6 +174,37 @@ const emailSchemas = createEmailSchemas(testMessageHandler);
 
 // Export schemas with updated API
 
+// Helper functions with overloads to support both string and options object
+function createEmailOptionalOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createEmailOptionalOverload(
+  options?: EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createEmailOptionalOverload(
+  msgOrOptions?: string | EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailOptional> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailOptional({ msg: msgOrOptions });
+  }
+  return emailSchemas.EmailOptional(msgOrOptions);
+}
+
+function createEmailRequiredOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createEmailRequiredOverload(
+  options?: EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createEmailRequiredOverload(
+  msgOrOptions?: string | EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailRequired> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailRequired({ msg: msgOrOptions });
+  }
+  return emailSchemas.EmailRequired(msgOrOptions);
+}
+
 /**
  * Creates an optional email schema that accepts valid email addresses or undefined
  *
@@ -194,9 +225,12 @@ const emailSchemas = createEmailSchemas(testMessageHandler);
  * const companySchema = EmailOptional({
  *   pattern: /^[a-z.]+@company\.com$/
  * });
+ *
+ * // New string parameter syntax
+ * const simpleSchema = EmailOptional('User Email');
  * ```
  */
-export const EmailOptional = emailSchemas.EmailOptional;
+export const EmailOptional = createEmailOptionalOverload;
 
 /**
  * Creates a required email schema that accepts only valid email addresses
@@ -223,9 +257,12 @@ export const EmailOptional = emailSchemas.EmailOptional;
  * const unicodeSchema = EmailRequired({
  *   pattern: z.regexes.unicodeEmail
  * });
+ *
+ * // New string parameter syntax
+ * const simpleSchema = EmailRequired('Contact Email');
  * ```
  */
-export const EmailRequired = emailSchemas.EmailRequired;
+export const EmailRequired = createEmailRequiredOverload;
 
 // Export the options interface for external use
 export type { EmailSchemaOptions };

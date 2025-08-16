@@ -239,6 +239,37 @@ const { UrlOptional: baseUrlOptional, UrlRequired: baseUrlRequired } =
 
 // Export schemas with new API pattern
 
+// Helper functions with overloads to support both string and options object
+function createUrlOptionalOverload(
+  msg: string,
+): ReturnType<typeof baseUrlOptional>;
+function createUrlOptionalOverload(
+  options?: UrlSchemaOptions,
+): ReturnType<typeof baseUrlOptional>;
+function createUrlOptionalOverload(
+  msgOrOptions?: string | UrlSchemaOptions,
+): ReturnType<typeof baseUrlOptional> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlOptional({ msg: msgOrOptions });
+  }
+  return baseUrlOptional(msgOrOptions);
+}
+
+function createUrlRequiredOverload(
+  msg: string,
+): ReturnType<typeof baseUrlRequired>;
+function createUrlRequiredOverload(
+  options?: UrlSchemaOptions,
+): ReturnType<typeof baseUrlRequired>;
+function createUrlRequiredOverload(
+  msgOrOptions?: string | UrlSchemaOptions,
+): ReturnType<typeof baseUrlRequired> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlRequired({ msg: msgOrOptions });
+  }
+  return baseUrlRequired(msgOrOptions);
+}
+
 /**
  * Creates an optional URL schema that accepts valid URLs or undefined
  *
@@ -251,15 +282,18 @@ const { UrlOptional: baseUrlOptional, UrlRequired: baseUrlRequired } =
  *
  * @example
  * ```typescript
- * const schema = zUrlOptional();
+ * const schema = UrlOptional();
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse('ftp://example.com');   // ✓ Valid
  * schema.parse(undefined);             // ✓ Valid
  * schema.parse('not-a-url');           // ✗ Throws error
+ *
+ * // New string parameter syntax
+ * const simpleSchema = UrlOptional('Website URL');
  * ```
  */
-export const UrlOptional = baseUrlOptional;
+export const UrlOptional = createUrlOptionalOverload;
 
 /**
  * Creates a required URL schema that accepts only valid URLs
@@ -279,9 +313,12 @@ export const UrlOptional = baseUrlOptional;
  * schema.parse('ftp://example.com');   // ✓ Valid
  * schema.parse(undefined);             // ✗ Throws error
  * schema.parse('not-a-url');           // ✗ Throws error
+ *
+ * // New string parameter syntax
+ * const simpleSchema = UrlRequired('API Endpoint');
  * ```
  */
-export const UrlRequired = baseUrlRequired;
+export const UrlRequired = createUrlRequiredOverload;
 
 // Export the options interface for external use
 export type { UrlSchemaOptions };
