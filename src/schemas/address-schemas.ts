@@ -232,14 +232,31 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
 };
 
 // Top-level exports for barrel usage
-export const zAddressOptional = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
-  createAddressSchemas(createTestMessageHandler()).zAddressOptional(msg, msgType);
+export const zAddressOptional = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) =>
+  createAddressSchemas(createTestMessageHandler()).zAddressOptional(
+    msg,
+    msgType,
+  );
 
-export const zAddressRequired = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
-  createAddressSchemas(createTestMessageHandler()).zAddressRequired(msg, msgType);
+export const zAddressRequired = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) =>
+  createAddressSchemas(createTestMessageHandler()).zAddressRequired(
+    msg,
+    msgType,
+  );
 
-export const zAddressSimple = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
+export const zAddressSimple = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) =>
   createAddressSchemas(createTestMessageHandler()).zAddressSimple(msg, msgType);
 
-export const zAddressUS = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
-  createAddressSchemas(createTestMessageHandler()).zAddressUS(msg, msgType);
+export const zAddressUS = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) => createAddressSchemas(createTestMessageHandler()).zAddressUS(msg, msgType);
