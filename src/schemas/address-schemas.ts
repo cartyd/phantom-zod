@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import { createPostalCodeSchemas } from "./postal-code-schemas";
 import { createStringSchemas } from "./string-schemas";
 import {
@@ -229,3 +230,33 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
     zAddressUS,
   };
 };
+
+// Top-level exports for barrel usage
+export const zAddressOptional = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) =>
+  createAddressSchemas(createTestMessageHandler()).zAddressOptional(
+    msg,
+    msgType,
+  );
+
+export const zAddressRequired = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) =>
+  createAddressSchemas(createTestMessageHandler()).zAddressRequired(
+    msg,
+    msgType,
+  );
+
+export const zAddressSimple = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) =>
+  createAddressSchemas(createTestMessageHandler()).zAddressSimple(msg, msgType);
+
+export const zAddressUS = (
+  msg = "Address",
+  msgType: MsgType = MsgType.FieldName,
+) => createAddressSchemas(createTestMessageHandler()).zAddressUS(msg, msgType);

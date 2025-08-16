@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import { MsgType } from "../common/types/msg-type";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
@@ -93,3 +94,16 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
     zEnumRequired,
   };
 };
+
+// Top-level exports for barrel usage
+export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  options: BaseSchemaOptions = {},
+) =>
+  createEnumSchemas(createTestMessageHandler()).zEnumOptional(values, options);
+
+export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  options: BaseSchemaOptions = {},
+) =>
+  createEnumSchemas(createTestMessageHandler()).zEnumRequired(values, options);
