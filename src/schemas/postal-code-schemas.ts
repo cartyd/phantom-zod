@@ -9,10 +9,10 @@ import { US_ZIP_CODE_PATTERN } from "../common/regex-patterns";
 // Note: These types reference the factory functions, so they need to be created from the factory
 type PostalCodeSchemasFactory = ReturnType<typeof createPostalCodeSchemas>;
 export type PostalCodeOptional = z.infer<
-  ReturnType<PostalCodeSchemasFactory["zPostalCodeOptional"]>
+  ReturnType<PostalCodeSchemasFactory["PostalCodeOptional"]>
 >;
 export type PostalCodeRequired = z.infer<
-  ReturnType<PostalCodeSchemasFactory["zPostalCodeRequired"]>
+  ReturnType<PostalCodeSchemasFactory["PostalCodeRequired"]>
 >;
 
 /**
@@ -81,14 +81,14 @@ export const createPostalCodeSchemas = (
    * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
    *
    * @example
-   * const { zPostalCodeOptional } = createPostalCodeSchemas(messageHandler);
-   * const schema = zPostalCodeOptional({ msg: "ZIP Code" });
+   * const { PostalCodeOptional } = createPostalCodeSchemas(messageHandler);
+   * const schema = PostalCodeOptional({ msg: "ZIP Code" });
    * schema.parse("12345");    // "12345"
    * schema.parse("12345-6789"); // "12345-6789"
    * schema.parse(undefined);   // undefined
    * schema.parse("00000");     // throws ZodError
    */
-  const zPostalCodeOptional = (options: PostalCodeSchemaOptions = {}) => {
+  const PostalCodeOptional = (options: PostalCodeSchemaOptions = {}) => {
     const { msg = "Postal Code", msgType = MsgType.FieldName } = options;
 
     return createBasePostalCodeSchema(msg, msgType)
@@ -128,14 +128,14 @@ export const createPostalCodeSchemas = (
    * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
    *
    * @example
-   * const { zPostalCodeRequired } = createPostalCodeSchemas(messageHandler);
-   * const schema = zPostalCodeRequired({ msg: "ZIP Code" });
+   * const { PostalCodeRequired } = createPostalCodeSchemas(messageHandler);
+   * const schema = PostalCodeRequired({ msg: "ZIP Code" });
    * schema.parse("12345");    // "12345"
    * schema.parse("12345-6789"); // "12345-6789"
    * schema.parse("");         // throws ZodError
    * schema.parse("00000");     // throws ZodError
    */
-  const zPostalCodeRequired = (options: PostalCodeSchemaOptions = {}) => {
+  const PostalCodeRequired = (options: PostalCodeSchemaOptions = {}) => {
     const { msg = "Postal Code", msgType = MsgType.FieldName } = options;
 
     return createBasePostalCodeSchema(msg, msgType)
@@ -169,18 +169,14 @@ export const createPostalCodeSchemas = (
   };
 
   return {
-    zPostalCodeOptional,
-    zPostalCodeRequired,
+    PostalCodeOptional,
+    PostalCodeRequired,
   };
 };
 
 // Top-level exports for barrel usage
-export const PostalCodeOptional = (options: PostalCodeSchemaOptions = {}) =>
-  createPostalCodeSchemas(createTestMessageHandler()).zPostalCodeOptional(
-    options,
-  );
+const testMessageHandler = createTestMessageHandler();
+const postalCodeSchemas = createPostalCodeSchemas(testMessageHandler);
 
-export const PostalCodeRequired = (options: PostalCodeSchemaOptions = {}) =>
-  createPostalCodeSchemas(createTestMessageHandler()).zPostalCodeRequired(
-    options,
-  );
+export const PostalCodeOptional = postalCodeSchemas.PostalCodeOptional;
+export const PostalCodeRequired = postalCodeSchemas.PostalCodeRequired;

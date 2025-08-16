@@ -3,17 +3,17 @@ import { pz } from '../src';
 
 describe('Person Schema', () => {
   const personSchema = z.object({
-    id: pz.zUuidV7Required({ msg: 'id' }),
-    name: pz.zStringRequired({ msg: 'name' }),
-    age: pz.zNumberOptional({ msg: 'age' }),
-    email: pz.zEmailRequired({ msg: 'email' }),
-    nickname: pz.zStringOptional({ msg: 'nickname' }),
-    phone: pz.zPhoneOptional({ msg: 'phone' }),
-    isActive: pz.zBooleanRequired({ msg: 'isActive' }),
-    roles: pz.zArrayOptional(pz.zStringOptional(), { msg: 'roles' }),
-    website: pz.zUrlOptional({ msg: 'website' }),
-    createdAt: pz.zDateStringOptional({ msg: 'createdAt' }),
-    user: pz.zUserOptional({ msg: 'user' }), // Nested user schema if available
+    id: pz.UuidV7Required({ msg: 'id' }),
+    name: pz.StringRequired({ msg: 'name' }),
+    age: pz.NumberOptional({ msg: 'age' }),
+    email: pz.EmailRequired({ msg: 'email' }),
+    nickname: pz.StringOptional({ msg: 'nickname' }),
+    phone: pz.PhoneOptional({ msg: 'phone' }),
+    isActive: pz.BooleanRequired({ msg: 'isActive' }),
+    roles: pz.ArrayOptional(pz.StringOptional(), { msg: 'roles' }),
+    website: pz.UrlOptional({ msg: 'website' }),
+    createdAt: pz.DateStringOptional({ msg: 'createdAt' }),
+    user: pz.UserOptional({ msg: 'user' }), // Nested user schema if available
   });
 
   const cases = [

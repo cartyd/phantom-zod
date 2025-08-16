@@ -10,10 +10,10 @@ import type { StringSchemaOptions } from "../common/types/schema-options.types";
 // Note: These types reference the factory functions, so they need to be created from the factory
 type StringSchemasFactory = ReturnType<typeof createStringSchemas>;
 export type StringOptional = z.infer<
-  ReturnType<StringSchemasFactory["zStringOptional"]>
+  ReturnType<StringSchemasFactory["StringOptional"]>
 >;
 export type StringRequired = z.infer<
-  ReturnType<StringSchemasFactory["zStringRequired"]>
+  ReturnType<StringSchemasFactory["StringRequired"]>
 >;
 
 /**
@@ -119,15 +119,15 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * - Length constraints are only applied if the respective parameters are provided.
    *
    * @example
-   * const { zStringOptional } = createStringSchemas(messageHandler);
-   * const schema = zStringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
+   * const { StringOptional } = createStringSchemas(messageHandler);
+   * const schema = StringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
    * schema.parse("  John  "); // "John"
    * schema.parse(undefined);  // ""
    * schema.parse("");         // ""
    * schema.parse("A");        // throws ZodError (too short)
    * schema.parse("This name is too long"); // throws ZodError (too long)
    */
-  const zStringOptional = (options: StringSchemaOptions = {}) => {
+  const StringOptional = (options: StringSchemaOptions = {}) => {
     const {
       msg = "Value",
       msgType = MsgType.FieldName,
@@ -164,13 +164,13 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod string schema with trimming and required validation.
    *
    * @example
-   * const { zStringRequired } = createStringSchemas(messageHandler);
-   * const schema = zStringRequired({ msg: "Username", minLength: 3 });
+   * const { StringRequired } = createStringSchemas(messageHandler);
+   * const schema = StringRequired({ msg: "Username", minLength: 3 });
    * schema.parse("  alice  "); // "alice"
    * schema.parse("");          // throws ZodError
    * schema.parse("   ");       // throws ZodError
    */
-  const zStringRequired = (options: StringSchemaOptions = {}) => {
+  const StringRequired = (options: StringSchemaOptions = {}) => {
     const {
       msg = "Value",
       msgType = MsgType.FieldName,
@@ -213,13 +213,14 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   return {
-    zStringOptional,
-    zStringRequired,
+    StringOptional,
+    StringRequired,
   };
 };
 
 // Top-level exports for barrel usage
-export const StringOptional = (options = {}) =>
-  createStringSchemas(createTestMessageHandler()).zStringOptional(options);
-export const StringRequired = (options = {}) =>
-  createStringSchemas(createTestMessageHandler()).zStringRequired(options);
+const testMessageHandler = createTestMessageHandler();
+const stringSchemas = createStringSchemas(testMessageHandler);
+
+export const StringOptional = stringSchemas.StringOptional;
+export const StringRequired = stringSchemas.StringRequired;

@@ -5,16 +5,16 @@ import { createTestMessageHandler } from "../src/localization/types/message-hand
 describe("ID List Schemas", () => {
     const messageHandler = createTestMessageHandler();
     const {
-        zIdListOptional,
-        zIdListRequired,
-        zId,
-        zUniqueIdList,
-        zPaginatedIdList,
-        zBatchOperationResponse,
-        zCustomId,
-        zMongoId,
-        zMongoIdList,
-        zFlexibleId,
+        IdListOptional,
+        IdListRequired,
+        Id,
+        UniqueIdList,
+        PaginatedIdList,
+        BatchOperationResponse,
+        CustomId,
+        MongoId,
+        MongoIdList,
+        FlexibleId,
     } = createIdListSchemas(messageHandler);
     const validUuid = "123e4567-e89b-12d3-a456-426614174000";
     const validUuid2 = "987fcdeb-51a2-4321-9876-543210987654";
@@ -23,8 +23,8 @@ describe("ID List Schemas", () => {
     const validMongoId2 = "507f1f77bcf86cd799439012";
     const invalidMongoId = "invalid-mongo-id";
 
-    describe("zIdListOptional", () => {
-        const schema = zIdListOptional();
+    describe("IdListOptional", () => {
+        const schema = IdListOptional();
 
         it("should accept undefined", () => {
             expect(schema.parse(undefined)).toBe(undefined);
@@ -41,25 +41,25 @@ describe("ID List Schemas", () => {
         });
 
         it("should validate minimum items", () => {
-            const schema = zIdListOptional("IDs", MsgType.FieldName, 2);
+            const schema = IdListOptional("IDs", MsgType.FieldName, 2);
             expect(() => schema.parse([validUuid])).toThrow();
             expect(schema.parse([validUuid, validUuid2])).toEqual([validUuid, validUuid2]);
         });
 
         it("should validate maximum items", () => {
-            const schema = zIdListOptional("IDs", MsgType.FieldName, 1, 2);
+            const schema = IdListOptional("IDs", MsgType.FieldName, 1, 2);
             const tooManyIds = [validUuid, validUuid2, validUuid];
             expect(() => schema.parse(tooManyIds)).toThrow();
         });
 
         it("should accept empty array when min is 0", () => {
-            const schema = zIdListOptional("IDs", MsgType.FieldName, 0);
+            const schema = IdListOptional("IDs", MsgType.FieldName, 0);
             expect(schema.parse([])).toEqual([]);
         });
     });
 
-    describe("zIdListRequired", () => {
-        const schema = zIdListRequired();
+    describe("IdListRequired", () => {
+        const schema = IdListRequired();
 
         it("should accept valid UUID list", () => {
             const validList = [validUuid, validUuid2];
@@ -80,15 +80,15 @@ describe("ID List Schemas", () => {
         });
 
         it("should validate custom min/max constraints", () => {
-            const schema = zIdListRequired("IDs", MsgType.FieldName, 2, 3);
+            const schema = IdListRequired("IDs", MsgType.FieldName, 2, 3);
             expect(() => schema.parse([validUuid])).toThrow();
             expect(schema.parse([validUuid, validUuid2])).toEqual([validUuid, validUuid2]);
             expect(() => schema.parse([validUuid, validUuid2, validUuid, validUuid2])).toThrow();
         });
     });
 
-    describe("zId", () => {
-        const schema = zId();
+    describe("Id", () => {
+        const schema = Id();
 
         it("should accept valid UUID", () => {
             expect(schema.parse(validUuid)).toBe(validUuid);
@@ -105,8 +105,8 @@ describe("ID List Schemas", () => {
         });
     });
 
-    describe("zUniqueIdList", () => {
-        const schema = zUniqueIdList();
+    describe("UniqueIdList", () => {
+        const schema = UniqueIdList();
 
         it("should accept list with unique IDs", () => {
             const uniqueList = [validUuid, validUuid2];
@@ -123,14 +123,14 @@ describe("ID List Schemas", () => {
         });
 
         it("should validate min/max constraints", () => {
-            const schema = zUniqueIdList("IDs", MsgType.FieldName, 2, 3);
+            const schema = UniqueIdList("IDs", MsgType.FieldName, 2, 3);
             expect(() => schema.parse([validUuid])).toThrow();
             expect(schema.parse([validUuid, validUuid2])).toEqual([validUuid, validUuid2]);
         });
     });
 
-    describe("zPaginatedIdList", () => {
-        const schema = zPaginatedIdList();
+    describe("PaginatedIdList", () => {
+        const schema = PaginatedIdList();
 
         it("should accept valid paginated ID list", () => {
             const validPaginated = {
@@ -169,7 +169,7 @@ describe("ID List Schemas", () => {
         });
 
         it("should reject limit exceeding max", () => {
-            const schema = zPaginatedIdList("IDs", MsgType.FieldName, 1, 10);
+            const schema = PaginatedIdList("IDs", MsgType.FieldName, 1, 10);
             const invalidPaginated = {
                 ids: [validUuid],
                 page: 0,
@@ -179,8 +179,8 @@ describe("ID List Schemas", () => {
         });
     });
 
-    describe("zBatchOperationResponse", () => {
-        const schema = zBatchOperationResponse();
+    describe("BatchOperationResponse", () => {
+        const schema = BatchOperationResponse();
 
         it("should accept valid batch response", () => {
             const validResponse = {
@@ -215,9 +215,9 @@ describe("ID List Schemas", () => {
         });
     });
 
-    describe("zCustomId", () => {
+    describe("CustomId", () => {
         const hexValidator = (id: string) => /^[0-9a-fA-F]+$/.test(id);
-        const schema = zCustomId(hexValidator, "Hex ID");
+        const schema = CustomId(hexValidator, "Hex ID");
 
         it("should accept valid custom ID", () => {
             expect(schema.parse("abc123")).toBe("abc123");
@@ -235,8 +235,8 @@ describe("ID List Schemas", () => {
         });
     });
 
-    describe("zMongoId", () => {
-        const schema = zMongoId();
+    describe("MongoId", () => {
+        const schema = MongoId();
 
         it("should accept valid MongoDB ObjectId", () => {
             expect(schema.parse(validMongoId)).toBe(validMongoId);
@@ -261,8 +261,8 @@ describe("ID List Schemas", () => {
         });
     });
 
-    describe("zMongoIdList", () => {
-        const schema = zMongoIdList();
+    describe("MongoIdList", () => {
+        const schema = MongoIdList();
 
         it("should accept valid MongoDB ObjectId list", () => {
             const validList = [validMongoId, validMongoId2];
@@ -275,7 +275,7 @@ describe("ID List Schemas", () => {
         });
 
         it("should validate min/max constraints", () => {
-            const schema = zMongoIdList("IDs", MsgType.FieldName, 2, 3);
+            const schema = MongoIdList("IDs", MsgType.FieldName, 2, 3);
             expect(() => schema.parse([validMongoId])).toThrow();
             expect(schema.parse([validMongoId, validMongoId2])).toEqual([validMongoId, validMongoId2]);
         });
@@ -285,8 +285,8 @@ describe("ID List Schemas", () => {
         });
     });
 
-    describe("zFlexibleId", () => {
-        const schema = zFlexibleId();
+    describe("FlexibleId", () => {
+        const schema = FlexibleId();
 
         it("should accept valid UUID", () => {
             expect(schema.parse(validUuid)).toBe(validUuid);
@@ -311,7 +311,7 @@ describe("ID List Schemas", () => {
 
     describe("Custom Error Messages", () => {
         it("should use custom field name in error messages", () => {
-            const schema = zIdListRequired("User IDs");
+            const schema = IdListRequired("User IDs");
             try {
                 schema.parse([]);
                 fail("Should have thrown an error");
@@ -321,7 +321,7 @@ describe("ID List Schemas", () => {
         });
 
         it("should use custom message when msgType is Message", () => {
-            const schema = zIdListRequired("Custom error message", MsgType.Message);
+            const schema = IdListRequired("Custom error message", MsgType.Message);
             try {
                 schema.parse([]);
                 fail("Should have thrown an error");
@@ -334,18 +334,18 @@ describe("ID List Schemas", () => {
     describe("Edge Cases", () => {
         it("should handle very long ID lists", () => {
             const longList = Array(100).fill(validUuid);
-            const schema = zIdListOptional("IDs", MsgType.FieldName, 1, 100);
+            const schema = IdListOptional("IDs", MsgType.FieldName, 1, 100);
             expect(schema.parse(longList)).toEqual(longList);
         });
 
         it("should handle mixed case UUIDs", () => {
             const mixedCaseUuid = "123E4567-E89B-12D3-A456-426614174000";
-            const schema = zIdListOptional();
+            const schema = IdListOptional();
             expect(schema.parse([mixedCaseUuid])).toEqual([mixedCaseUuid]);
         });
 
         it("should validate MongoDB ObjectId format strictly", () => {
-            const schema = zMongoId();
+            const schema = MongoId();
             expect(() => schema.parse("507f1f77bcf86cd799439g11")).toThrow(); // invalid character 'g'
             expect(() => schema.parse("507f1f77bcf86cd799439 11")).toThrow(); // space
         });

@@ -73,16 +73,16 @@ export const US_STATE_CODES = [
  *
  * @param messageHandler - An error message formatter used to customize validation error messages.
  * @returns An object containing the following address schemas:
- * - `zAddressOptional`: Validates an optional address object with all fields, allowing `undefined`.
- * - `zAddressRequired`: Validates a required address object with all fields.
- * - `zAddressSimple`: Validates a simple address object with minimal required fields (street, city, country).
- * - `zAddressUS`: Validates a US-specific address object, including state and ZIP code validation.
+ * - `AddressOptional`: Validates an optional address object with all fields, allowing `undefined`.
+ * - `AddressRequired`: Validates a required address object with all fields.
+ * - `AddressSimple`: Validates a simple address object with minimal required fields (street, city, country).
+ * - `AddressUS`: Validates a US-specific address object, including state and ZIP code validation.
  *
  * Each schema removes empty string fields (e.g., `street2`) from the result and supports custom error messages.
  *
  * @example
  * const schemas = createAddressSchemas(messageHandler);
- * const result = schemas.zAddressRequired().safeParse({
+ * const result = schemas.AddressRequired().safeParse({
  *   street: "123 Main St",
  *   street2: "",
  *   city: "Springfield",
@@ -101,22 +101,22 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Optional address schema with all fields.
    * Includes street, city, state, postal code, and country validation.
    */
-  const zAddressOptional = (
+  const AddressOptional = (
     msg = "Address",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     makeOptionalSimple(
       z
         .object({
-          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
-          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
-          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
-          state: stringSchemas.zStringRequired({ msg: "State", msgType }),
-          postalCode: postalCodeSchemas.zPostalCodeRequired({
+          street: stringSchemas.StringRequired({ msg: "Street", msgType }),
+          street2: stringSchemas.StringOptional({ msg: "Street 2", msgType }),
+          city: stringSchemas.StringRequired({ msg: "City", msgType }),
+          state: stringSchemas.StringRequired({ msg: "State", msgType }),
+          postalCode: postalCodeSchemas.PostalCodeRequired({
             msg: "Postal Code",
             msgType,
           }),
-          country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+          country: stringSchemas.StringRequired({ msg: "Country", msgType }),
         })
         .transform(removeEmptyStringFields(["street2"])),
       messageHandler.formatErrorMessage({
@@ -131,22 +131,22 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Required address schema with all fields.
    * Includes street, city, state, postal code, and country validation.
    */
-  const zAddressRequired = (
+  const AddressRequired = (
     msg = "Address",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z
       .object(
         {
-          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
-          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
-          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
-          state: stringSchemas.zStringRequired({ msg: "State", msgType }),
-          postalCode: postalCodeSchemas.zPostalCodeRequired({
+          street: stringSchemas.StringRequired({ msg: "Street", msgType }),
+          street2: stringSchemas.StringOptional({ msg: "Street 2", msgType }),
+          city: stringSchemas.StringRequired({ msg: "City", msgType }),
+          state: stringSchemas.StringRequired({ msg: "State", msgType }),
+          postalCode: postalCodeSchemas.PostalCodeRequired({
             msg: "Postal Code",
             msgType,
           }),
-          country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+          country: stringSchemas.StringRequired({ msg: "Country", msgType }),
         },
         {
           message: messageHandler.formatErrorMessage({
@@ -163,15 +163,15 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Simple address schema with minimal fields (street, city, country).
    * Useful for basic address validation.
    */
-  const zAddressSimple = (
+  const AddressSimple = (
     msg = "Address",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.object(
       {
-        street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
-        city: stringSchemas.zStringRequired({ msg: "City", msgType }),
-        country: stringSchemas.zStringRequired({ msg: "Country", msgType }),
+        street: stringSchemas.StringRequired({ msg: "Street", msgType }),
+        city: stringSchemas.StringRequired({ msg: "City", msgType }),
+        country: stringSchemas.StringRequired({ msg: "Country", msgType }),
       },
       {
         message: messageHandler.formatErrorMessage({
@@ -187,13 +187,13 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
    * US address schema with state validation and ZIP code format.
    * Includes validation for US-specific address formats.
    */
-  const zAddressUS = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
+  const AddressUS = (msg = "Address", msgType: MsgType = MsgType.FieldName) =>
     z
       .object(
         {
-          street: stringSchemas.zStringRequired({ msg: "Street", msgType }),
-          street2: stringSchemas.zStringOptional({ msg: "Street 2", msgType }),
-          city: stringSchemas.zStringRequired({ msg: "City", msgType }),
+          street: stringSchemas.StringRequired({ msg: "Street", msgType }),
+          street2: stringSchemas.StringOptional({ msg: "Street 2", msgType }),
+          city: stringSchemas.StringRequired({ msg: "City", msgType }),
           state: z.enum(US_STATE_CODES as [string, ...string[]], {
             message: messageHandler.formatErrorMessage({
               group: "address",
@@ -224,39 +224,31 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
       .transform(removeEmptyStringFields(["street2"]));
 
   return {
-    zAddressOptional,
-    zAddressRequired,
-    zAddressSimple,
-    zAddressUS,
+    AddressOptional,
+    AddressRequired,
+    AddressSimple,
+    AddressUS,
   };
 };
 
 // Top-level exports for barrel usage
-export const AddressOptional = (
-  msg = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  createAddressSchemas(createTestMessageHandler()).zAddressOptional(
-    msg,
-    msgType,
-  );
+const testMessageHandler = createTestMessageHandler();
+const addressSchemas = createAddressSchemas(testMessageHandler);
 
-export const AddressRequired = (
-  msg = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  createAddressSchemas(createTestMessageHandler()).zAddressRequired(
-    msg,
-    msgType,
-  );
+export const AddressOptional = addressSchemas.AddressOptional;
+export const AddressRequired = addressSchemas.AddressRequired;
+export const AddressSimple = addressSchemas.AddressSimple;
+export const AddressUS = addressSchemas.AddressUS;
 
-export const AddressSimple = (
-  msg = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) =>
-  createAddressSchemas(createTestMessageHandler()).zAddressSimple(msg, msgType);
-
-export const AddressUS = (
-  msg = "Address",
-  msgType: MsgType = MsgType.FieldName,
-) => createAddressSchemas(createTestMessageHandler()).zAddressUS(msg, msgType);
+// --- Types ---
+type AddressSchemasFactory = ReturnType<typeof createAddressSchemas>;
+export type AddressOptional = z.infer<
+  ReturnType<AddressSchemasFactory["AddressOptional"]>
+>;
+export type AddressRequired = z.infer<
+  ReturnType<AddressSchemasFactory["AddressRequired"]>
+>;
+export type AddressSimple = z.infer<
+  ReturnType<AddressSchemasFactory["AddressSimple"]>
+>;
+export type AddressUS = z.infer<ReturnType<AddressSchemasFactory["AddressUS"]>>;

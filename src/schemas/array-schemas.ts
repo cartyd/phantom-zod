@@ -2,7 +2,7 @@ import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
-import { zStringOptional, zStringRequired } from "./string-schemas";
+import { StringOptional, StringRequired } from "./string-schemas";
 
 // Enhanced array schema options
 export interface GenericArraySchemaOptions {
@@ -63,7 +63,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    *   { msg: "Users", maxItems: 10 }
    * );
    */
-  const zArrayOptional = <T>(
+  const ArrayOptional = <T>(
     elementSchema: z.ZodType<T>,
     options: GenericArraySchemaOptions = {},
   ) => {
@@ -206,7 +206,7 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
    *   { msg: "Users", minItems: 1, allowDuplicates: false }
    * );
    */
-  const zArrayRequired = <T>(
+  const ArrayRequired = <T>(
     elementSchema: z.ZodType<T>,
     options: GenericArraySchemaOptions = {},
   ) => {
@@ -323,47 +323,47 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
     return schema;
   };
 
-  const zNumberArrayOptional = (options: GenericArraySchemaOptions = {}) =>
-    zArrayOptional(z.number(), options);
+  const NumberArrayOptional = (options: GenericArraySchemaOptions = {}) =>
+    ArrayOptional(z.number(), options);
 
-  const zNumberArrayRequired = (options: GenericArraySchemaOptions = {}) =>
-    zArrayRequired(z.number(), options);
+  const NumberArrayRequired = (options: GenericArraySchemaOptions = {}) =>
+    ArrayRequired(z.number(), options);
 
-  const zBooleanArrayOptional = (options: GenericArraySchemaOptions = {}) =>
-    zArrayOptional(z.boolean(), options);
+  const BooleanArrayOptional = (options: GenericArraySchemaOptions = {}) =>
+    ArrayOptional(z.boolean(), options);
 
-  const zBooleanArrayRequired = (options: GenericArraySchemaOptions = {}) =>
-    zArrayRequired(z.boolean(), options);
+  const BooleanArrayRequired = (options: GenericArraySchemaOptions = {}) =>
+    ArrayRequired(z.boolean(), options);
 
-  const zUuidArrayOptional = (options: GenericArraySchemaOptions = {}) =>
-    zArrayOptional(z.string().uuid(), options);
+  const UuidArrayOptional = (options: GenericArraySchemaOptions = {}) =>
+    ArrayOptional(z.string().uuid(), options);
 
-  const zUuidArrayRequired = (options: GenericArraySchemaOptions = {}) =>
-    zArrayRequired(z.string().uuid(), options);
+  const UuidArrayRequired = (options: GenericArraySchemaOptions = {}) =>
+    ArrayRequired(z.string().uuid(), options);
 
   // String array convenience functions using pz string schemas
-  const zStringArrayOptional = (options: GenericArraySchemaOptions = {}) =>
-    zArrayOptional(zStringOptional(), options);
+  const StringArrayOptional = (options: GenericArraySchemaOptions = {}) =>
+    ArrayOptional(StringOptional(), options);
 
-  const zStringArrayRequired = (options: GenericArraySchemaOptions = {}) =>
-    zArrayRequired(zStringRequired(), options);
+  const StringArrayRequired = (options: GenericArraySchemaOptions = {}) =>
+    ArrayRequired(StringRequired(), options);
 
   return {
     // Generic array functions
-    zArrayOptional,
-    zArrayRequired,
+    ArrayOptional,
+    ArrayRequired,
 
     // String array convenience functions
-    zStringArrayOptional,
-    zStringArrayRequired,
+    StringArrayOptional,
+    StringArrayRequired,
 
     // Common type convenience functions
-    zNumberArrayOptional,
-    zNumberArrayRequired,
-    zBooleanArrayOptional,
-    zBooleanArrayRequired,
-    zUuidArrayOptional,
-    zUuidArrayRequired,
+    NumberArrayOptional,
+    NumberArrayRequired,
+    BooleanArrayOptional,
+    BooleanArrayRequired,
+    UuidArrayOptional,
+    UuidArrayRequired,
   };
 };
 
@@ -371,16 +371,16 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
 const defaultArraySchemas = createArraySchemas(createTestMessageHandler());
 
 export const {
-  zArrayOptional,
-  zArrayRequired,
-  zStringArrayOptional,
-  zStringArrayRequired,
-  zNumberArrayOptional,
-  zNumberArrayRequired,
-  zBooleanArrayOptional,
-  zBooleanArrayRequired,
-  zUuidArrayOptional,
-  zUuidArrayRequired,
+  ArrayOptional,
+  ArrayRequired,
+  StringArrayOptional,
+  StringArrayRequired,
+  NumberArrayOptional,
+  NumberArrayRequired,
+  BooleanArrayOptional,
+  BooleanArrayRequired,
+  UuidArrayOptional,
+  UuidArrayRequired,
 } = defaultArraySchemas;
 
 // createArraySchemas is already exported above

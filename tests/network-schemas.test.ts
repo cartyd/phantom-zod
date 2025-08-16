@@ -237,37 +237,37 @@ describe("Network Schemas", () => {
   const messageHandler = createTestMessageHandler();
   const schemas = createNetworkSchemas(messageHandler);
   const { 
-    zIPv4Optional, 
-    zIPv4Required, 
-    zIPv6Optional, 
-    zIPv6Required, 
-    zIPv4CIDROptional,
-    zIPv4CIDRRequired,
-    zIPv6CIDROptional,
-    zIPv6CIDRRequired,
-    zCIDRGeneric,
-    zMacAddressOptional, 
-    zMacAddressRequired,
-    zNetworkAddressGeneric,
-    zIPAddressGeneric,
+    IPv4Optional, 
+    IPv4Required, 
+    IPv6Optional, 
+    IPv6Required, 
+    IPv4CIDROptional,
+    IPv4CIDRRequired,
+    IPv6CIDROptional,
+    IPv6CIDRRequired,
+    CIDRGeneric,
+    MacAddressOptional, 
+    MacAddressRequired,
+    NetworkAddressGeneric,
+    IPAddressGeneric,
     getNetworkAddressExamples
   } = schemas;
 
   // MAC Address Tests
-  testRequiredSchema("zMacAddressRequired", zMacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
-  testOptionalSchema("zMacAddressOptional", zMacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
+  testRequiredSchema("MacAddressRequired", MacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
+  testOptionalSchema("MacAddressOptional", MacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
 
   // IPv4 Tests
-  testRequiredSchema("zIPv4Required", zIPv4Required, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
-  testOptionalSchema("zIPv4Optional", zIPv4Optional, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
+  testRequiredSchema("IPv4Required", IPv4Required, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
+  testOptionalSchema("IPv4Optional", IPv4Optional, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
 
   // IPv6 Tests
-  testRequiredSchema("zIPv6Required", zIPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
-  testOptionalSchema("zIPv6Optional", zIPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
+  testRequiredSchema("IPv6Required", IPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
+  testOptionalSchema("IPv6Optional", IPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
 
   // New Schema Tests
-  describe('zNetworkAddressGeneric', () => {
-    const schema = zNetworkAddressGeneric();
+  describe('NetworkAddressGeneric', () => {
+    const schema = NetworkAddressGeneric();
     const allValidData = [...TEST_DATA.validIPv4, ...TEST_DATA.validIPv6, ...TEST_DATA.validMacAddresses];
     const invalidData = ['invalid-address', 'not.a.network.address', '192.168.1', '00:1A:2B', 'xyz::abc:invalid'];
 
@@ -288,7 +288,7 @@ describe("Network Schemas", () => {
     });
 
     test('uses custom message with msgType Message', () => {
-      const customSchema = zNetworkAddressGeneric({ msg: 'Custom network error', msgType: MsgType.Message });
+      const customSchema = NetworkAddressGeneric({ msg: 'Custom network error', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Custom network error');
     });
   });
@@ -316,11 +316,11 @@ describe("Network Schemas", () => {
   describe('Message customization tests', () => {
     test('all schemas support custom field names and message types', () => {
       const testCases = [
-        { schema: zIPv4Required, name: 'IPv4 Required', invalid: 'invalid-ipv4' },
-        { schema: zIPv6Required, name: 'IPv6 Required', invalid: 'invalid-ipv6' },
-        { schema: zMacAddressRequired, name: 'MAC Required', invalid: 'invalid-mac' },
-        { schema: zNetworkAddressGeneric, name: 'Network Generic', invalid: 'invalid-network' },
-        { schema: zIPAddressGeneric, name: 'IP Generic', invalid: 'invalid-ip' },
+        { schema: IPv4Required, name: 'IPv4 Required', invalid: 'invalid-ipv4' },
+        { schema: IPv6Required, name: 'IPv6 Required', invalid: 'invalid-ipv6' },
+        { schema: MacAddressRequired, name: 'MAC Required', invalid: 'invalid-mac' },
+        { schema: NetworkAddressGeneric, name: 'Network Generic', invalid: 'invalid-network' },
+        { schema: IPAddressGeneric, name: 'IP Generic', invalid: 'invalid-ip' },
       ];
 
       testCases.forEach(({ schema, name, invalid }) => {

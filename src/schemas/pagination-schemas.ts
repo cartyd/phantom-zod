@@ -14,10 +14,12 @@ import { createTestMessageHandler } from "../localization/types/message-handler.
 export const createPaginationSchemas = (
   messageHandler: ErrorMessageFormatter,
 ) => {
+  const stringSchemas = createStringSchemas(messageHandler);
+
   /**
    * Offset-based pagination schema.
    */
-  const zOffsetPagination = (
+  const OffsetPagination = (
     msg = "Offset Pagination",
     msgType: MsgType = MsgType.FieldName,
     defaultLimit = 10,
@@ -89,7 +91,7 @@ export const createPaginationSchemas = (
           }),
         })
         .default(defaultLimit),
-      sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
+      sort: stringSchemas.StringOptional({ msg: "Sort", msgType }),
       order: z
         .enum(["asc", "desc"], {
           message: messageHandler.formatErrorMessage({
@@ -105,7 +107,7 @@ export const createPaginationSchemas = (
   /**
    * Cursor-based pagination schema.
    */
-  const zCursorPagination = (
+  const CursorPagination = (
     msg = "Cursor Pagination",
     msgType: MsgType = MsgType.FieldName,
     defaultLimit = 10,
@@ -161,7 +163,7 @@ export const createPaginationSchemas = (
           }),
         })
         .default(defaultLimit),
-      sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
+      sort: stringSchemas.StringOptional({ msg: "Sort", msgType }),
       order: z
         .enum(["asc", "desc"], {
           message: messageHandler.formatErrorMessage({
@@ -177,7 +179,7 @@ export const createPaginationSchemas = (
   /**
    * Pagination query schema for parsing query params as strings and converting to numbers.
    */
-  const zPaginationQuery = (
+  const PaginationQuery = (
     msg = "Pagination",
     msgType: MsgType = MsgType.FieldName,
     defaultLimit = 10,
@@ -221,7 +223,7 @@ export const createPaginationSchemas = (
             params: { limit: maxLimit },
           }),
         }),
-      sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
+      sort: stringSchemas.StringOptional({ msg: "Sort", msgType }),
       order: z
         .enum(["asc", "desc"], {
           message: messageHandler.formatErrorMessage({
@@ -234,12 +236,10 @@ export const createPaginationSchemas = (
         })
         .optional(),
     });
-  const stringSchemas = createStringSchemas(messageHandler);
-
   /**
    * Pagination schema standardizing query parameters: page, limit, sort, and order.
    */
-  const zPagination = (
+  const Pagination = (
     msg = "Pagination",
     msgType: MsgType = MsgType.FieldName,
     defaultLimit = 10,
@@ -311,7 +311,7 @@ export const createPaginationSchemas = (
           }),
         })
         .default(defaultLimit),
-      sort: stringSchemas.zStringOptional({ msg: "Sort", msgType }),
+      sort: stringSchemas.StringOptional({ msg: "Sort", msgType }),
       order: z
         .enum(["asc", "desc"], {
           message: messageHandler.formatErrorMessage({
@@ -328,7 +328,7 @@ export const createPaginationSchemas = (
   /**
    * Pagination response schema for API responses.
    */
-  const zPaginationResponse = (
+  const PaginationResponse = (
     msg = "Pagination Response",
     msgType: MsgType = MsgType.FieldName,
   ) =>
@@ -354,7 +354,7 @@ export const createPaginationSchemas = (
   /**
    * Paginated data schema that wraps data with pagination metadata.
    */
-  const zPaginatedData = <T extends z.ZodTypeAny>(
+  const PaginatedData = <T extends z.ZodTypeAny>(
     dataSchema: T,
     msg = "Paginated Data",
     msgType: MsgType = MsgType.FieldName,
@@ -362,7 +362,7 @@ export const createPaginationSchemas = (
     z.object(
       {
         data: dataSchema,
-        pagination: zPaginationResponse(msg, msgType),
+        pagination: PaginationResponse(msg, msgType),
       },
       {
         message: messageHandler.formatErrorMessage({
@@ -375,12 +375,12 @@ export const createPaginationSchemas = (
     );
 
   return {
-    zPagination,
-    zPaginationQuery,
-    zCursorPagination,
-    zOffsetPagination,
-    zPaginationResponse,
-    zPaginatedData,
+    Pagination,
+    PaginationQuery,
+    CursorPagination,
+    OffsetPagination,
+    PaginationResponse,
+    PaginatedData,
   };
 };
 
@@ -390,23 +390,24 @@ export const createPaginationSchemas = (
 const defaultPaginationSchemas = createPaginationSchemas(
   createTestMessageHandler(),
 );
-export const zPagination = defaultPaginationSchemas.zPagination;
-export const zPaginationQuery = defaultPaginationSchemas.zPaginationQuery;
-export const zCursorPagination = defaultPaginationSchemas.zCursorPagination;
-export const zOffsetPagination = defaultPaginationSchemas.zOffsetPagination;
-export const zPaginationResponse = defaultPaginationSchemas.zPaginationResponse;
-export const zPaginatedData = defaultPaginationSchemas.zPaginatedData;
+// Export without z prefix for new naming convention
+export const Pagination = defaultPaginationSchemas.Pagination;
+export const PaginationQuery = defaultPaginationSchemas.PaginationQuery;
+export const CursorPagination = defaultPaginationSchemas.CursorPagination;
+export const OffsetPagination = defaultPaginationSchemas.OffsetPagination;
+export const PaginationResponse = defaultPaginationSchemas.PaginationResponse;
+export const PaginatedData = defaultPaginationSchemas.PaginatedData;
 
 /**
  * Type for a pagination schema.
  */
 export type PaginationType = z.infer<
-  ReturnType<ReturnType<typeof createPaginationSchemas>["zPagination"]>
+  ReturnType<ReturnType<typeof createPaginationSchemas>["Pagination"]>
 >;
 
 /**
  * Type for query parameter pagination (from URL query string).
  */
 export type PaginationQueryType = z.infer<
-  ReturnType<ReturnType<typeof createPaginationSchemas>["zPaginationQuery"]>
+  ReturnType<ReturnType<typeof createPaginationSchemas>["PaginationQuery"]>
 >;

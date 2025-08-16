@@ -7,31 +7,31 @@ const messageHandler = createTestMessageHandler();
 
 // Create schema instances using factory
 const {
-  zPassword,
-  zUsername,
-  zDisplayName,
-  zUserRegistration,
-  zUserLogin,
-  zUserOptional,
-  zUserRequired,
-  zUserUpdate,
-  zPasswordChange,
-  zPasswordReset,
-  zAdminUserManagement,
+  Password,
+  Username,
+  DisplayName,
+  UserRegistration,
+  UserLogin,
+  UserOptional,
+  UserRequired,
+  UserUpdate,
+  PasswordChange,
+  PasswordReset,
+  AdminUserManagement,
   // New schemas
-  zPasswordWithWeaknessCheck,
-  zUserGenericValidation,
-  zEmailUniqueness,
-  zUsernameUniqueness,
-  zRoleValidation,
-  zAccountTypeValidation,
-  zUserRegistrationWithUniqueness,
+  PasswordWithWeaknessCheck,
+  UserGenericValidation,
+  EmailUniqueness,
+  UsernameUniqueness,
+  RoleValidation,
+  AccountTypeValidation,
+  UserRegistrationWithUniqueness,
 } = createUserSchemas(messageHandler);
 import { runTableTests } from './setup';
 
 describe('User Schemas', () => {
-  describe('zPassword', () => {
-    const schema = zPassword();
+  describe('Password', () => {
+    const schema = Password();
 
     runTableTests([
       {
@@ -84,41 +84,41 @@ describe('User Schemas', () => {
 
     describe('Custom requirements', () => {
       it('should accept password with custom minimum length', () => {
-        const customSchema = zPassword('Password', MsgType.FieldName, 12);
+        const customSchema = Password('Password', MsgType.FieldName, 12);
         expect(customSchema.parse('LongPassword123!')).toBe('LongPassword123!');
       });
 
       it('should reject password below custom minimum length', () => {
-        const customSchema = zPassword('Password', MsgType.FieldName, 12);
+        const customSchema = Password('Password', MsgType.FieldName, 12);
         expect(() => customSchema.parse('Short1!')).toThrow('Password password is too short (minimum: 12 characters)');
       });
 
       it('should allow passwords without uppercase when not required', () => {
-        const customSchema = zPassword('Password', MsgType.FieldName, 8, false);
+        const customSchema = Password('Password', MsgType.FieldName, 8, false);
         expect(customSchema.parse('lowercase1!')).toBe('lowercase1!');
       });
 
       it('should allow passwords without special characters when not required', () => {
-        const customSchema = zPassword('Password', MsgType.FieldName, 8, true, true, true, false);
+        const customSchema = Password('Password', MsgType.FieldName, 8, true, true, true, false);
         expect(customSchema.parse('ValidPass123')).toBe('ValidPass123');
       });
     });
 
     describe('Error messages', () => {
       it('should use custom field name in error messages', () => {
-        const customSchema = zPassword('Secret');
+        const customSchema = Password('Secret');
         expect(() => customSchema.parse('weak')).toThrow('Secret password is too short (minimum: 8 characters)');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const customSchema = zPassword('Password is invalid', MsgType.Message);
+        const customSchema = Password('Password is invalid', MsgType.Message);
         expect(() => customSchema.parse('weak')).toThrow('Password is invalid');
       });
     });
   });
 
-  describe('zUsername', () => {
-    const schema = zUsername();
+  describe('Username', () => {
+    const schema = Username();
 
     runTableTests([
       {
@@ -193,29 +193,29 @@ describe('User Schemas', () => {
 
     describe('Custom length requirements', () => {
       it('should accept username with custom minimum length', () => {
-        const customSchema = zUsername('Username', MsgType.FieldName, 5);
+        const customSchema = Username('Username', MsgType.FieldName, 5);
         expect(customSchema.parse('valid')).toBe('valid');
       });
 
       it('should reject username below custom minimum length', () => {
-        const customSchema = zUsername('Username', MsgType.FieldName, 5);
+        const customSchema = Username('Username', MsgType.FieldName, 5);
         expect(() => customSchema.parse('user')).toThrow('Username is too short (minimum: 5 characters)');
       });
 
       it('should accept username with custom maximum length', () => {
-        const customSchema = zUsername('Username', MsgType.FieldName, 3, 10);
+        const customSchema = Username('Username', MsgType.FieldName, 3, 10);
         expect(customSchema.parse('username12')).toBe('username12');
       });
 
       it('should reject username above custom maximum length', () => {
-        const customSchema = zUsername('Username', MsgType.FieldName, 3, 10);
+        const customSchema = Username('Username', MsgType.FieldName, 3, 10);
         expect(() => customSchema.parse('verylongusername')).toThrow('Username is too long (maximum: 10 characters)');
       });
     });
   });
 
-  describe('zDisplayName', () => {
-    const schema = zDisplayName();
+  describe('DisplayName', () => {
+    const schema = DisplayName();
 
     runTableTests([
       {
@@ -252,8 +252,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zUserRegistration', () => {
-    const schema = zUserRegistration();
+  describe('UserRegistration', () => {
+    const schema = UserRegistration();
 
     const validRegistration = {
       username: 'johndoe',
@@ -329,8 +329,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zUserLogin', () => {
-    const schema = zUserLogin();
+  describe('UserLogin', () => {
+    const schema = UserLogin();
 
     runTableTests([
       {
@@ -387,8 +387,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zPasswordChange', () => {
-    const schema = zPasswordChange();
+  describe('PasswordChange', () => {
+    const schema = PasswordChange();
 
     runTableTests([
       {
@@ -437,8 +437,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zPasswordReset', () => {
-    const schema = zPasswordReset();
+  describe('PasswordReset', () => {
+    const schema = PasswordReset();
 
     runTableTests([
       {
@@ -467,8 +467,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zUserRequired', () => {
-    const schema = zUserRequired();
+  describe('UserRequired', () => {
+    const schema = UserRequired();
 
     const validUser = {
       id: 'user123',
@@ -533,8 +533,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zUserUpdate', () => {
-    const schema = zUserUpdate();
+  describe('UserUpdate', () => {
+    const schema = UserUpdate();
 
     runTableTests([
       {
@@ -577,8 +577,8 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zAdminUserManagement', () => {
-    const schema = zAdminUserManagement();
+  describe('AdminUserManagement', () => {
+    const schema = AdminUserManagement();
 
     runTableTests([
       {
@@ -626,8 +626,8 @@ describe('User Schemas', () => {
   });
 
   // New schema tests
-  describe('zPasswordWithWeaknessCheck', () => {
-    const schema = zPasswordWithWeaknessCheck();
+  describe('PasswordWithWeaknessCheck', () => {
+    const schema = PasswordWithWeaknessCheck();
 
     runTableTests([
       {
@@ -659,8 +659,8 @@ describe('User Schemas', () => {
     });
   });
 
-  describe('zUserGenericValidation', () => {
-    const schema = zUserGenericValidation();
+  describe('UserGenericValidation', () => {
+    const schema = UserGenericValidation();
 
     runTableTests([
       {
@@ -694,9 +694,9 @@ describe('User Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zEmailUniqueness', () => {
+  describe('EmailUniqueness', () => {
     const existingEmails = ['john@example.com', 'jane@example.com'];
-    const schema = zEmailUniqueness('Email', MsgType.FieldName, existingEmails);
+    const schema = EmailUniqueness('Email', MsgType.FieldName, existingEmails);
 
     runTableTests([
       {
@@ -734,9 +734,9 @@ describe('User Schemas', () => {
     });
   });
 
-  describe('zUsernameUniqueness', () => {
+  describe('UsernameUniqueness', () => {
     const existingUsernames = ['johndoe', 'janedoe'];
-    const schema = zUsernameUniqueness('Username', MsgType.FieldName, existingUsernames);
+    const schema = UsernameUniqueness('Username', MsgType.FieldName, existingUsernames);
 
     runTableTests([
       {
@@ -774,8 +774,8 @@ describe('User Schemas', () => {
     });
   });
 
-  describe('zRoleValidation', () => {
-    const schema = zRoleValidation();
+  describe('RoleValidation', () => {
+    const schema = RoleValidation();
 
     runTableTests([
       {
@@ -812,8 +812,8 @@ describe('User Schemas', () => {
     });
   });
 
-  describe('zAccountTypeValidation', () => {
-    const schema = zAccountTypeValidation();
+  describe('AccountTypeValidation', () => {
+    const schema = AccountTypeValidation();
 
     runTableTests([
       {
@@ -850,10 +850,10 @@ describe('User Schemas', () => {
     });
   });
 
-  describe('zUserRegistrationWithUniqueness', () => {
+  describe('UserRegistrationWithUniqueness', () => {
     const existingEmails = ['john@example.com'];
     const existingUsernames = ['johndoe'];
-    const schema = zUserRegistrationWithUniqueness('Registration', MsgType.FieldName, existingEmails, existingUsernames);
+    const schema = UserRegistrationWithUniqueness('Registration', MsgType.FieldName, existingEmails, existingUsernames);
 
     const validRegistration = {
       username: 'newuser',
@@ -918,10 +918,10 @@ describe('User Schemas', () => {
   describe('Message customization tests', () => {
     it('all new schemas support custom field names and message types', () => {
       const testCases = [
-        { schema: zPasswordWithWeaknessCheck, name: 'Password Strength', invalid: 'weak' },
-        { schema: zUserGenericValidation, name: 'User Object', invalid: 'not-object' },
-        { schema: zRoleValidation, name: 'User Role', invalid: 'invalid_role' },
-        { schema: zAccountTypeValidation, name: 'Account Type', invalid: 'invalid_type' },
+        { schema: PasswordWithWeaknessCheck, name: 'Password Strength', invalid: 'weak' },
+        { schema: UserGenericValidation, name: 'User Object', invalid: 'not-object' },
+        { schema: RoleValidation, name: 'User Role', invalid: 'invalid_role' },
+        { schema: AccountTypeValidation, name: 'Account Type', invalid: 'invalid_type' },
       ];
 
       testCases.forEach(({ schema, name, invalid }) => {

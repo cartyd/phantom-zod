@@ -1,4 +1,4 @@
-import { createArraySchemas, zNumberArrayOptional, zNumberArrayRequired, zBooleanArrayOptional, zBooleanArrayRequired, zUuidArrayOptional, zUuidArrayRequired } from '../src/schemas/array-schemas';
+import { createArraySchemas, NumberArrayOptional, NumberArrayRequired, BooleanArrayOptional, BooleanArrayRequired, UuidArrayOptional, UuidArrayRequired } from '../src/schemas/array-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests } from './setup';
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
@@ -35,7 +35,7 @@ const mockMessageHandler = createTestMessageHandler(
 );
 
 // Create schema functions with injected message handler
-const { zArrayOptional, zArrayRequired } = createArraySchemas(mockMessageHandler);
+const { ArrayOptional: zArrayOptional, ArrayRequired: zArrayRequired } = createArraySchemas(mockMessageHandler);
 
 // Create convenience functions for the tests
 const zStringArrayOptional = (options: any = {}) => zArrayOptional(z.string(), options);
@@ -378,15 +378,15 @@ describe('Array Schemas', () => {
   // NEW: Convenience Function Tests
   describe('Convenience Functions', () => {
     describe('Number Arrays', () => {
-      it('zNumberArrayOptional should work correctly', () => {
-        const schema = zNumberArrayOptional({ msg: 'Scores' });
+      it('NumberArrayOptional should work correctly', () => {
+        const schema = NumberArrayOptional({ msg: 'Scores' });
         expect(schema.parse([1, 2, 3])).toEqual([1, 2, 3]);
         expect(schema.parse(undefined)).toBeUndefined();
         expect(() => schema.parse(['not', 'numbers'])).toThrow();
       });
 
-      it('zNumberArrayRequired should work correctly', () => {
-        const schema = zNumberArrayRequired({ msg: 'Scores' });
+      it('NumberArrayRequired should work correctly', () => {
+        const schema = NumberArrayRequired({ msg: 'Scores' });
         expect(schema.parse([1, 2, 3])).toEqual([1, 2, 3]);
         expect(() => schema.parse([])).toThrow();
         expect(() => schema.parse(undefined)).toThrow();
@@ -394,15 +394,15 @@ describe('Array Schemas', () => {
     });
 
     describe('Boolean Arrays', () => {
-      it('zBooleanArrayOptional should work correctly', () => {
-        const schema = zBooleanArrayOptional({ msg: 'Flags' });
+      it('BooleanArrayOptional should work correctly', () => {
+        const schema = BooleanArrayOptional({ msg: 'Flags' });
         expect(schema.parse([true, false])).toEqual([true, false]);
         expect(schema.parse(undefined)).toBeUndefined();
         expect(() => schema.parse([1, 0])).toThrow();
       });
 
-      it('zBooleanArrayRequired should work correctly', () => {
-        const schema = zBooleanArrayRequired({ msg: 'Flags' });
+      it('BooleanArrayRequired should work correctly', () => {
+        const schema = BooleanArrayRequired({ msg: 'Flags' });
         expect(schema.parse([true, false])).toEqual([true, false]);
         expect(() => schema.parse([])).toThrow();
         expect(() => schema.parse(undefined)).toThrow();
@@ -410,16 +410,16 @@ describe('Array Schemas', () => {
     });
 
     describe('UUID Arrays', () => {
-      it('zUuidArrayOptional should work correctly', () => {
-        const schema = zUuidArrayOptional({ msg: 'IDs' });
+      it('UuidArrayOptional should work correctly', () => {
+        const schema = UuidArrayOptional({ msg: 'IDs' });
         const uuid = '123e4567-e89b-12d3-a456-426614174000';
         expect(schema.parse([uuid])).toEqual([uuid]);
         expect(schema.parse(undefined)).toBeUndefined();
         expect(() => schema.parse(['not-a-uuid'])).toThrow();
       });
 
-      it('zUuidArrayRequired should work correctly', () => {
-        const schema = zUuidArrayRequired({ msg: 'IDs' });
+      it('UuidArrayRequired should work correctly', () => {
+        const schema = UuidArrayRequired({ msg: 'IDs' });
         const uuid = '123e4567-e89b-12d3-a456-426614174000';
         expect(schema.parse([uuid])).toEqual([uuid]);
         expect(() => schema.parse([])).toThrow();
@@ -520,7 +520,7 @@ describe('Array Schemas', () => {
   describe('Type Safety', () => {
     it('should maintain proper TypeScript types', () => {
       const stringArray = zStringArrayRequired({ msg: 'Strings' });
-      const numberArray = zNumberArrayRequired({ msg: 'Numbers' });
+      const numberArray = NumberArrayRequired({ msg: 'Numbers' });
       const objectArray = zArrayRequired(z.object({ id: z.string() }), { msg: 'Objects' });
       
       // These should compile correctly with proper types

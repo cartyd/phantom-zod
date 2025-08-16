@@ -1,4 +1,3 @@
-
 # LocalizationManager – Updated Common Interface
 
 ## Overview
@@ -24,7 +23,12 @@ export class LocalizationManager {
 
   // Message operations
   getMessage(key: string, params?: MessageParams, locale?: LocaleCode): string;
-  getErrorMessage(fieldName: string, messageKey: MessageKeyPath, params?: MessageParams, locale?: LocaleCode): string;
+  getErrorMessage(
+    fieldName: string,
+    messageKey: MessageKeyPath,
+    params?: MessageParams,
+    locale?: LocaleCode,
+  ): string;
   registerMessages(messages: LocalizationMessages): void;
 
   // Utility methods
@@ -44,28 +48,30 @@ export class LocalizationManager {
 ### 1. **Global Instance**
 
 ```typescript
-import { localizationManager } from 'phantom-zod/localization';
+import { localizationManager } from "phantom-zod/localization";
 
-await localizationManager.loadLocale('es');
-localizationManager.setLocale('es');
-const msg = localizationManager.getMessage('string.required', { field: 'Email' });
+await localizationManager.loadLocale("es");
+localizationManager.setLocale("es");
+const msg = localizationManager.getMessage("string.required", {
+  field: "Email",
+});
 ```
 
 ### 2. **Dependency Injection / Custom Instance**
 
 ```typescript
-import { createLocalizationManager } from 'phantom-zod/localization';
+import { createLocalizationManager } from "phantom-zod/localization";
 
 const manager = createLocalizationManager();
-await manager.loadLocale('fr');
-manager.setLocale('fr');
-const msg = manager.getMessage('string.required');
+await manager.loadLocale("fr");
+manager.setLocale("fr");
+const msg = manager.getMessage("string.required");
 ```
 
 ### 3. **Testing and Reset**
 
 ```typescript
-import { resetGlobalLocalizationManager } from 'phantom-zod/localization';
+import { resetGlobalLocalizationManager } from "phantom-zod/localization";
 
 resetGlobalLocalizationManager(); // Resets the global instance to default state
 ```
@@ -97,16 +103,18 @@ resetGlobalLocalizationManager(); // Resets the global instance to default state
 ## Example: Advanced Usage
 
 ```typescript
-import { LocalizationManager } from 'phantom-zod/localization';
+import { LocalizationManager } from "phantom-zod/localization";
 
 const manager = new LocalizationManager();
-await manager.loadLocales(['en', 'es']);
-manager.setLocale('es');
+await manager.loadLocales(["en", "es"]);
+manager.setLocale("es");
 
-const errorMsg = manager.getErrorMessage('Email', 'string.required', { fieldName: 'Email' });
+const errorMsg = manager.getErrorMessage("Email", "string.required", {
+  fieldName: "Email",
+});
 console.log(errorMsg);
 
-if (manager.isMessageDefined('string.required')) {
+if (manager.isMessageDefined("string.required")) {
   // Message exists
 }
 ```
@@ -138,7 +146,8 @@ The new `LocalizationManager` provides a unified, extensible, and type-safe API 
 const manager: ILocalizationManager = getLocalizationManager();
 manager.setLocale('es');
 const message = manager.getMessage('string.required');
-```
+
+````
 
 ### 3. **Convenience Functions (Most Common Operations)**
 ```typescript
@@ -149,20 +158,21 @@ await loadLocale('es');
 setLocale('es');
 const currentLocale = getLocale();
 const message = getMessage('string.required');
-```
+````
 
 ## Benefits of the Common Interface
 
 ### 🔧 **Dependency Injection**
+
 ```typescript
 class MyService {
   constructor(private localizationManager: ILocalizationManager) {}
-  
+
   async initialize(locale: string) {
     await this.localizationManager.loadLocale(locale);
     this.localizationManager.setLocale(locale);
   }
-  
+
   getErrorMessage(key: string) {
     return this.localizationManager.getMessage(key);
   }
@@ -173,12 +183,13 @@ const service = new MyService(getLocalizationManager());
 ```
 
 ### 🧪 **Testing**
+
 ```typescript
 // Create a mock implementation for testing
 const mockManager: ILocalizationManager = {
   setLocale: jest.fn(),
-  getLocale: jest.fn().mockReturnValue('en'),
-  getMessage: jest.fn().mockReturnValue('test message'),
+  getLocale: jest.fn().mockReturnValue("en"),
+  getMessage: jest.fn().mockReturnValue("test message"),
   // ... other methods
 };
 
@@ -187,17 +198,18 @@ const service = new MyService(mockManager);
 ```
 
 ### 🔄 **Custom Implementations**
+
 ```typescript
 class CustomLocalizationManager implements ILocalizationManager {
   // Your custom implementation
   setLocale(locale: LocaleCode): void {
     // Custom logic
   }
-  
+
   getMessage(key: string): string {
     // Custom message retrieval
   }
-  
+
   // ... implement all interface methods
 }
 
@@ -208,63 +220,65 @@ const customManager = new CustomLocalizationManager();
 ## Complete Usage Examples
 
 ### Basic Usage
+
 ```typescript
-import { getLocalizationManager } from 'phantom-zod/localization';
+import { getLocalizationManager } from "phantom-zod/localization";
 
 async function setupLocalization() {
   const manager = getLocalizationManager();
-  
+
   // Load additional locales
-  await manager.loadLocale('es');
-  await manager.loadLocale('fr');
-  
+  await manager.loadLocale("es");
+  await manager.loadLocale("fr");
+
   // Set current locale
-  manager.setLocale('es');
-  
+  manager.setLocale("es");
+
   // Get localized messages
-  const requiredMsg = manager.getMessage('string.required');
-  const errorMsg = manager.getErrorMessage('Email', 'string.invalid');
-  
-  console.log('Available locales:', manager.getAvailableLocales());
-  console.log('Current locale:', manager.getLocale());
-  console.log('Fallback locale:', manager.getFallbackLocale());
+  const requiredMsg = manager.getMessage("string.required");
+  const errorMsg = manager.getErrorMessage("Email", "string.invalid");
+
+  console.log("Available locales:", manager.getAvailableLocales());
+  console.log("Current locale:", manager.getLocale());
+  console.log("Fallback locale:", manager.getFallbackLocale());
 }
 ```
 
 ### Advanced Usage with Class
+
 ```typescript
-import type { ILocalizationManager } from 'phantom-zod/localization';
+import type { ILocalizationManager } from "phantom-zod/localization";
 
 class ValidationService {
   constructor(private l10n: ILocalizationManager) {}
-  
+
   async validateEmail(email: string, locale?: string): Promise<string[]> {
     const errors: string[] = [];
-    
+
     if (locale) {
       await this.l10n.ensureLocaleLoaded(locale);
     }
-    
+
     if (!email) {
       errors.push(
-        this.l10n.getErrorMessage('Email', 'string.required', {}, locale)
+        this.l10n.getErrorMessage("Email", "string.required", {}, locale),
       );
-    } else if (!email.includes('@')) {
+    } else if (!email.includes("@")) {
       errors.push(
-        this.l10n.getErrorMessage('Email', 'email.invalidFormat', {}, locale)
+        this.l10n.getErrorMessage("Email", "email.invalidFormat", {}, locale),
       );
     }
-    
+
     return errors;
   }
-  
+
   getSupportedLocales(): string[] {
     return this.l10n.getAvailableLocales();
   }
 }
 
 // Usage
-import { getLocalizationManager } from 'phantom-zod/localization';
+import { getLocalizationManager } from "phantom-zod/localization";
 const validator = new ValidationService(getLocalizationManager());
 ```
 
@@ -273,20 +287,20 @@ const validator = new ValidationService(getLocalizationManager());
 The interface works seamlessly with the global message handler:
 
 ```typescript
-import { getLocalizationManager } from 'phantom-zod/localization';
-import { setLocale as setGlobalLocale } from 'phantom-zod/common/message-handler';
+import { getLocalizationManager } from "phantom-zod/localization";
+import { setLocale as setGlobalLocale } from "phantom-zod/common/message-handler";
 
 async function syncLocales(locale: string) {
   const manager = getLocalizationManager();
-  
+
   // Ensure locale is loaded
   await manager.ensureLocaleLoaded(locale);
-  
+
   // Set both locale states
   manager.setLocale(locale);
   setGlobalLocale(locale);
-  
-  console.log('Locales synchronized to:', locale);
+
+  console.log("Locales synchronized to:", locale);
 }
 ```
 
@@ -295,13 +309,17 @@ async function syncLocales(locale: string) {
 The interface provides full TypeScript support:
 
 ```typescript
-import type { ILocalizationManager, LocaleCode, MessageParams } from 'phantom-zod/localization';
+import type {
+  ILocalizationManager,
+  LocaleCode,
+  MessageParams,
+} from "phantom-zod/localization";
 
 function createLocalizedMessage(
   manager: ILocalizationManager,
   key: string,
   params?: MessageParams,
-  locale?: LocaleCode
+  locale?: LocaleCode,
 ): string {
   // Full type safety and IntelliSense support
   return manager.getMessage(key, params, locale);
@@ -314,7 +332,7 @@ function createLocalizedMessage(
 
 - **🎯 `ILocalizationManager` Interface**: Standardized contract for all localization operations
 - **🔄 Multiple Access Patterns**: Direct, interface-based, and convenience functions
-- **💉 Dependency Injection Ready**: Perfect for testing and custom implementations  
+- **💉 Dependency Injection Ready**: Perfect for testing and custom implementations
 - **🧪 Testing Friendly**: Easy to mock and test
 - **📝 Type Safe**: Full TypeScript support with IntelliSense
 - **🔗 Global Integration**: Works with global message handler system

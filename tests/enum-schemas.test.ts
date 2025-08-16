@@ -21,12 +21,12 @@ const mockMessageHandler = createTestMessageHandler(
 );
 
 // Create schema functions with injected message handler
-const { zEnumOptional, zEnumRequired } = createEnumSchemas(mockMessageHandler);
+const { EnumOptional, EnumRequired } = createEnumSchemas(mockMessageHandler);
 
 describe('Enum Schemas', () => {
-  describe('zEnumOptional', () => {
+  describe('EnumOptional', () => {
     const statusValues = ['active', 'inactive', 'pending'] as const;
-    const schema = zEnumOptional(statusValues);
+    const schema = EnumOptional(statusValues);
 
     it('should accept valid enum values', () => {
       expect(schema.parse('active')).toBe('active');
@@ -58,33 +58,33 @@ describe('Enum Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zEnumOptional(statusValues, { msg: 'Status' });
+      const customSchema = EnumOptional(statusValues, { msg: 'Status' });
       expect(() => customSchema.parse('invalid')).toThrow('Status must be one of: active, inactive, pending');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zEnumOptional(statusValues, { msg: 'Invalid status value', msgType: MsgType.Message });
+      const customSchema = EnumOptional(statusValues, { msg: 'Invalid status value', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid status value');
     });
 
     it('should work with single value enum', () => {
-      const singleValueSchema = zEnumOptional(['only']);
+      const singleValueSchema = EnumOptional(['only']);
       expect(singleValueSchema.parse('only')).toBe('only');
       expect(() => singleValueSchema.parse('other')).toThrow();
     });
 
     it('should work with many enum values', () => {
       const manyValues = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
-      const manySchema = zEnumOptional(manyValues);
+      const manySchema = EnumOptional(manyValues);
       expect(manySchema.parse('a')).toBe('a');
       expect(manySchema.parse('h')).toBe('h');
       expect(() => manySchema.parse('i')).toThrow();
     });
   });
 
-  describe('zEnumRequired', () => {
+  describe('EnumRequired', () => {
     const statusValues = ['active', 'inactive', 'pending'] as const;
-    const schema = zEnumRequired(statusValues);
+    const schema = EnumRequired(statusValues);
 
     it('should accept valid enum values', () => {
       expect(schema.parse('active')).toBe('active');
@@ -115,24 +115,24 @@ describe('Enum Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zEnumRequired(statusValues, { msg: 'Status' });
+      const customSchema = EnumRequired(statusValues, { msg: 'Status' });
       expect(() => customSchema.parse('invalid')).toThrow('Status must be one of: active, inactive, pending');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zEnumRequired(statusValues, { msg: 'Invalid status value', msgType: MsgType.Message });
+      const customSchema = EnumRequired(statusValues, { msg: 'Invalid status value', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid status value');
     });
 
     it('should work with single value enum', () => {
-      const singleValueSchema = zEnumRequired(['only']);
+      const singleValueSchema = EnumRequired(['only']);
       expect(singleValueSchema.parse('only')).toBe('only');
       expect(() => singleValueSchema.parse('other')).toThrow();
     });
 
     it('should work with many enum values', () => {
       const manyValues = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
-      const manySchema = zEnumRequired(manyValues);
+      const manySchema = EnumRequired(manyValues);
       expect(manySchema.parse('a')).toBe('a');
       expect(manySchema.parse('h')).toBe('h');
       expect(() => manySchema.parse('i')).toThrow();
@@ -142,7 +142,7 @@ describe('Enum Schemas', () => {
   describe('Common enum use cases', () => {
     it('should work with priority levels', () => {
       const priorityValues = ['low', 'medium', 'high', 'urgent'] as const;
-      const schema = zEnumRequired(priorityValues, { msg: 'Priority' });
+      const schema = EnumRequired(priorityValues, { msg: 'Priority' });
       
       expect(schema.parse('low')).toBe('low');
       expect(schema.parse('urgent')).toBe('urgent');
@@ -151,7 +151,7 @@ describe('Enum Schemas', () => {
 
     it('should work with user roles', () => {
       const roleValues = ['admin', 'user', 'guest'] as const;
-      const schema = zEnumOptional(roleValues, { msg: 'Role' });
+      const schema = EnumOptional(roleValues, { msg: 'Role' });
       
       expect(schema.parse('admin')).toBe('admin');
       expect(schema.parse(undefined)).toBeUndefined();
@@ -160,7 +160,7 @@ describe('Enum Schemas', () => {
 
     it('should work with color schemes', () => {
       const colorValues = ['light', 'dark', 'auto'] as const;
-      const schema = zEnumRequired(colorValues, { msg: 'Theme' });
+      const schema = EnumRequired(colorValues, { msg: 'Theme' });
       
       expect(schema.parse('light')).toBe('light');
       expect(schema.parse('dark')).toBe('dark');
@@ -170,7 +170,7 @@ describe('Enum Schemas', () => {
 
     it('should work with HTTP methods', () => {
       const methodValues = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
-      const schema = zEnumRequired(methodValues, { msg: 'HTTP Method' });
+      const schema = EnumRequired(methodValues, { msg: 'HTTP Method' });
       
       expect(schema.parse('GET')).toBe('GET');
       expect(schema.parse('POST')).toBe('POST');
@@ -180,7 +180,7 @@ describe('Enum Schemas', () => {
 
     it('should work with file formats', () => {
       const formatValues = ['json', 'xml', 'csv', 'txt'] as const;
-      const schema = zEnumOptional(formatValues, { msg: 'File Format' });
+      const schema = EnumOptional(formatValues, { msg: 'File Format' });
       
       expect(schema.parse('json')).toBe('json');
       expect(schema.parse('csv')).toBe('csv');
@@ -191,14 +191,14 @@ describe('Enum Schemas', () => {
 
   describe('Edge cases', () => {
     it('should handle empty string as valid enum value', () => {
-      const schemaWithEmpty = zEnumRequired(['', 'value']);
+      const schemaWithEmpty = EnumRequired(['', 'value']);
       expect(schemaWithEmpty.parse('')).toBe('');
       expect(schemaWithEmpty.parse('value')).toBe('value');
     });
 
     it('should handle special characters in enum values', () => {
       const specialValues = ['@special', '#hash', 'with-dash', 'with_underscore'] as const;
-      const schema = zEnumRequired(specialValues);
+      const schema = EnumRequired(specialValues);
       
       expect(schema.parse('@special')).toBe('@special');
       expect(schema.parse('#hash')).toBe('#hash');
@@ -208,7 +208,7 @@ describe('Enum Schemas', () => {
 
     it('should handle unicode characters in enum values', () => {
       const unicodeValues = ['🚀', '💯', '🎉'] as const;
-      const schema = zEnumRequired(unicodeValues, { msg: 'Emoji' });
+      const schema = EnumRequired(unicodeValues, { msg: 'Emoji' });
       
       expect(schema.parse('🚀')).toBe('🚀');
       expect(schema.parse('💯')).toBe('💯');
@@ -217,7 +217,7 @@ describe('Enum Schemas', () => {
 
     it('should handle long enum values', () => {
       const longValue = 'a'.repeat(1000);
-      const schema = zEnumRequired([longValue, 'short']);
+      const schema = EnumRequired([longValue, 'short']);
       
       expect(schema.parse(longValue)).toBe(longValue);
       expect(schema.parse('short')).toBe('short');

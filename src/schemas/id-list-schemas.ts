@@ -25,7 +25,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     maxItems = 1000,
   ) => {
     const baseSchema = z
-      .array(uuidSchemas.zUuidRequired({ msg: "ID", msgType }))
+      .array(uuidSchemas.UuidRequired({ msg: "ID", msgType }))
       .optional();
 
     return addArrayConstraints(
@@ -63,7 +63,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     maxItems = 1000,
   ) => {
     const baseSchema = z.array(
-      uuidSchemas.zUuidRequired({ msg: "ID", msgType }),
+      uuidSchemas.UuidRequired({ msg: "ID", msgType }),
     );
 
     return addArrayConstraints(
@@ -95,7 +95,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Wrapper around UUID validation for ID-specific use cases.
    */
   const zId = (msg = "ID", msgType: MsgType = MsgType.FieldName) =>
-    uuidSchemas.zUuidRequired({ msg, msgType });
+    uuidSchemas.UuidRequired({ msg, msgType });
 
   /**
    * ID list with duplicates removal.
@@ -199,7 +199,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg = "Custom ID",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType }).refine(validateFn, {
+    stringSchemas.StringRequired({ msg, msgType }).refine(validateFn, {
       message: messageHandler.formatErrorMessage({
         group: "uuid",
         messageKey: "invalid",
@@ -216,7 +216,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     msgType: MsgType = MsgType.FieldName,
   ) =>
     stringSchemas
-      .zStringRequired({ msg, msgType })
+      .StringRequired({ msg, msgType })
       .refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
         message: messageHandler.formatErrorMessage({
           group: "uuid",
@@ -261,7 +261,7 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
    */
   const zFlexibleId = (msg = "ID", msgType: MsgType = MsgType.FieldName) =>
     z.union(
-      [uuidSchemas.zUuidRequired({ msg, msgType }), zMongoId(msg, msgType)],
+      [uuidSchemas.UuidRequired({ msg, msgType }), zMongoId(msg, msgType)],
       {
         message: messageHandler.formatErrorMessage({
           group: "uuid",
@@ -273,15 +273,33 @@ export const createIdListSchemas = (messageHandler: ErrorMessageFormatter) => {
     );
 
   return {
-    zIdListOptional,
-    zIdListRequired,
-    zId,
-    zUniqueIdList,
-    zPaginatedIdList,
-    zBatchOperationResponse,
-    zCustomId,
-    zMongoId,
-    zMongoIdList,
-    zFlexibleId,
+    IdListOptional: zIdListOptional,
+    IdListRequired: zIdListRequired,
+    Id: zId,
+    UniqueIdList: zUniqueIdList,
+    PaginatedIdList: zPaginatedIdList,
+    BatchOperationResponse: zBatchOperationResponse,
+    CustomId: zCustomId,
+    MongoId: zMongoId,
+    MongoIdList: zMongoIdList,
+    FlexibleId: zFlexibleId,
   };
 };
+
+// Create a default message handler and export direct schemas
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+
+const defaultIdListSchemas = createIdListSchemas(createTestMessageHandler());
+
+// Direct schema exports with clean naming
+export const IdListOptional = defaultIdListSchemas.IdListOptional;
+export const IdListRequired = defaultIdListSchemas.IdListRequired;
+export const Id = defaultIdListSchemas.Id;
+export const UniqueIdList = defaultIdListSchemas.UniqueIdList;
+export const PaginatedIdList = defaultIdListSchemas.PaginatedIdList;
+export const BatchOperationResponse =
+  defaultIdListSchemas.BatchOperationResponse;
+export const CustomId = defaultIdListSchemas.CustomId;
+export const MongoId = defaultIdListSchemas.MongoId;
+export const MongoIdList = defaultIdListSchemas.MongoIdList;
+export const FlexibleId = defaultIdListSchemas.FlexibleId;

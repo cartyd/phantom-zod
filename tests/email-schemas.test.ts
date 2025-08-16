@@ -1,14 +1,14 @@
 import { 
   createEmailSchemas, 
   isEmail,
-  zEmailOptional,
-  zEmailRequired,
-  zHtml5EmailRequired,
-  zHtml5EmailOptional,
-  zRfc5322EmailRequired,
-  zRfc5322EmailOptional,
-  zUnicodeEmailRequired,
-  zUnicodeEmailOptional
+  EmailOptional,
+  EmailRequired,
+  Html5EmailRequired,
+  Html5EmailOptional,
+  Rfc5322EmailRequired,
+  Rfc5322EmailOptional,
+  UnicodeEmailRequired,
+  UnicodeEmailOptional
 } from '../src/schemas/email-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
@@ -16,9 +16,9 @@ import { runTableTests, generateTestData } from './setup';
 
 describe('Email Schemas', () => {
   const messageHandler = createTestMessageHandler();
-  const { zEmailOptional, zEmailRequired } = createEmailSchemas(messageHandler);
-  describe('zEmailOptional', () => {
-    const schema = zEmailOptional();
+  const { EmailOptional, EmailRequired } = createEmailSchemas(messageHandler);
+  describe('EmailOptional', () => {
+    const schema = EmailOptional();
 
     runTableTests([
       {
@@ -115,19 +115,19 @@ describe('Email Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zEmailOptional({ msg: 'Email Address' });
+        const schema = EmailOptional({ msg: 'Email Address' });
         expect(() => schema.parse('invalid')).toThrow('Email Address must be a valid email address');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zEmailOptional({ msg: 'Invalid email format', msgType: MsgType.Message });
+        const schema = EmailOptional({ msg: 'Invalid email format', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid email format');
       });
     });
   });
 
-  describe('zEmailRequired', () => {
-    const schema = zEmailRequired();
+  describe('EmailRequired', () => {
+    const schema = EmailRequired();
 
     runTableTests([
       {
@@ -182,12 +182,12 @@ describe('Email Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in validation error message', () => {
-        const schema = zEmailRequired({ msg: 'Email Address' });
+        const schema = EmailRequired({ msg: 'Email Address' });
         expect(() => schema.parse('invalid')).toThrow('Email Address must be a valid email address');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zEmailRequired({ msg: 'Email is required', msgType: MsgType.Message });
+        const schema = EmailRequired({ msg: 'Email is required', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Email is required');
       });
     });
@@ -258,10 +258,10 @@ describe('Email Schemas', () => {
   });
 
   describe('Convenience functions with different patterns', () => {
-    describe('zEmailRequired and zEmailOptional (exported)', () => {
+    describe('EmailRequired and EmailOptional (exported)', () => {
       it('should work with default pattern', () => {
-        const requiredSchema = zEmailRequired();
-        const optionalSchema = zEmailOptional();
+        const requiredSchema = EmailRequired();
+        const optionalSchema = EmailOptional();
         
         expect(requiredSchema.parse('user@example.com')).toBe('user@example.com');
         expect(optionalSchema.parse('user@example.com')).toBe('user@example.com');
@@ -273,8 +273,8 @@ describe('Email Schemas', () => {
 
       it('should work with custom pattern', () => {
         const pattern = /^[a-z]+@company\.com$/;
-        const requiredSchema = zEmailRequired({ pattern });
-        const optionalSchema = zEmailOptional({ pattern });
+        const requiredSchema = EmailRequired({ pattern });
+        const optionalSchema = EmailOptional({ pattern });
         
         expect(requiredSchema.parse('user@company.com')).toBe('user@company.com');
         expect(optionalSchema.parse('user@company.com')).toBe('user@company.com');
@@ -286,8 +286,8 @@ describe('Email Schemas', () => {
       });
 
       it('should work with custom error messages', () => {
-        const requiredSchema = zEmailRequired({ msg: 'User Email' });
-        const optionalSchema = zEmailOptional({ msg: 'User Email' });
+        const requiredSchema = EmailRequired({ msg: 'User Email' });
+        const optionalSchema = EmailOptional({ msg: 'User Email' });
         
         expect(() => requiredSchema.parse('invalid')).toThrow('User Email must be a valid email address');
         expect(() => optionalSchema.parse('invalid')).toThrow('User Email must be a valid email address');
@@ -295,8 +295,8 @@ describe('Email Schemas', () => {
     });
 
     describe('HTML5 email validation', () => {
-      it('zHtml5EmailRequired should accept HTML5-compliant emails', () => {
-        const schema = zHtml5EmailRequired();
+      it('Html5EmailRequired should accept HTML5-compliant emails', () => {
+        const schema = Html5EmailRequired();
         
         expect(schema.parse('user@example.com')).toBe('user@example.com');
         expect(schema.parse('user+tag@example.com')).toBe('user+tag@example.com');
@@ -306,8 +306,8 @@ describe('Email Schemas', () => {
         expect(() => schema.parse(undefined)).toThrow();
       });
 
-      it('zHtml5EmailOptional should accept HTML5-compliant emails or undefined', () => {
-        const schema = zHtml5EmailOptional();
+      it('Html5EmailOptional should accept HTML5-compliant emails or undefined', () => {
+        const schema = Html5EmailOptional();
         
         expect(schema.parse('user@example.com')).toBe('user@example.com');
         expect(schema.parse(undefined)).toBeUndefined();
@@ -316,14 +316,14 @@ describe('Email Schemas', () => {
       });
 
       it('should use custom error messages', () => {
-        const schema = zHtml5EmailRequired({ msg: 'Registration Email' });
+        const schema = Html5EmailRequired({ msg: 'Registration Email' });
         expect(() => schema.parse('invalid')).toThrow('Registration Email must be a valid email address');
       });
     });
 
     describe('RFC 5322 email validation', () => {
-      it('zRfc5322EmailRequired should accept RFC 5322-compliant emails', () => {
-        const schema = zRfc5322EmailRequired();
+      it('Rfc5322EmailRequired should accept RFC 5322-compliant emails', () => {
+        const schema = Rfc5322EmailRequired();
         
         expect(schema.parse('user@example.com')).toBe('user@example.com');
         expect(schema.parse('very.long.email.address@example.com')).toBe('very.long.email.address@example.com');
@@ -332,8 +332,8 @@ describe('Email Schemas', () => {
         expect(() => schema.parse(undefined)).toThrow();
       });
 
-      it('zRfc5322EmailOptional should accept RFC 5322-compliant emails or undefined', () => {
-        const schema = zRfc5322EmailOptional();
+      it('Rfc5322EmailOptional should accept RFC 5322-compliant emails or undefined', () => {
+        const schema = Rfc5322EmailOptional();
         
         expect(schema.parse('user@example.com')).toBe('user@example.com');
         expect(schema.parse(undefined)).toBeUndefined();
@@ -342,14 +342,14 @@ describe('Email Schemas', () => {
       });
 
       it('should use custom error messages', () => {
-        const schema = zRfc5322EmailRequired({ msg: 'API User Email' });
+        const schema = Rfc5322EmailRequired({ msg: 'API User Email' });
         expect(() => schema.parse('invalid')).toThrow('API User Email must be a valid email address');
       });
     });
 
     describe('Unicode email validation', () => {
-      it('zUnicodeEmailRequired should accept Unicode emails', () => {
-        const schema = zUnicodeEmailRequired();
+      it('UnicodeEmailRequired should accept Unicode emails', () => {
+        const schema = UnicodeEmailRequired();
         
         expect(schema.parse('user@example.com')).toBe('user@example.com');
         // Note: Unicode emails might not be supported in test environment
@@ -359,8 +359,8 @@ describe('Email Schemas', () => {
         expect(() => schema.parse(undefined)).toThrow();
       });
 
-      it('zUnicodeEmailOptional should accept Unicode emails or undefined', () => {
-        const schema = zUnicodeEmailOptional();
+      it('UnicodeEmailOptional should accept Unicode emails or undefined', () => {
+        const schema = UnicodeEmailOptional();
         
         expect(schema.parse('user@example.com')).toBe('user@example.com');
         expect(schema.parse(undefined)).toBeUndefined();
@@ -369,7 +369,7 @@ describe('Email Schemas', () => {
       });
 
       it('should use custom error messages', () => {
-        const schema = zUnicodeEmailRequired({ msg: 'International Email' });
+        const schema = UnicodeEmailRequired({ msg: 'International Email' });
         expect(() => schema.parse('invalid')).toThrow('International Email must be a valid email address');
       });
     });
