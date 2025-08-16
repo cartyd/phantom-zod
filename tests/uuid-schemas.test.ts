@@ -55,8 +55,8 @@ describe('UUID Schemas', () => {
     '123e4567-e89b-52d3-a456-426614174000', // v5 (not v4)
   ];
 
-  describe('zUuidOptional', () => {
-    const { zUuidOptional } = createUuidSchemas({ formatErrorMessage: () => '' });
+  describe('UuidOptional', () => {
+    const { UuidOptional } = createUuidSchemas({ formatErrorMessage: () => '' });
     runTableTests([
       {
         description: 'should handle undefined',
@@ -103,15 +103,15 @@ describe('UUID Schemas', () => {
         expected: new Error(),
         shouldThrow: true
       }
-    ], (input) => zUuidOptional({}).parse(input));
+    ], (input) => UuidOptional({}).parse(input));
 
     it('should call message handler for invalid values', () => {
       const { handler, calls } = createMockHandler();
-      const { zUuidOptional } = createUuidSchemas(handler);
+      const { UuidOptional } = createUuidSchemas(handler);
       
       // Message handler is called during schema creation
       calls.length = 0;
-      const schema = zUuidOptional();
+      const schema = UuidOptional();
       expect(calls.length).toBeGreaterThan(0);
       
       // Find the mustBeValidUuid call in the calls made during schema creation
@@ -129,8 +129,8 @@ describe('UUID Schemas', () => {
     });
   });
 
-  describe('zUuidRequired', () => {
-    const { zUuidRequired } = createUuidSchemas({ formatErrorMessage: () => '' });
+  describe('UuidRequired', () => {
+    const { UuidRequired } = createUuidSchemas({ formatErrorMessage: () => '' });
     runTableTests([
       {
         description: 'should reject undefined',
@@ -167,15 +167,15 @@ describe('UUID Schemas', () => {
         expected: new Error(),
         shouldThrow: true
       }
-    ], (input) => zUuidRequired({}).parse(input));
+    ], (input) => UuidRequired({}).parse(input));
 
     it('should call message handler for invalid values', () => {
       const { handler, calls } = createMockHandler();
-      const { zUuidRequired } = createUuidSchemas(handler);
+      const { UuidRequired } = createUuidSchemas(handler);
       
       // Message handler is called during schema creation
       calls.length = 0;
-      const schema = zUuidRequired();
+      const schema = UuidRequired();
       expect(calls.length).toBeGreaterThan(0);
       
       // Find the mustBeValidUuid call in the calls made during schema creation
@@ -193,8 +193,8 @@ describe('UUID Schemas', () => {
     });
   });
 
-  describe('zUuidV4Optional', () => {
-    const { zUuidV4Optional } = createUuidSchemas({ formatErrorMessage: () => '' });
+  describe('UuidV4Optional', () => {
+    const { UuidV4Optional } = createUuidSchemas({ formatErrorMessage: () => '' });
     runTableTests([
       {
         description: 'should handle undefined',
@@ -229,15 +229,15 @@ describe('UUID Schemas', () => {
         expected: new Error(),
         shouldThrow: true
       }
-    ], (input) => zUuidV4Optional().parse(input));
+    ], (input) => UuidV4Optional().parse(input));
 
     it('should call message handler for invalid values', () => {
       const { handler, calls } = createMockHandler();
-      const { zUuidV4Optional } = createUuidSchemas(handler);
+      const { UuidV4Optional } = createUuidSchemas(handler);
       
       // Message handler is called during schema creation
       calls.length = 0;
-      const schema = zUuidV4Optional();
+      const schema = UuidV4Optional();
       expect(calls.length).toBeGreaterThan(0);
       
       // Find the mustBeValidUuidV4 call in the calls made during schema creation
@@ -258,8 +258,8 @@ describe('UUID Schemas', () => {
     });
   });
 
-  describe('zUuidV4Required', () => {
-    const { zUuidV4Required } = createUuidSchemas({ formatErrorMessage: () => '' });
+  describe('UuidV4Required', () => {
+    const { UuidV4Required } = createUuidSchemas({ formatErrorMessage: () => '' });
     runTableTests([
       {
         description: 'should reject undefined',
@@ -290,15 +290,15 @@ describe('UUID Schemas', () => {
         expected: new Error(),
         shouldThrow: true
       }
-    ], (input) => zUuidV4Required().parse(input));
+    ], (input) => UuidV4Required().parse(input));
 
     it('should call message handler for invalid values', () => {
       const { handler, calls } = createMockHandler();
-      const { zUuidV4Required } = createUuidSchemas(handler);
+      const { UuidV4Required } = createUuidSchemas(handler);
       
       // Message handler is called during schema creation
       calls.length = 0;
-      const schema = zUuidV4Required();
+      const schema = UuidV4Required();
       expect(calls.length).toBeGreaterThan(0);
       
       // Find the mustBeValidUuidV4 call in the calls made during schema creation
@@ -319,9 +319,9 @@ describe('UUID Schemas', () => {
 
   describe('UUID version validation', () => {
     it('should distinguish between UUID versions correctly', () => {
-      const { zUuidOptional, zUuidV4Optional } = createUuidSchemas({ formatErrorMessage: () => '' });
-      const generalSchema = zUuidOptional();
-      const v4Schema = zUuidV4Optional();
+      const { UuidOptional, UuidV4Optional } = createUuidSchemas({ formatErrorMessage: () => '' });
+      const generalSchema = UuidOptional();
+      const v4Schema = UuidV4Optional();
 
       // All versions should be valid for general UUID
       validUuids.forEach(uuid => {
@@ -351,8 +351,8 @@ describe('UUID Schemas', () => {
       const lowerCaseUuid = '123e4567-e89b-42d3-a456-426614174000';
       const mixedCaseUuid = '123e4567-E89b-42d3-A456-426614174000';
 
-      const { zUuidV4Optional } = createUuidSchemas({ formatErrorMessage: () => '' });
-      const schema = zUuidV4Optional();
+      const { UuidV4Optional } = createUuidSchemas({ formatErrorMessage: () => '' });
+      const schema = UuidV4Optional();
       
       expect(schema.parse(upperCaseUuid)).toBe(upperCaseUuid);
       expect(schema.parse(lowerCaseUuid)).toBe(lowerCaseUuid);
@@ -362,8 +362,8 @@ describe('UUID Schemas', () => {
 
   describe('Edge cases', () => {
     it('should handle borderline invalid UUIDs', () => {
-      const { zUuidOptional: zUuidOptionalEdge } = createUuidSchemas({ formatErrorMessage: () => '' });
-      const schema = zUuidOptionalEdge();
+      const { UuidOptional: UuidOptionalEdge } = createUuidSchemas({ formatErrorMessage: () => '' });
+      const schema = UuidOptionalEdge();
       const borderlineInvalid = [
         '123e4567-e89b-12d3-a456-42661417400', // missing one character
         '123e4567-e89b-12d3-a456-4266141740000', // one extra character
@@ -378,8 +378,8 @@ describe('UUID Schemas', () => {
     });
 
     it('should handle special characters in UUIDs', () => {
-      const { zUuidOptional: zUuidOptionalSpecial } = createUuidSchemas({ formatErrorMessage: () => '' });
-      const schema = zUuidOptionalSpecial();
+      const { UuidOptional: UuidOptionalSpecial } = createUuidSchemas({ formatErrorMessage: () => '' });
+      const schema = UuidOptionalSpecial();
       const withSpecialChars = [
         '123e4567-e89b-12d3-a456-426614174000!', // exclamation
         '123e4567-e89b-12d3-a456-426614174000?', // question mark
@@ -408,13 +408,13 @@ describe('UUID Schemas', () => {
       });
     });
 
-    it('should use invalidFormat message in zUuidWithFormatError schema', () => {
+    it('should use invalidFormat message in UuidWithFormatError schema', () => {
       const { handler, calls } = createMockHandler();
-      const { zUuidWithFormatError } = createUuidSchemas(handler);
+      const { UuidWithFormatError } = createUuidSchemas(handler);
       
       // The message handler is called during schema creation
       calls.length = 0;
-      const schema = zUuidWithFormatError({ msg: 'Token' });
+      const schema = UuidWithFormatError({ msg: 'Token' });
       expect(calls.length).toBeGreaterThan(0);
       
       // Find the invalidFormat call in the calls made during schema creation
@@ -436,7 +436,7 @@ describe('UUID Schemas', () => {
 
     it('should work with default options for invalidFormat utilities', () => {
       const { handler, calls } = createMockHandler();
-      const { getUuidFormatErrorMessage, zUuidWithFormatError } = createUuidSchemas(handler);
+      const { getUuidFormatErrorMessage, UuidWithFormatError } = createUuidSchemas(handler);
       
       // Test default message
       calls.length = 0;
@@ -448,7 +448,7 @@ describe('UUID Schemas', () => {
 
       // Test default options in schema
       calls.length = 0;
-      const schema = zUuidWithFormatError();
+      const schema = UuidWithFormatError();
       expect(() => schema.parse('invalid')).toThrow();
       expect(calls[calls.length-1]).toMatchObject({
         msg: 'ID',
@@ -459,8 +459,8 @@ describe('UUID Schemas', () => {
 
   describe('Performance and reliability', () => {
     it('should handle large number of validations efficiently', () => {
-      const { zUuidOptional: zUuidOptionalPerf } = createUuidSchemas({ formatErrorMessage: () => '' });
-      const schema = zUuidOptionalPerf();
+      const { UuidOptional: UuidOptionalPerf } = createUuidSchemas({ formatErrorMessage: () => '' });
+      const schema = UuidOptionalPerf();
       const validUuid = '123e4567-e89b-42d3-a456-426614174000';
       const startTime = Date.now();
       for (let i = 0; i < 1000; i++) {
@@ -471,8 +471,8 @@ describe('UUID Schemas', () => {
     });
 
     it('should be consistent across multiple calls', () => {
-      const { zUuidOptional: zUuidOptionalConsistent } = createUuidSchemas({ formatErrorMessage: () => '' });
-      const schema = zUuidOptionalConsistent();
+      const { UuidOptional: UuidOptionalConsistent } = createUuidSchemas({ formatErrorMessage: () => '' });
+      const schema = UuidOptionalConsistent();
       const validUuid = '123e4567-e89b-42d3-a456-426614174000';
       for (let i = 0; i < 100; i++) {
         expect(schema.parse(validUuid)).toBe(validUuid);

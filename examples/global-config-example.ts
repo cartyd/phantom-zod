@@ -1,87 +1,71 @@
 /**
- * Example showing how to set up global logger and localization
- * for consistent behavior across all schema validations
+ * Example showing how to use the localization manager
+ * for consistent behavior across schema validations
  */
 
-import { 
-  setLogger, 
-  setLocale, 
-  setLocalizationManager,
-  getLogger,
-  getLocale,
-  getLocalizationManager
-} from '../src/common/message-handler';
-import { LocalizationManager } from '../src/localization';
-import { zStringRequired } from '../src/schemas/string-schemas';
-import { zEmailRequired } from '../src/schemas/email-schemas';
-import { zIPv4Required } from '../src/schemas/network-schemas';
+import { localizationManager } from "../src/localization";
+import { pz } from "../src/index";
 
-// Example: Set up a custom logger
-const customLogger = {
-  warn: (message: string, meta?: any) => {
-    console.error(`[VALIDATION WARNING]: ${message}`, meta);
-  },
-  debug: (message: string, meta?: any) => {
-    console.log(`[VALIDATION DEBUG]: ${message}`, meta);
-  }
-};
+// Example: Set up localization
+function setupLocalization() {
+  // Configure the localization manager
+  localizationManager.setLocale("en");
+  localizationManager.setFallbackLocale("en");
 
-// Example: Set up global configuration
-function setupGlobalConfig() {
-  // Set global logger - all schemas will use this logger
-  setLogger(customLogger);
-  
-  // Set global locale - all schemas will use this locale
-  setLocale('en');
-  
-  // Optionally set a custom localization manager
-  // const customLocalizationManager = new LocalizationManager();
-  // setLocalizationManager(customLocalizationManager);
-
-  console.log('Global configuration set:');
-  console.log('- Logger:', typeof getLogger());
-  console.log('- Locale:', getLocale());
-  console.log('- Localization Manager:', typeof getLocalizationManager());
+  console.log("Localization configuration set:");
+  console.log("- Current Locale:", localizationManager.getLocale());
+  console.log("- Fallback Locale:", localizationManager.getFallbackLocale());
+  console.log(
+    "- Available Locales:",
+    localizationManager.getAvailableLocales(),
+  );
 }
 
-// Example: Use schemas with global configuration
+// Example: Use schemas with localization
 function exampleUsage() {
-  setupGlobalConfig();
+  setupLocalization();
 
-  // All these schemas will use the global logger and locale
-  const nameSchema = zStringRequired('Name');
-  const emailSchema = zEmailRequired('Email');
-  const ipSchema = zIPv4Required('IP Address');
+  // All these schemas use the default English localization
+  const nameSchema = pz.StringRequired({ msg: "Name" });
+  const emailSchema = pz.EmailRequired({ msg: "Email" });
+  const ipSchema = pz.IPv4Required({ msg: "IP Address" });
 
-  console.log('\n--- Testing schemas with global config ---');
+  console.log("\n--- Testing schemas with localization ---");
 
   try {
-    nameSchema.parse(''); // Should trigger validation error
+    nameSchema.parse(""); // Should trigger validation error
   } catch (error) {
-    console.log('Name validation error:', error.issues[0].message);
+    console.log(
+      "Name validation error:",
+      error.issues?.[0]?.message || error.message,
+    );
   }
 
   try {
-    emailSchema.parse('invalid-email'); // Should trigger validation error
+    emailSchema.parse("invalid-email"); // Should trigger validation error
   } catch (error) {
-    console.log('Email validation error:', error.issues[0].message);
+    console.log(
+      "Email validation error:",
+      error.issues?.[0]?.message || error.message,
+    );
   }
 
   try {
-    ipSchema.parse('999.999.999.999'); // Should trigger validation error
+    ipSchema.parse("999.999.999.999"); // Should trigger validation error
   } catch (error) {
-    console.log('IP validation error:', error.issues[0].message);
+    console.log(
+      "IP validation error:",
+      error.issues?.[0]?.message || error.message,
+    );
   }
 
-  console.log('\n--- Valid inputs ---');
-  console.log('Valid name:', nameSchema.parse('John Doe'));
-  console.log('Valid email:', emailSchema.parse('john@example.com'));
-  console.log('Valid IP:', ipSchema.parse('192.168.1.1'));
+  console.log("\n--- Valid inputs ---");
+  console.log("Valid name:", nameSchema.parse("John Doe"));
+  console.log("Valid email:", emailSchema.parse("john@example.com"));
+  console.log("Valid IP:", ipSchema.parse("192.168.1.1"));
 }
 
 // Run the example
-if (require.main === module) {
-  exampleUsage();
-}
+exampleUsage();
 
-export { setupGlobalConfig, exampleUsage };
+export { setupLocalization, exampleUsage };

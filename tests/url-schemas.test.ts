@@ -1,4 +1,4 @@
-import { zUrlOptional, zUrlRequired, zHttpsUrlRequired, zHttpsUrlOptional, zHttpUrlRequired, zHttpUrlOptional, zWebUrlRequired, zWebUrlOptional } from '../src/schemas/url-schemas';
+import { UrlOptional, UrlRequired, HttpsUrlRequired, HttpsUrlOptional, HttpUrlRequired, HttpUrlOptional, WebUrlRequired, WebUrlOptional } from '../src/schemas/url-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests } from './setup';
 
@@ -43,8 +43,8 @@ describe('URL Schemas', () => {
     'https://example.com.', // trailing dot - normalized
   ];
 
-  describe('zUrlOptional', () => {
-    const schema = zUrlOptional();
+  describe('UrlOptional', () => {
+    const schema = UrlOptional();
 
     runTableTests([
       {
@@ -170,19 +170,19 @@ describe('URL Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zUrlOptional({ msg: 'Website' });
+        const schema = UrlOptional({ msg: 'Website' });
         expect(() => schema.parse('invalid')).toThrow('Website must be a valid URL');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zUrlOptional({ msg: 'Invalid URL format', msgType: MsgType.Message });
+        const schema = UrlOptional({ msg: 'Invalid URL format', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid URL format');
       });
     });
   });
 
-  describe('zUrlRequired', () => {
-    const schema = zUrlRequired();
+  describe('UrlRequired', () => {
+    const schema = UrlRequired();
 
     runTableTests([
       {
@@ -224,17 +224,17 @@ describe('URL Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in required error message', () => {
-        const schema = zUrlRequired({ msg: 'Website' });
+        const schema = UrlRequired({ msg: 'Website' });
         expect(() => schema.parse('')).toThrow('Website must be a valid URL');
       });
 
       it('should use custom field name in validation error message', () => {
-        const schema = zUrlRequired({ msg: 'Website' });
+        const schema = UrlRequired({ msg: 'Website' });
         expect(() => schema.parse('invalid')).toThrow('Website must be a valid URL');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zUrlRequired({ msg: 'URL is required', msgType: MsgType.Message });
+        const schema = UrlRequired({ msg: 'URL is required', msgType: MsgType.Message });
         expect(() => schema.parse('')).toThrow('URL is required');
       });
     });
@@ -242,7 +242,7 @@ describe('URL Schemas', () => {
 
   describe('Edge cases', () => {
     it('should handle URLs with special characters', () => {
-      const schema = zUrlOptional();
+      const schema = UrlOptional();
       
       const specialCharUrls = [
         'https://example.com/path with spaces', // might be invalid
@@ -266,7 +266,7 @@ describe('URL Schemas', () => {
     });
 
     it('should handle very long URLs', () => {
-      const schema = zUrlOptional();
+      const schema = UrlOptional();
       const longPath = 'a'.repeat(1000);
       const longUrl = `https://example.com/${longPath}`;
       
@@ -274,7 +274,7 @@ describe('URL Schemas', () => {
     });
 
     it('should handle URLs with international domain names', () => {
-      const schema = zUrlOptional();
+      const schema = UrlOptional();
       
       // These might or might not be valid depending on the URL parser
       const internationalUrls = [
@@ -296,7 +296,7 @@ describe('URL Schemas', () => {
 
   describe('Performance and reliability', () => {
     it('should handle large number of validations efficiently', () => {
-      const schema = zUrlOptional();
+      const schema = UrlOptional();
       const validUrl = 'https://example.com';
       const startTime = Date.now();
       
@@ -309,7 +309,7 @@ describe('URL Schemas', () => {
     });
 
     it('should be consistent across multiple calls', () => {
-      const schema = zUrlOptional();
+      const schema = UrlOptional();
       const validUrl = 'https://example.com';
       
       for (let i = 0; i < 100; i++) {
@@ -320,8 +320,8 @@ describe('URL Schemas', () => {
   });
 
   describe('HTTPS Protocol Validation', () => {
-    describe('zHttpsUrlRequired', () => {
-      const schema = zHttpsUrlRequired();
+    describe('HttpsUrlRequired', () => {
+      const schema = HttpsUrlRequired();
 
       it('should accept HTTPS URLs', () => {
         expect(schema.parse('https://example.com')).toBe('https://example.com');
@@ -348,18 +348,18 @@ describe('URL Schemas', () => {
       });
 
       it('should use custom field name in error messages', () => {
-        const schema = zHttpsUrlRequired({ msg: 'API URL' });
+        const schema = HttpsUrlRequired({ msg: 'API URL' });
         expect(() => schema.parse('http://example.com')).toThrow('API URL has invalid protocol');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zHttpsUrlRequired({ msg: 'Only HTTPS URLs are allowed', msgType: MsgType.Message });
+        const schema = HttpsUrlRequired({ msg: 'Only HTTPS URLs are allowed', msgType: MsgType.Message });
         expect(() => schema.parse('http://example.com')).toThrow('Only HTTPS URLs are allowed');
       });
     });
 
-    describe('zHttpsUrlOptional', () => {
-      const schema = zHttpsUrlOptional();
+    describe('HttpsUrlOptional', () => {
+      const schema = HttpsUrlOptional();
 
       it('should accept undefined', () => {
         expect(schema.parse(undefined)).toBeUndefined();
@@ -379,21 +379,21 @@ describe('URL Schemas', () => {
       });
 
       it('should use custom field name in error messages', () => {
-        const schema = zHttpsUrlOptional({ msg: 'Secure URL' });
+        const schema = HttpsUrlOptional({ msg: 'Secure URL' });
         expect(() => schema.parse('http://example.com')).toThrow('Secure URL has invalid protocol: non-HTTPS');
       });
     });
 
     describe('Manual protocol specification', () => {
-      it('should work with zUrlRequired and protocol option', () => {
-        const schema = zUrlRequired({ protocol: /^https$/ });
+      it('should work with UrlRequired and protocol option', () => {
+        const schema = UrlRequired({ protocol: /^https$/ });
         
         expect(schema.parse('https://example.com')).toBe('https://example.com');
         expect(() => schema.parse('http://example.com')).toThrow('URL has invalid protocol: non-HTTPS');
       });
 
-      it('should work with zUrlOptional and protocol option', () => {
-        const schema = zUrlOptional({ protocol: /^https$/ });
+      it('should work with UrlOptional and protocol option', () => {
+        const schema = UrlOptional({ protocol: /^https$/ });
         
         expect(schema.parse(undefined)).toBeUndefined();
         expect(schema.parse('https://example.com')).toBe('https://example.com');
@@ -402,20 +402,20 @@ describe('URL Schemas', () => {
 
       it('should allow custom protocol patterns', () => {
         // Allow only FTP
-        const ftpSchema = zUrlRequired({ protocol: /^ftp$/ });
+        const ftpSchema = UrlRequired({ protocol: /^ftp$/ });
         expect(ftpSchema.parse('ftp://example.com')).toBe('ftp://example.com');
         expect(() => ftpSchema.parse('https://example.com')).toThrow('URL has invalid protocol: non-HTTPS');
 
         // Allow HTTP or HTTPS
-        const webSchema = zUrlRequired({ protocol: /^https?$/ });
+        const webSchema = UrlRequired({ protocol: /^https?$/ });
         expect(webSchema.parse('http://example.com')).toBe('http://example.com');
         expect(webSchema.parse('https://example.com')).toBe('https://example.com');
         expect(() => webSchema.parse('ftp://example.com')).toThrow('URL has invalid protocol: non-HTTPS');
       });
     });
 
-    describe('zHttpUrlRequired (HTTP-only)', () => {
-      const schema = zHttpUrlRequired();
+    describe('HttpUrlRequired (HTTP-only)', () => {
+      const schema = HttpUrlRequired();
 
       it('should accept HTTP URLs', () => {
         expect(schema.parse('http://example.com')).toBe('http://example.com');
@@ -432,13 +432,13 @@ describe('URL Schemas', () => {
       });
 
       it('should use custom field name in error messages', () => {
-        const schema = zHttpUrlRequired({ msg: 'Legacy URL' });
+        const schema = HttpUrlRequired({ msg: 'Legacy URL' });
         expect(() => schema.parse('https://example.com')).toThrow('Legacy URL has invalid protocol: non-HTTPS');
       });
     });
 
-    describe('zHttpUrlOptional (HTTP-only)', () => {
-      const schema = zHttpUrlOptional();
+    describe('HttpUrlOptional (HTTP-only)', () => {
+      const schema = HttpUrlOptional();
 
       it('should accept undefined', () => {
         expect(schema.parse(undefined)).toBeUndefined();
@@ -453,8 +453,8 @@ describe('URL Schemas', () => {
       });
     });
 
-    describe('zWebUrlRequired (HTTP or HTTPS)', () => {
-      const schema = zWebUrlRequired();
+    describe('WebUrlRequired (HTTP or HTTPS)', () => {
+      const schema = WebUrlRequired();
 
       it('should accept HTTP URLs', () => {
         expect(schema.parse('http://example.com')).toBe('http://example.com');
@@ -471,13 +471,13 @@ describe('URL Schemas', () => {
       });
 
       it('should use custom field name in error messages', () => {
-        const schema = zWebUrlRequired({ msg: 'Website URL' });
+        const schema = WebUrlRequired({ msg: 'Website URL' });
         expect(() => schema.parse('ftp://example.com')).toThrow('Website URL has invalid protocol: non-HTTPS');
       });
     });
 
-    describe('zWebUrlOptional (HTTP or HTTPS)', () => {
-      const schema = zWebUrlOptional();
+    describe('WebUrlOptional (HTTP or HTTPS)', () => {
+      const schema = WebUrlOptional();
 
       it('should accept undefined', () => {
         expect(schema.parse(undefined)).toBeUndefined();
@@ -498,19 +498,19 @@ describe('URL Schemas', () => {
 
     describe('Hostname validation', () => {
       it('should accept URLs with matching hostname', () => {
-        const schema = zUrlRequired({ hostname: /^example\.com$/ });
+        const schema = UrlRequired({ hostname: /^example\.com$/ });
         expect(schema.parse('https://example.com')).toBe('https://example.com');
         expect(schema.parse('http://example.com/path')).toBe('http://example.com/path');
       });
 
       it('should reject URLs with non-matching hostname', () => {
-        const schema = zUrlRequired({ hostname: /^example\.com$/ });
+        const schema = UrlRequired({ hostname: /^example\.com$/ });
         expect(() => schema.parse('https://zombo.com')).toThrow();
         expect(() => schema.parse('https://sub.example.com')).toThrow();
       });
 
       it('should work with protocol and hostname together', () => {
-        const schema = zUrlRequired({ 
+        const schema = UrlRequired({ 
           protocol: /^https$/, 
           hostname: /^api\.example\.com$/ 
         });
@@ -521,7 +521,7 @@ describe('URL Schemas', () => {
       });
 
       it('should support complex hostname patterns', () => {
-        const schema = zUrlRequired({ hostname: /^(api|admin)\.example\.com$/ });
+        const schema = UrlRequired({ hostname: /^(api|admin)\.example\.com$/ });
         
         expect(schema.parse('https://api.example.com')).toBe('https://api.example.com');
         expect(schema.parse('https://admin.example.com')).toBe('https://admin.example.com');
@@ -529,7 +529,7 @@ describe('URL Schemas', () => {
       });
 
       it('should work with optional URLs', () => {
-        const schema = zUrlOptional({ hostname: /^example\.com$/ });
+        const schema = UrlOptional({ hostname: /^example\.com$/ });
         
         expect(schema.parse(undefined)).toBeUndefined();
         expect(schema.parse('https://example.com')).toBe('https://example.com');
@@ -537,7 +537,7 @@ describe('URL Schemas', () => {
       });
 
       it('should use custom field name in hostname error messages', () => {
-        const schema = zUrlRequired({ 
+        const schema = UrlRequired({ 
           msg: 'API Endpoint', 
           hostname: /^api\.company\.com$/ 
         });

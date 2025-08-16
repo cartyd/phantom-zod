@@ -169,20 +169,20 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return isRequired ? schema : schema.optional();
   };
 
-  const zNumberOptional = (options: NumberSchemaOptions = {}) =>
+  const NumberOptional = (options: NumberSchemaOptions = {}) =>
     createNumberSchema(options, false);
 
-  const zNumberRequired = (options: NumberSchemaOptions = {}) =>
+  const NumberRequired = (options: NumberSchemaOptions = {}) =>
     createNumberSchema(options, true);
 
-  const zNumberStringOptional = (options: NumberSchemaOptions = {}) =>
+  const NumberStringOptional = (options: NumberSchemaOptions = {}) =>
     createNumberSchema(options, false, true);
 
-  const zNumberStringRequired = (options: NumberSchemaOptions = {}) =>
+  const NumberStringRequired = (options: NumberSchemaOptions = {}) =>
     createNumberSchema(options, true, true);
 
   // Explicit specialized schema implementations - clear and maintainable
-  const zIntegerRequired = (options: NumberSchemaOptions = {}) => {
+  const IntegerRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -204,11 +204,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zIntegerOptional = (options: NumberSchemaOptions = {}) => {
-    return zIntegerRequired(options).optional();
+  const IntegerOptional = (options: NumberSchemaOptions = {}) => {
+    return IntegerRequired(options).optional();
   };
 
-  const zPositiveRequired = (options: NumberSchemaOptions = {}) => {
+  const PositiveRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -230,11 +230,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zPositiveOptional = (options: NumberSchemaOptions = {}) => {
-    return zPositiveRequired(options).optional();
+  const PositiveOptional = (options: NumberSchemaOptions = {}) => {
+    return PositiveRequired(options).optional();
   };
 
-  const zNegativeRequired = (options: NumberSchemaOptions = {}) => {
+  const NegativeRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -256,11 +256,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zNegativeOptional = (options: NumberSchemaOptions = {}) => {
-    return zNegativeRequired(options).optional();
+  const NegativeOptional = (options: NumberSchemaOptions = {}) => {
+    return NegativeRequired(options).optional();
   };
 
-  const zNonNegativeRequired = (options: NumberSchemaOptions = {}) => {
+  const NonNegativeRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -282,11 +282,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zNonNegativeOptional = (options: NumberSchemaOptions = {}) => {
-    return zNonNegativeRequired(options).optional();
+  const NonNegativeOptional = (options: NumberSchemaOptions = {}) => {
+    return NonNegativeRequired(options).optional();
   };
 
-  const zNonPositiveRequired = (options: NumberSchemaOptions = {}) => {
+  const NonPositiveRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -308,11 +308,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zNonPositiveOptional = (options: NumberSchemaOptions = {}) => {
-    return zNonPositiveRequired(options).optional();
+  const NonPositiveOptional = (options: NumberSchemaOptions = {}) => {
+    return NonPositiveRequired(options).optional();
   };
 
-  const zFiniteRequired = (options: NumberSchemaOptions = {}) => {
+  const FiniteRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -334,11 +334,11 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zFiniteOptional = (options: NumberSchemaOptions = {}) => {
-    return zFiniteRequired(options).optional();
+  const FiniteOptional = (options: NumberSchemaOptions = {}) => {
+    return FiniteRequired(options).optional();
   };
 
-  const zSafeIntegerRequired = (options: NumberSchemaOptions = {}) => {
+  const SafeIntegerRequired = (options: NumberSchemaOptions = {}) => {
     const { msg, msgType, min, max } = extractOptions(options);
     const schema = z.coerce
       .number({
@@ -360,29 +360,29 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return addMinMaxConstraints(schema, min, max, msg, msgType);
   };
 
-  const zSafeIntegerOptional = (options: NumberSchemaOptions = {}) => {
-    return zSafeIntegerRequired(options).optional();
+  const SafeIntegerOptional = (options: NumberSchemaOptions = {}) => {
+    return SafeIntegerRequired(options).optional();
   };
 
   return {
-    zNumberOptional,
-    zNumberRequired,
-    zNumberStringOptional,
-    zNumberStringRequired,
-    zIntegerRequired,
-    zIntegerOptional,
-    zPositiveRequired,
-    zPositiveOptional,
-    zNegativeRequired,
-    zNegativeOptional,
-    zNonNegativeRequired,
-    zNonNegativeOptional,
-    zNonPositiveRequired,
-    zNonPositiveOptional,
-    zFiniteRequired,
-    zFiniteOptional,
-    zSafeIntegerRequired,
-    zSafeIntegerOptional,
+    NumberOptional,
+    NumberRequired,
+    NumberStringOptional,
+    NumberStringRequired,
+    IntegerRequired,
+    IntegerOptional,
+    PositiveRequired,
+    PositiveOptional,
+    NegativeRequired,
+    NegativeOptional,
+    NonNegativeRequired,
+    NonNegativeOptional,
+    NonPositiveRequired,
+    NonPositiveOptional,
+    FiniteRequired,
+    FiniteOptional,
+    SafeIntegerRequired,
+    SafeIntegerOptional,
   };
 };
 
@@ -427,46 +427,46 @@ const numberMessageHandler = createTestMessageHandler((options) => {
 
 // Create schemas with default handler and export them directly - eliminates all repetitive export patterns
 const {
-  zNumberOptional,
-  zNumberRequired,
-  zNumberStringOptional,
-  zNumberStringRequired,
-  zIntegerRequired,
-  zIntegerOptional,
-  zPositiveRequired,
-  zPositiveOptional,
-  zNegativeRequired,
-  zNegativeOptional,
-  zNonNegativeRequired,
-  zNonNegativeOptional,
-  zNonPositiveRequired,
-  zNonPositiveOptional,
-  zFiniteRequired,
-  zFiniteOptional,
-  zSafeIntegerRequired,
-  zSafeIntegerOptional,
+  NumberOptional,
+  NumberRequired,
+  NumberStringOptional,
+  NumberStringRequired,
+  IntegerRequired,
+  IntegerOptional,
+  PositiveRequired,
+  PositiveOptional,
+  NegativeRequired,
+  NegativeOptional,
+  NonNegativeRequired,
+  NonNegativeOptional,
+  NonPositiveRequired,
+  NonPositiveOptional,
+  FiniteRequired,
+  FiniteOptional,
+  SafeIntegerRequired,
+  SafeIntegerOptional,
 } = createNumberSchemas(numberMessageHandler);
 
 // Export schemas for direct use - single destructuring and export eliminates all repetitive patterns
 export {
-  zNumberOptional,
-  zNumberRequired,
-  zNumberStringOptional,
-  zNumberStringRequired,
-  zIntegerRequired,
-  zIntegerOptional,
-  zPositiveRequired,
-  zPositiveOptional,
-  zNegativeRequired,
-  zNegativeOptional,
-  zNonNegativeRequired,
-  zNonNegativeOptional,
-  zNonPositiveRequired,
-  zNonPositiveOptional,
-  zFiniteRequired,
-  zFiniteOptional,
-  zSafeIntegerRequired,
-  zSafeIntegerOptional,
+  NumberOptional,
+  NumberRequired,
+  NumberStringOptional,
+  NumberStringRequired,
+  IntegerRequired,
+  IntegerOptional,
+  PositiveRequired,
+  PositiveOptional,
+  NegativeRequired,
+  NegativeOptional,
+  NonNegativeRequired,
+  NonNegativeOptional,
+  NonPositiveRequired,
+  NonPositiveOptional,
+  FiniteRequired,
+  FiniteOptional,
+  SafeIntegerRequired,
+  SafeIntegerOptional,
 };
 
 // Export the options interface for external use

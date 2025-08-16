@@ -33,10 +33,10 @@ import { createTestMessageHandler } from '../src/localization/types/message-hand
 describe('Address Schemas', () => {
   const messageHandler = createTestMessageHandler();
   const schemas = createAddressSchemas(messageHandler);
-  const { zAddressOptional, zAddressRequired, zAddressSimple, zAddressUS } = schemas;
+  const { AddressOptional, AddressRequired, AddressSimple, AddressUS } = schemas;
 
-  describe('zAddressOptional', () => {
-    const schema = zAddressOptional();
+  describe('AddressOptional', () => {
+    const schema = AddressOptional();
 
     it('should accept valid address object', () => {
       const validAddress = {
@@ -95,12 +95,12 @@ describe('Address Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zAddressOptional('Shipping Address');
+      const customSchema = AddressOptional('Shipping Address');
       expect(() => customSchema.parse('invalid')).toThrow('Shipping Address is invalid');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zAddressOptional('Invalid address format', MsgType.Message);
+      const customSchema = AddressOptional('Invalid address format', MsgType.Message);
       expect(() => customSchema.parse('invalid')).toThrow('Invalid address format');
     });
 
@@ -125,8 +125,8 @@ describe('Address Schemas', () => {
     });
   });
 
-  describe('zAddressRequired', () => {
-    const schema = zAddressRequired();
+  describe('AddressRequired', () => {
+    const schema = AddressRequired();
 
     it('should accept valid address object', () => {
       const validAddress = {
@@ -178,12 +178,12 @@ describe('Address Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zAddressRequired('Billing Address');
+      const customSchema = AddressRequired('Billing Address');
       expect(() => customSchema.parse(undefined)).toThrow('Billing Address is required');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zAddressRequired('Address is mandatory', MsgType.Message);
+      const customSchema = AddressRequired('Address is mandatory', MsgType.Message);
       expect(() => customSchema.parse(undefined)).toThrow('Address is mandatory');
     });
 
@@ -208,8 +208,8 @@ describe('Address Schemas', () => {
     });
   });
 
-  describe('zAddressSimple', () => {
-    const schema = zAddressSimple();
+  describe('AddressSimple', () => {
+    const schema = AddressSimple();
 
     it('should accept valid simple address', () => {
       const validAddress = {
@@ -249,12 +249,12 @@ describe('Address Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zAddressSimple('Simple Address');
+      const customSchema = AddressSimple('Simple Address');
       expect(() => customSchema.parse(undefined)).toThrow('Simple Address is required');
     });
   });
 
-  describe('zAddressUS', () => {
+  describe('AddressUS', () => {
   it('should default country to US when omitted', () => {
     const addressWithoutCountry = {
       street: '123 Main St',
@@ -262,11 +262,11 @@ describe('Address Schemas', () => {
       state: 'NY',
       postalCode: '10001',
     };
-    const result = zAddressUS().parse(addressWithoutCountry);
+    const result = AddressUS().parse(addressWithoutCountry);
     expect(result.country).toBe('US');
     expect(result).toEqual({ ...addressWithoutCountry, country: 'US' });
   });
-    const schema = zAddressUS();
+    const schema = AddressUS();
 
     it('should accept valid US address', () => {
       const validAddress = {
@@ -359,7 +359,7 @@ describe('Address Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zAddressUS('US Address');
+      const customSchema = AddressUS('US Address');
       expect(() => customSchema.parse(undefined)).toThrow('US Address is required');
     });
 
@@ -391,7 +391,7 @@ describe('Address Schemas', () => {
         city: 'São Paulo',
         country: 'Brazil',
       };
-      const result = zAddressSimple().parse(unicodeAddress);
+      const result = AddressSimple().parse(unicodeAddress);
       expect(result).toEqual(unicodeAddress);
     });
 
@@ -401,7 +401,7 @@ describe('Address Schemas', () => {
         city: 'New York',
         country: 'US',
       };
-      const result = zAddressSimple().parse(longStreetAddress);
+      const result = AddressSimple().parse(longStreetAddress);
       expect(result.street).toBe('A'.repeat(255));
     });
 
@@ -413,7 +413,7 @@ describe('Address Schemas', () => {
         postalCode: '10001',
         country: '  US  ',
       };
-      const result = zAddressRequired().parse(addressWithSpaces);
+      const result = AddressRequired().parse(addressWithSpaces);
       expect(result.street).toBe('123 Main St');
       expect(result.city).toBe('New York');
       expect(result.state).toBe('NY');

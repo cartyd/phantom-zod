@@ -1,10 +1,7 @@
-import { createTestMessageHandler } from "../localization/types/message-handler.types";
-// Top-level export for barrel usage
-export const zBooleanRequired = (options = {}) =>
-  createBooleanSchemas(createTestMessageHandler()).zBooleanRequired(options);
 import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import { MsgType } from "../common/types/msg-type";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
@@ -12,16 +9,16 @@ import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 // Note: These types reference the factory functions, so they need to be created from the factory
 type BooleanSchemasFactory = ReturnType<typeof createBooleanSchemas>;
 export type BooleanOptional = z.infer<
-  ReturnType<BooleanSchemasFactory["zBooleanOptional"]>
+  ReturnType<BooleanSchemasFactory["BooleanOptional"]>
 >;
 export type BooleanRequired = z.infer<
-  ReturnType<BooleanSchemasFactory["zBooleanRequired"]>
+  ReturnType<BooleanSchemasFactory["BooleanRequired"]>
 >;
 export type BooleanStringOptional = z.infer<
-  ReturnType<BooleanSchemasFactory["zBooleanStringOptional"]>
+  ReturnType<BooleanSchemasFactory["BooleanStringOptional"]>
 >;
 export type BooleanStringRequired = z.infer<
-  ReturnType<BooleanSchemasFactory["zBooleanStringRequired"]>
+  ReturnType<BooleanSchemasFactory["BooleanStringRequired"]>
 >;
 
 /**
@@ -39,13 +36,13 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod schema that validates an optional boolean value.
    *
    * @example
-   * const { zBooleanOptional } = createBooleanSchemas(messageHandler);
-   * const schema = zBooleanOptional({ msg: "Is Active" });
+   * const { BooleanOptional } = createBooleanSchemas(messageHandler);
+   * const schema = BooleanOptional({ msg: "Is Active" });
    * schema.parse(true);      // true
    * schema.parse(false);     // false
    * schema.parse(undefined); // undefined
    */
-  const zBooleanOptional = (options: BaseSchemaOptions = {}) => {
+  const BooleanOptional = (options: BaseSchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
     return z
       .unknown()
@@ -69,13 +66,13 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod schema that validates a required boolean value.
    *
    * @example
-   * const { zBooleanRequired } = createBooleanSchemas(messageHandler);
-   * const schema = zBooleanRequired({ msg: "Agreed to Terms" });
+   * const { BooleanRequired } = createBooleanSchemas(messageHandler);
+   * const schema = BooleanRequired({ msg: "Agreed to Terms" });
    * schema.parse(true);  // true
    * schema.parse(false); // false
    * schema.parse(null);  // throws ZodError
    */
-  const zBooleanRequired = (options: BaseSchemaOptions = {}) => {
+  const BooleanRequired = (options: BaseSchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
     return z
       .unknown()
@@ -99,15 +96,15 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod schema that validates a boolean or string representation and returns a string.
    *
    * @example
-   * const { zBooleanStringRequired } = createBooleanSchemas(messageHandler);
-   * const schema = zBooleanStringRequired({ msg: "Feature Flag" });
+   * const { BooleanStringRequired } = createBooleanSchemas(messageHandler);
+   * const schema = BooleanStringRequired({ msg: "Feature Flag" });
    * schema.parse(true);     // "true"
    * schema.parse(false);    // "false"
    * schema.parse("true");   // "true"
    * schema.parse("false");  // "false"
    * schema.parse("yes");    // throws ZodError
    */
-  const zBooleanStringRequired = (options: BaseSchemaOptions = {}) => {
+  const BooleanStringRequired = (options: BaseSchemaOptions = {}) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
     return baseBooleanStringSchema
       .refine(
@@ -142,22 +139,31 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod schema that validates an optional boolean string value.
    *
    * @example
-   * const { zBooleanStringOptional } = createBooleanSchemas(messageHandler);
-   * const schema = zBooleanStringOptional({ msg: "Newsletter Subscription" });
+   * const { BooleanStringOptional } = createBooleanSchemas(messageHandler);
+   * const schema = BooleanStringOptional({ msg: "Newsletter Subscription" });
    * schema.parse(true);      // "true"
    * schema.parse("false");   // "false"
    * schema.parse(undefined); // undefined
    */
-  const zBooleanStringOptional = (options: BaseSchemaOptions = {}) => {
-    return zBooleanStringRequired(options).optional();
+  const BooleanStringOptional = (options: BaseSchemaOptions = {}) => {
+    return BooleanStringRequired(options).optional();
   };
 
   return {
-    zBooleanOptional,
-    zBooleanRequired,
-    zBooleanStringRequired,
-    zBooleanStringOptional,
+    BooleanOptional,
+    BooleanRequired,
+    BooleanStringRequired,
+    BooleanStringOptional,
   };
 };
 
 const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
+
+// Top-level exports for barrel usage
+const testMessageHandler = createTestMessageHandler();
+const booleanSchemas = createBooleanSchemas(testMessageHandler);
+
+export const BooleanOptional = booleanSchemas.BooleanOptional;
+export const BooleanRequired = booleanSchemas.BooleanRequired;
+export const BooleanStringOptional = booleanSchemas.BooleanStringOptional;
+export const BooleanStringRequired = booleanSchemas.BooleanStringRequired;

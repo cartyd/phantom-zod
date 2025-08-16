@@ -140,7 +140,7 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
    * });
    * ```
    */
-  const zUrlOptional = (options: UrlSchemaOptions = {}) => {
+  const UrlOptional = (options: UrlSchemaOptions = {}) => {
     const { protocol, hostname } = options;
 
     const urlConfig: any = {
@@ -171,23 +171,23 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @example
    * ```typescript
    * // Accept any valid URL
-   * const anyUrl = zUrlRequired();
+   * const anyUrl = UrlRequired();
    *
    * // Accept only HTTPS URLs
-   * const httpsUrl = zUrlRequired({ protocol: /^https$/ });
+   * const httpsUrl = UrlRequired({ protocol: /^https$/ });
    *
    * // Accept URLs from specific domain
-   * const domainUrl = zUrlRequired({ hostname: /^api\.company\.com$/ });
+   * const domainUrl = UrlRequired({ hostname: /^api\.company\.com$/ });
    *
    * // Combined validation with custom error message
-   * const secureApi = zUrlRequired({
+   * const secureApi = UrlRequired({
    *   protocol: /^https$/,
    *   hostname: /^api\.company\.com$/,
    *   msg: 'Secure API URL'
    * });
    * ```
    */
-  const zUrlRequired = (options: UrlSchemaOptions = {}) => {
+  const UrlRequired = (options: UrlSchemaOptions = {}) => {
     const { protocol, hostname } = options;
 
     const urlConfig: any = {
@@ -205,7 +205,7 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
     return z.url(urlConfig);
   };
 
-  return { zUrlOptional, zUrlRequired };
+  return { UrlOptional, UrlRequired };
 };
 
 // Create a custom message handler for URL validation
@@ -234,7 +234,7 @@ const urlMessageHandler = createTestMessageHandler((options) => {
 });
 
 // Create schemas with default handler
-const { zUrlOptional: baseZUrlOptional, zUrlRequired: baseZUrlRequired } =
+const { UrlOptional: baseUrlOptional, UrlRequired: baseUrlRequired } =
   createUrlSchemas(urlMessageHandler);
 
 // Export schemas with new API pattern
@@ -259,7 +259,7 @@ const { zUrlOptional: baseZUrlOptional, zUrlRequired: baseZUrlRequired } =
  * schema.parse('not-a-url');           // ✗ Throws error
  * ```
  */
-export const zUrlOptional = baseZUrlOptional;
+export const UrlOptional = baseUrlOptional;
 
 /**
  * Creates a required URL schema that accepts only valid URLs
@@ -273,7 +273,7 @@ export const zUrlOptional = baseZUrlOptional;
  *
  * @example
  * ```typescript
- * const schema = zUrlRequired();
+ * const schema = UrlRequired();
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse('ftp://example.com');   // ✓ Valid
@@ -281,7 +281,7 @@ export const zUrlOptional = baseZUrlOptional;
  * schema.parse('not-a-url');           // ✗ Throws error
  * ```
  */
-export const zUrlRequired = baseZUrlRequired;
+export const UrlRequired = baseUrlRequired;
 
 // Export the options interface for external use
 export type { UrlSchemaOptions };
@@ -314,10 +314,10 @@ export type { UrlSchemaOptions };
  * apiSchema.parse('https://example.com');     // ✗ Throws error
  * ```
  */
-export const zHttpsUrlRequired = (
+export const HttpsUrlRequired = (
   options: Omit<UrlSchemaOptions, "protocol"> = {},
 ) => {
-  return baseZUrlRequired({ ...options, protocol: /^https$/ });
+  return baseUrlRequired({ ...options, protocol: /^https$/ });
 };
 
 /**
@@ -334,21 +334,21 @@ export const zHttpsUrlRequired = (
  *
  * @example
  * ```typescript
- * const schema = zHttpsUrlOptional();
+ * const schema = HttpsUrlOptional();
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse(undefined);             // ✓ Valid
  * schema.parse('http://example.com');  // ✗ Throws error
  *
  * // With hostname validation
- * const apiSchema = zHttpsUrlOptional({
+ * const apiSchema = HttpsUrlOptional({
  *   hostname: /^api\.company\.com$/
  * });
  * ```
  */
-export const zHttpsUrlOptional = (
+export const HttpsUrlOptional = (
   options: Omit<UrlSchemaOptions, "protocol"> = {},
 ) => {
-  return baseZUrlOptional({ ...options, protocol: /^https$/ });
+  return baseUrlOptional({ ...options, protocol: /^https$/ });
 };
 
 /**
@@ -366,20 +366,20 @@ export const zHttpsUrlOptional = (
  *
  * @example
  * ```typescript
- * const schema = zHttpUrlRequired();
+ * const schema = HttpUrlRequired();
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse('https://example.com'); // ✗ Throws error
  *
  * // With hostname validation for internal services
- * const internalSchema = zHttpUrlRequired({
+ * const internalSchema = HttpUrlRequired({
  *   hostname: /^internal\.company\.local$/
  * });
  * ```
  */
-export const zHttpUrlRequired = (
+export const HttpUrlRequired = (
   options: Omit<UrlSchemaOptions, "protocol"> = {},
 ) => {
-  return baseZUrlRequired({ ...options, protocol: /^http$/ });
+  return baseUrlRequired({ ...options, protocol: /^http$/ });
 };
 
 /**
@@ -396,16 +396,16 @@ export const zHttpUrlRequired = (
  *
  * @example
  * ```typescript
- * const schema = zHttpUrlOptional();
+ * const schema = HttpUrlOptional();
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse(undefined);             // ✓ Valid
  * schema.parse('https://example.com'); // ✗ Throws error
  * ```
  */
-export const zHttpUrlOptional = (
+export const HttpUrlOptional = (
   options: Omit<UrlSchemaOptions, "protocol"> = {},
 ) => {
-  return baseZUrlOptional({ ...options, protocol: /^http$/ });
+  return baseUrlOptional({ ...options, protocol: /^http$/ });
 };
 
 /**
@@ -422,21 +422,21 @@ export const zHttpUrlOptional = (
  *
  * @example
  * ```typescript
- * const schema = zWebUrlRequired();
+ * const schema = WebUrlRequired();
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse('ftp://example.com');   // ✗ Throws error
  *
  * // With hostname validation for specific websites
- * const websiteSchema = zWebUrlRequired({
+ * const websiteSchema = WebUrlRequired({
  *   hostname: /^(www\.)?company\.com$/
  * });
  * ```
  */
-export const zWebUrlRequired = (
+export const WebUrlRequired = (
   options: Omit<UrlSchemaOptions, "protocol"> = {},
 ) => {
-  return baseZUrlRequired({ ...options, protocol: /^https?$/ });
+  return baseUrlRequired({ ...options, protocol: /^https?$/ });
 };
 
 /**
@@ -453,7 +453,7 @@ export const zWebUrlRequired = (
  *
  * @example
  * ```typescript
- * const schema = zWebUrlOptional();
+ * const schema = WebUrlOptional();
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse(undefined);             // ✓ Valid
@@ -462,12 +462,12 @@ export const zWebUrlRequired = (
  * // For optional website fields
  * const profileSchema = z.object({
  *   name: z.string(),
- *   website: zWebUrlOptional({ msg: 'Website URL' })
+ *   website: WebUrlOptional({ msg: 'Website URL' })
  * });
  * ```
  */
-export const zWebUrlOptional = (
+export const WebUrlOptional = (
   options: Omit<UrlSchemaOptions, "protocol"> = {},
 ) => {
-  return baseZUrlOptional({ ...options, protocol: /^https?$/ });
+  return baseUrlOptional({ ...options, protocol: /^https?$/ });
 };

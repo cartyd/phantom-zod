@@ -1,17 +1,8 @@
-import { createTestMessageHandler } from "../localization/types/message-handler.types";
-// Top-level export for barrel usage
-export const zUserOptional = (
-  options: { msg?: string; msgType?: MsgType } = {},
-) => {
-  const { msg = "User", msgType = MsgType.FieldName } = options;
-  return createUserSchemas(createTestMessageHandler()).zUserOptional(
-    msg,
-    msgType,
-  );
-};
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 import { createStringSchemas } from "./string-schemas";
 import { createEmailSchemas } from "./email-schemas";
 import { createEnumSchemas } from "./enum-schemas";
@@ -90,7 +81,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Password strength validation schema.
    * Validates password with configurable requirements.
    */
-  const zPassword = (
+  const Password = (
     msg = "Password",
     msgType: MsgType = MsgType.FieldName,
     minLength = 8,
@@ -100,7 +91,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     requireSpecialChars = true,
   ) =>
     stringSchemas
-      .zStringRequired({ msg, msgType })
+      .StringRequired({ msg, msgType })
       .refine((password) => password.length >= minLength, {
         message: messageHandler.formatErrorMessage({
           group: "user",
@@ -151,14 +142,14 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Username validation schema.
    * Validates username with length and character requirements.
    */
-  const zUsername = (
+  const Username = (
     msg = "Username",
     msgType: MsgType = MsgType.FieldName,
     minLength = 3,
     maxLength = 30,
   ) =>
     stringSchemas
-      .zStringRequired({ msg, msgType, minLength, maxLength })
+      .StringRequired({ msg, msgType, minLength, maxLength })
       .refine((username) => /^[a-zA-Z0-9_-]+$/.test(username), {
         message: messageHandler.formatErrorMessage({
           group: "user",
@@ -194,13 +185,13 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Display name validation schema.
    * Optional field with length validation.
    */
-  const zDisplayName = (
+  const DisplayName = (
     msg = "Display Name",
     msgType: MsgType = MsgType.FieldName,
     maxLength = 50,
   ) =>
     stringSchemas
-      .zStringOptional({ msg, msgType, maxLength })
+      .StringOptional({ msg, msgType, maxLength })
       .refine((name) => !name || name.trim().length > 0, {
         message: messageHandler.formatErrorMessage({
           group: "string",
@@ -213,26 +204,26 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Basic user registration schema.
    */
-  const zUserRegistration = (
+  const UserRegistration = (
     msg = "User Registration",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z
       .object(
         {
-          username: zUsername("Username", msgType),
-          email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
-          password: zPassword("Password", msgType),
-          confirmPassword: stringSchemas.zStringRequired({
+          username: Username("Username", msgType),
+          email: emailSchemas.EmailRequired({ msg: "Email", msgType }),
+          password: Password("Password", msgType),
+          confirmPassword: stringSchemas.StringRequired({
             msg: "Confirm Password",
             msgType,
           }),
-          displayName: zDisplayName("Display Name", msgType),
-          firstName: stringSchemas.zStringOptional({
+          displayName: DisplayName("Display Name", msgType),
+          firstName: stringSchemas.StringOptional({
             msg: "First Name",
             msgType,
           }),
-          lastName: stringSchemas.zStringOptional({
+          lastName: stringSchemas.StringOptional({
             msg: "Last Name",
             msgType,
           }),
@@ -276,17 +267,17 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * User login schema.
    */
-  const zUserLogin = (
+  const UserLogin = (
     msg = "User Login",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.object(
       {
-        identifier: stringSchemas.zStringRequired({
+        identifier: stringSchemas.StringRequired({
           msg: "Username/Email",
           msgType,
         }),
-        password: stringSchemas.zStringRequired({ msg: "Password", msgType }),
+        password: stringSchemas.StringRequired({ msg: "Password", msgType }),
         rememberMe: z.boolean().optional(),
       },
       {
@@ -302,32 +293,33 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Optional user profile schema.
    */
-  const zUserOptional = (msg = "User", msgType: MsgType = MsgType.FieldName) =>
-    z
+  const UserOptional = (options: BaseSchemaOptions = {}) => {
+    const { msg = "User", msgType = MsgType.FieldName } = options;
+    return z
       .object({
-        id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
-        username: zUsername("Username", msgType),
-        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
-        displayName: zDisplayName("Display Name", msgType),
-        firstName: stringSchemas.zStringOptional({
+        id: stringSchemas.StringRequired({ msg: "User ID", msgType }),
+        username: Username("Username", msgType),
+        email: emailSchemas.EmailRequired({ msg: "Email", msgType }),
+        displayName: DisplayName("Display Name", msgType),
+        firstName: stringSchemas.StringOptional({
           msg: "First Name",
           msgType,
         }),
-        lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-        role: enumSchemas.zEnumRequired([...USER_ROLES], {
+        lastName: stringSchemas.StringOptional({ msg: "Last Name", msgType }),
+        role: enumSchemas.EnumRequired([...USER_ROLES], {
           msg: "Role",
           msgType,
         }),
-        status: enumSchemas.zEnumRequired([...USER_STATUS], {
+        status: enumSchemas.EnumRequired([...USER_STATUS], {
           msg: "Status",
           msgType,
         }),
-        accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], {
+        accountType: enumSchemas.EnumOptional([...ACCOUNT_TYPES], {
           msg: "Account Type",
           msgType,
         }),
-        avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
-        bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+        avatar: stringSchemas.StringOptional({ msg: "Avatar", msgType }),
+        bio: stringSchemas.StringOptional({ msg: "Bio", msgType }),
         createdAt: z.date().optional(),
         updatedAt: z.date().optional(),
         lastLoginAt: z.date().optional(),
@@ -346,36 +338,37 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           }),
         },
       );
+  };
 
   /**
    * Required user profile schema.
    */
-  const zUserRequired = (msg = "User", msgType: MsgType = MsgType.FieldName) =>
+  const UserRequired = (msg = "User", msgType: MsgType = MsgType.FieldName) =>
     z.object(
       {
-        id: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
-        username: zUsername("Username", msgType),
-        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
-        displayName: zDisplayName("Display Name", msgType),
-        firstName: stringSchemas.zStringOptional({
+        id: stringSchemas.StringRequired({ msg: "User ID", msgType }),
+        username: Username("Username", msgType),
+        email: emailSchemas.EmailRequired({ msg: "Email", msgType }),
+        displayName: DisplayName("Display Name", msgType),
+        firstName: stringSchemas.StringOptional({
           msg: "First Name",
           msgType,
         }),
-        lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-        role: enumSchemas.zEnumRequired([...USER_ROLES], {
+        lastName: stringSchemas.StringOptional({ msg: "Last Name", msgType }),
+        role: enumSchemas.EnumRequired([...USER_ROLES], {
           msg: "Role",
           msgType,
         }),
-        status: enumSchemas.zEnumRequired([...USER_STATUS], {
+        status: enumSchemas.EnumRequired([...USER_STATUS], {
           msg: "Status",
           msgType,
         }),
-        accountType: enumSchemas.zEnumOptional([...ACCOUNT_TYPES], {
+        accountType: enumSchemas.EnumOptional([...ACCOUNT_TYPES], {
           msg: "Account Type",
           msgType,
         }),
-        avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
-        bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+        avatar: stringSchemas.StringOptional({ msg: "Avatar", msgType }),
+        bio: stringSchemas.StringOptional({ msg: "Bio", msgType }),
         createdAt: z.date().optional(),
         updatedAt: z.date().optional(),
         lastLoginAt: z.date().optional(),
@@ -395,20 +388,20 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * User profile update schema (allows partial updates).
    */
-  const zUserUpdate = (
+  const UserUpdate = (
     msg = "User Update",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.object(
       {
-        displayName: zDisplayName("Display Name", msgType),
-        firstName: stringSchemas.zStringOptional({
+        displayName: DisplayName("Display Name", msgType),
+        firstName: stringSchemas.StringOptional({
           msg: "First Name",
           msgType,
         }),
-        lastName: stringSchemas.zStringOptional({ msg: "Last Name", msgType }),
-        avatar: stringSchemas.zStringOptional({ msg: "Avatar", msgType }),
-        bio: stringSchemas.zStringOptional({ msg: "Bio", msgType }),
+        lastName: stringSchemas.StringOptional({ msg: "Last Name", msgType }),
+        avatar: stringSchemas.StringOptional({ msg: "Avatar", msgType }),
+        bio: stringSchemas.StringOptional({ msg: "Bio", msgType }),
       },
       {
         message: messageHandler.formatErrorMessage({
@@ -423,19 +416,19 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Password change schema.
    */
-  const zPasswordChange = (
+  const PasswordChange = (
     msg = "Password Change",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z
       .object(
         {
-          currentPassword: stringSchemas.zStringRequired({
+          currentPassword: stringSchemas.StringRequired({
             msg: "Current Password",
             msgType,
           }),
-          newPassword: zPassword("New Password", msgType),
-          confirmPassword: stringSchemas.zStringRequired({
+          newPassword: Password("New Password", msgType),
+          confirmPassword: stringSchemas.StringRequired({
             msg: "Confirm Password",
             msgType,
           }),
@@ -471,13 +464,13 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Password reset request schema.
    */
-  const zPasswordReset = (
+  const PasswordReset = (
     msg = "Password Reset",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.object(
       {
-        email: emailSchemas.zEmailRequired({ msg: "Email", msgType }),
+        email: emailSchemas.EmailRequired({ msg: "Email", msgType }),
       },
       {
         message: messageHandler.formatErrorMessage({
@@ -492,22 +485,22 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Admin user management schema.
    */
-  const zAdminUserManagement = (
+  const AdminUserManagement = (
     msg = "Admin User Management",
     msgType: MsgType = MsgType.FieldName,
   ) =>
     z.object(
       {
-        userId: stringSchemas.zStringRequired({ msg: "User ID", msgType }),
-        role: enumSchemas.zEnumOptional([...USER_ROLES], {
+        userId: stringSchemas.StringRequired({ msg: "User ID", msgType }),
+        role: enumSchemas.EnumOptional([...USER_ROLES], {
           msg: "Role",
           msgType,
         }),
-        status: enumSchemas.zEnumOptional([...USER_STATUS], {
+        status: enumSchemas.EnumOptional([...USER_STATUS], {
           msg: "Status",
           msgType,
         }),
-        reason: stringSchemas.zStringOptional({ msg: "Reason", msgType }),
+        reason: stringSchemas.StringOptional({ msg: "Reason", msgType }),
       },
       {
         message: messageHandler.formatErrorMessage({
@@ -523,11 +516,11 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Enhanced password validation with weakness detection.
    * Uses the "passwordWeak" message key for comprehensive validation.
    */
-  const zPasswordWithWeaknessCheck = (
+  const PasswordWithWeaknessCheck = (
     msg = "Password",
     msgType: MsgType = MsgType.FieldName,
   ) =>
-    stringSchemas.zStringRequired({ msg, msgType }).refine(
+    stringSchemas.StringRequired({ msg, msgType }).refine(
       (password) => {
         const score = calculatePasswordStrength(password);
         return score >= 4; // Require "strong" password
@@ -551,7 +544,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * User validation with invalid message.
    * Uses the generic "invalid" message key for validation errors.
    */
-  const zUserGenericValidation = (
+  const UserGenericValidation = (
     msg = "User",
     msgType: MsgType = MsgType.FieldName,
   ) =>
@@ -575,13 +568,13 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Email uniqueness validation schema.
    * Uses the "emailAlreadyExists" message key.
    */
-  const zEmailUniqueness = (
+  const EmailUniqueness = (
     msg = "Email",
     msgType: MsgType = MsgType.FieldName,
     existingEmails: string[] = [],
   ) =>
     emailSchemas
-      .zEmailRequired({ msg, msgType })
+      .EmailRequired({ msg, msgType })
       .refine((email) => !existingEmails.includes(email.toLowerCase()), {
         message: messageHandler.formatErrorMessage({
           group: "user",
@@ -596,12 +589,12 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Username uniqueness validation schema.
    * Uses the "usernameAlreadyExists" message key.
    */
-  const zUsernameUniqueness = (
+  const UsernameUniqueness = (
     msg = "Username",
     msgType: MsgType = MsgType.FieldName,
     existingUsernames: string[] = [],
   ) =>
-    zUsername(msg, msgType).refine(
+    Username(msg, msgType).refine(
       (username) => !existingUsernames.includes(username.toLowerCase()),
       {
         message: messageHandler.formatErrorMessage({
@@ -618,10 +611,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Role validation schema with invalid role detection.
    * Uses the "invalidRole" message key.
    */
-  const zRoleValidation = (
-    msg = "Role",
-    msgType: MsgType = MsgType.FieldName,
-  ) =>
+  const RoleValidation = (msg = "Role", msgType: MsgType = MsgType.FieldName) =>
     z
       .string({
         message: messageHandler.formatErrorMessage({
@@ -645,7 +635,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Account type validation schema with invalid type detection.
    * Uses the "invalidAccountType" message key.
    */
-  const zAccountTypeValidation = (
+  const AccountTypeValidation = (
     msg = "Account Type",
     msgType: MsgType = MsgType.FieldName,
   ) =>
@@ -671,7 +661,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Enhanced user registration with uniqueness checks.
    */
-  const zUserRegistrationWithUniqueness = (
+  const UserRegistrationWithUniqueness = (
     msg = "User Registration",
     msgType: MsgType = MsgType.FieldName,
     existingEmails: string[] = [],
@@ -680,23 +670,23 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     z
       .object(
         {
-          username: zUsernameUniqueness("Username", msgType, existingUsernames),
-          email: zEmailUniqueness("Email", msgType, existingEmails),
-          password: zPasswordWithWeaknessCheck("Password", msgType),
-          confirmPassword: stringSchemas.zStringRequired({
+          username: UsernameUniqueness("Username", msgType, existingUsernames),
+          email: EmailUniqueness("Email", msgType, existingEmails),
+          password: PasswordWithWeaknessCheck("Password", msgType),
+          confirmPassword: stringSchemas.StringRequired({
             msg: "Confirm Password",
             msgType,
           }),
-          displayName: zDisplayName("Display Name", msgType),
-          firstName: stringSchemas.zStringOptional({
+          displayName: DisplayName("Display Name", msgType),
+          firstName: stringSchemas.StringOptional({
             msg: "First Name",
             msgType,
           }),
-          lastName: stringSchemas.zStringOptional({
+          lastName: stringSchemas.StringOptional({
             msg: "Last Name",
             msgType,
           }),
-          accountType: zAccountTypeValidation("Account Type", msgType),
+          accountType: AccountTypeValidation("Account Type", msgType),
           acceptTerms: z
             .boolean({
               message: messageHandler.formatErrorMessage({
@@ -743,27 +733,33 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
       });
 
   return {
-    zPassword,
-    zUsername,
-    zDisplayName,
-    zUserRegistration,
-    zUserLogin,
-    zUserOptional,
-    zUserRequired,
-    zUserUpdate,
-    zPasswordChange,
-    zPasswordReset,
-    zAdminUserManagement,
+    Password,
+    Username,
+    DisplayName,
+    UserRegistration,
+    UserLogin,
+    UserOptional,
+    UserRequired,
+    UserUpdate,
+    PasswordChange,
+    PasswordReset,
+    AdminUserManagement,
     // New schemas that use the missing message keys
-    zPasswordWithWeaknessCheck,
-    zUserGenericValidation,
-    zEmailUniqueness,
-    zUsernameUniqueness,
-    zRoleValidation,
-    zAccountTypeValidation,
-    zUserRegistrationWithUniqueness,
+    PasswordWithWeaknessCheck,
+    UserGenericValidation,
+    EmailUniqueness,
+    UsernameUniqueness,
+    RoleValidation,
+    AccountTypeValidation,
+    UserRegistrationWithUniqueness,
     USER_ROLES,
     USER_STATUS,
     ACCOUNT_TYPES,
   };
 };
+
+// Top-level exports using test message handler
+const testMessageHandler = createTestMessageHandler();
+const userSchemas = createUserSchemas(testMessageHandler);
+
+export const UserOptional = userSchemas.UserOptional;

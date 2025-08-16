@@ -77,12 +77,12 @@ describe('BooleanMessageParams contract coverage', () => {
 });
 
 // Create schema functions with injected message handler
-const { zBooleanOptional, zBooleanRequired, zBooleanStringOptional, zBooleanStringRequired } = createBooleanSchemas(mockMessageHandler);
+const { BooleanOptional, BooleanRequired, BooleanStringOptional, BooleanStringRequired } = createBooleanSchemas(mockMessageHandler);
 
 describe('Boolean Schemas', () => {
 
-  describe('zBooleanOptional', () => {
-    const schema = zBooleanOptional();
+  describe('BooleanOptional', () => {
+    const schema = BooleanOptional();
 
     runTableTests([
       {
@@ -134,7 +134,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanOptional({ msg: 'Active' });
+        const schema = BooleanOptional({ msg: 'Active' });
         try {
           schema.parse('true');
           fail('Expected schema to throw error');
@@ -144,14 +144,14 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanOptional({ msg: 'Invalid boolean format', msgType: MsgType.Message });
+        const schema = BooleanOptional({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('true')).toThrow('Invalid boolean format');
       });
     });
   });
 
-  describe('zBooleanRequired', () => {
-    const schema = zBooleanRequired();
+  describe('BooleanRequired', () => {
+    const schema = BooleanRequired();
 
     runTableTests([
       {
@@ -198,7 +198,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanRequired({ msg: 'Active' });
+        const schema = BooleanRequired({ msg: 'Active' });
         try {
           schema.parse('true');
           fail('Expected schema to throw error');
@@ -208,14 +208,14 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanRequired({ msg: 'Invalid boolean format', msgType: MsgType.Message });
+        const schema = BooleanRequired({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('true')).toThrow('Invalid boolean format');
       });
     });
   });
 
-  describe('zBooleanStringOptional', () => {
-    const schema = zBooleanStringOptional();
+  describe('BooleanStringOptional', () => {
+    const schema = BooleanStringOptional();
 
     runTableTests([
       {
@@ -319,7 +319,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanStringOptional({ msg: 'Active' });
+        const schema = BooleanStringOptional({ msg: 'Active' });
         try {
           schema.parse('invalid');
           fail('Expected schema to throw error');
@@ -329,14 +329,14 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanStringOptional({ msg: 'Invalid boolean format', msgType: MsgType.Message });
+        const schema = BooleanStringOptional({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid boolean format');
       });
     });
   });
 
-  describe('zBooleanStringRequired', () => {
-    const schema = zBooleanStringRequired();
+  describe('BooleanStringRequired', () => {
+    const schema = BooleanStringRequired();
 
     runTableTests([
       {
@@ -409,7 +409,7 @@ describe('Boolean Schemas', () => {
 
     describe('Custom error messages', () => {
       it('should use custom field name in error message', () => {
-        const schema = zBooleanStringRequired({ msg: 'Active' });
+        const schema = BooleanStringRequired({ msg: 'Active' });
         try {
           schema.parse('invalid');
           fail('Expected schema to throw error');
@@ -419,7 +419,7 @@ describe('Boolean Schemas', () => {
       });
 
       it('should use custom message when msgType is Message', () => {
-        const schema = zBooleanStringRequired({ msg: 'Invalid boolean format', msgType: MsgType.Message });
+        const schema = BooleanStringRequired({ msg: 'Invalid boolean format', msgType: MsgType.Message });
         expect(() => schema.parse('invalid')).toThrow('Invalid boolean format');
       });
     });
@@ -427,7 +427,7 @@ describe('Boolean Schemas', () => {
 
   describe('Edge cases and special scenarios', () => {
     it('should handle boolean string conversion consistently', () => {
-      const schema = zBooleanStringOptional();
+      const schema = BooleanStringOptional();
       
       // Test all case variations
       const trueVariations = ['true', 'TRUE', 'True', 'tRuE', ' true ', '\ttrue\n'];
@@ -443,8 +443,8 @@ describe('Boolean Schemas', () => {
     });
 
     it('should handle primitive boolean values consistently', () => {
-      const optionalSchema = zBooleanStringOptional();
-      const requiredSchema = zBooleanStringRequired();
+      const optionalSchema = BooleanStringOptional();
+      const requiredSchema = BooleanStringRequired();
       
       expect(optionalSchema.parse(true)).toBe('true');
       expect(optionalSchema.parse(false)).toBe('false');
@@ -453,7 +453,7 @@ describe('Boolean Schemas', () => {
     });
 
     it('should reject truthy/falsy values that are not boolean', () => {
-      const schema = zBooleanStringOptional();
+      const schema = BooleanStringOptional();
       
       const truthyValues = [1, 'yes', 'on', 'True', [], {}];
       const falsyValues = [0, '', 'no', 'off', 'False', null];

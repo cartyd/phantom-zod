@@ -5,17 +5,17 @@ import { createTestMessageHandler } from "../src/localization/types/message-hand
 describe("File Upload Schemas", () => {
     const messageHandler = createTestMessageHandler();
     const {
-        zFileSize,
-        zMimeType,
-        zFilename,
-        zFileUploadOptional,
-        zFileUploadRequired,
-        zImageUpload,
-        zDocumentUpload,
-        zMultipleFileUpload,
+        FileSize,
+        MimeType,
+        Filename,
+        FileUploadOptional,
+        FileUploadRequired,
+        ImageUpload,
+        DocumentUpload,
+        MultipleFileUpload,
     } = createFileUploadSchemas(messageHandler);
-    describe("zFileUploadOptional", () => {
-        const schema = zFileUploadOptional();
+    describe("FileUploadOptional", () => {
+        const schema = FileUploadOptional();
 
         it("should accept undefined", () => {
             expect(schema.parse(undefined)).toBe(undefined);
@@ -42,7 +42,7 @@ describe("File Upload Schemas", () => {
         });
 
         it("should validate file size constraints", () => {
-            const schema = zFileUploadOptional({ maxSize: 1000 });
+            const schema = FileUploadOptional({ maxSize: 1000 });
             const oversizedFile = {
                 filename: "large.jpg",
                 mimetype: "image/jpeg",
@@ -53,7 +53,7 @@ describe("File Upload Schemas", () => {
         });
 
         it("should validate allowed file types", () => {
-            const schema = zFileUploadOptional({ allowedTypes: IMAGE_MIME_TYPES });
+            const schema = FileUploadOptional({ allowedTypes: IMAGE_MIME_TYPES });
             const wrongTypeFile = {
                 filename: "document.pdf",
                 mimetype: "application/pdf",
@@ -64,7 +64,7 @@ describe("File Upload Schemas", () => {
         });
 
         it("should require file extension when specified", () => {
-            const schema = zFileUploadOptional({ requireExtension: true });
+            const schema = FileUploadOptional({ requireExtension: true });
             const noExtensionFile = {
                 filename: "filename",
                 mimetype: "image/jpeg",
@@ -75,8 +75,8 @@ describe("File Upload Schemas", () => {
         });
     });
 
-    describe("zFileUploadRequired", () => {
-        const schema = zFileUploadRequired();
+    describe("FileUploadRequired", () => {
+        const schema = FileUploadRequired();
 
         it("should accept valid file object", () => {
             const validFile = {
@@ -99,8 +99,8 @@ describe("File Upload Schemas", () => {
         });
     });
 
-    describe("zImageUpload", () => {
-        const schema = zImageUpload();
+    describe("ImageUpload", () => {
+        const schema = ImageUpload();
 
         it("should accept valid image file", () => {
             const validImage = {
@@ -127,7 +127,7 @@ describe("File Upload Schemas", () => {
         });
 
         it("should reject files exceeding size limit", () => {
-            const schema = zImageUpload(1024); // 1KB limit
+            const schema = ImageUpload(1024); // 1KB limit
             const oversizedImage = {
                 filename: "large.jpg",
                 mimetype: "image/jpeg",
@@ -156,8 +156,8 @@ describe("File Upload Schemas", () => {
         });
     });
 
-    describe("zDocumentUpload", () => {
-        const schema = zDocumentUpload();
+    describe("DocumentUpload", () => {
+        const schema = DocumentUpload();
 
         it("should accept valid document file", () => {
             const validDoc = {
@@ -202,8 +202,8 @@ describe("File Upload Schemas", () => {
         });
     });
 
-    describe("zMultipleFileUpload", () => {
-        const schema = zMultipleFileUpload();
+    describe("MultipleFileUpload", () => {
+        const schema = MultipleFileUpload();
 
         it("should accept multiple valid files", () => {
             const validFiles = [
@@ -245,7 +245,7 @@ describe("File Upload Schemas", () => {
         });
 
         it("should accept custom max files limit", () => {
-            const schema = zMultipleFileUpload({}, "Files", MsgType.FieldName, 2);
+            const schema = MultipleFileUpload({}, "Files", MsgType.FieldName, 2);
             const validFiles = [
                 {
                     filename: "file1.txt",
@@ -271,41 +271,41 @@ describe("File Upload Schemas", () => {
         });
     });
 
-    describe("zFileSize", () => {
+    describe("FileSize", () => {
         it("should validate file size", () => {
-            const schema = zFileSize(1000);
+            const schema = FileSize(1000);
             expect(schema.parse(500)).toBe(500);
             expect(() => schema.parse(1500)).toThrow();
         });
 
         it("should reject negative sizes", () => {
-            const schema = zFileSize(1000);
+            const schema = FileSize(1000);
             expect(() => schema.parse(-100)).toThrow();
         });
 
         it("should reject zero size", () => {
-            const schema = zFileSize(1000);
+            const schema = FileSize(1000);
             expect(() => schema.parse(0)).toThrow();
         });
     });
 
-    describe("zMimeType", () => {
+    describe("MimeType", () => {
         it("should validate allowed MIME types", () => {
-            const schema = zMimeType(IMAGE_MIME_TYPES);
+            const schema = MimeType(IMAGE_MIME_TYPES);
             expect(schema.parse("image/jpeg")).toBe("image/jpeg");
             expect(() => schema.parse("video/mp4")).toThrow();
         });
     });
 
-    describe("zFilename", () => {
+    describe("Filename", () => {
         it("should accept valid filenames", () => {
-            const schema = zFilename();
+            const schema = Filename();
             expect(schema.parse("document.pdf")).toBe("document.pdf");
             expect(schema.parse("image file.jpg")).toBe("image file.jpg");
         });
 
         it("should reject invalid characters", () => {
-            const schema = zFilename();
+            const schema = Filename();
             expect(() => schema.parse("file<name.txt")).toThrow();
             expect(() => schema.parse("file>name.txt")).toThrow();
             expect(() => schema.parse("file:name.txt")).toThrow();
@@ -313,7 +313,7 @@ describe("File Upload Schemas", () => {
         });
 
         it("should reject filenames starting or ending with dot", () => {
-            const schema = zFilename();
+            const schema = Filename();
             expect(() => schema.parse(".hiddenfile")).toThrow();
             expect(() => schema.parse("filename.")).toThrow();
         });

@@ -5,13 +5,13 @@ import { createTestMessageHandler } from '../src/localization/types/message-hand
 // Create schemas using the factory with test message handler
 const mockMessageHandler = createTestMessageHandler();
 const {
-  zPostalCodeOptional,
-  zPostalCodeRequired,
+  PostalCodeOptional,
+  PostalCodeRequired,
 } = createPostalCodeSchemas(mockMessageHandler);
 
 describe('Postal Code Schemas', () => {
-  describe('zPostalCodeOptional', () => {
-    const schema = zPostalCodeOptional();
+  describe('PostalCodeOptional', () => {
+    const schema = PostalCodeOptional();
 
     it('should accept valid 5-digit ZIP codes', () => {
       expect(schema.parse('12345')).toBe('12345');
@@ -74,18 +74,18 @@ describe('Postal Code Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zPostalCodeOptional({ msg: 'ZIP Code' });
+      const customSchema = PostalCodeOptional({ msg: 'ZIP Code' });
       expect(() => customSchema.parse('invalid')).toThrow('ZIP Code is invalid');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zPostalCodeOptional({ msg: 'Invalid ZIP format', msgType: MsgType.Message });
+      const customSchema = PostalCodeOptional({ msg: 'Invalid ZIP format', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid ZIP format');
     });
   });
 
-  describe('zPostalCodeRequired', () => {
-    const schema = zPostalCodeRequired();
+  describe('PostalCodeRequired', () => {
+    const schema = PostalCodeRequired();
 
     it('should accept valid 5-digit ZIP codes', () => {
       expect(schema.parse('12345')).toBe('12345');
@@ -147,21 +147,21 @@ describe('Postal Code Schemas', () => {
     });
 
     it('should use custom field name in error messages', () => {
-      const customSchema = zPostalCodeRequired({ msg: 'ZIP Code' });
+      const customSchema = PostalCodeRequired({ msg: 'ZIP Code' });
       expect(() => customSchema.parse('')).toThrow('ZIP Code is required');
       expect(() => customSchema.parse('invalid')).toThrow('ZIP Code is invalid');
     });
 
     it('should use custom message when msgType is Message', () => {
-      const customSchema = zPostalCodeRequired({ msg: 'ZIP code is mandatory', msgType: MsgType.Message });
+      const customSchema = PostalCodeRequired({ msg: 'ZIP code is mandatory', msgType: MsgType.Message });
       expect(() => customSchema.parse('')).toThrow('ZIP code is mandatory');
       expect(() => customSchema.parse('invalid')).toThrow('ZIP code is mandatory');
     });
   });
 
   describe('Real-world ZIP code examples', () => {
-    const optionalSchema = zPostalCodeOptional();
-    const requiredSchema = zPostalCodeRequired();
+    const optionalSchema = PostalCodeOptional();
+    const requiredSchema = PostalCodeRequired();
 
     it('should accept famous ZIP codes', () => {
       const famousZips = [
@@ -217,24 +217,24 @@ describe('Postal Code Schemas', () => {
 
   describe('Edge cases', () => {
     it('should handle leading zeros correctly', () => {
-      expect(zPostalCodeOptional().parse('01234')).toBe('01234');
-      expect(zPostalCodeOptional().parse('00123')).toBe('00123');
-      expect(zPostalCodeOptional().parse('00001')).toBe('00001');
-      expect(zPostalCodeRequired().parse('00001')).toBe('00001');
+      expect(PostalCodeOptional().parse('01234')).toBe('01234');
+      expect(PostalCodeOptional().parse('00123')).toBe('00123');
+      expect(PostalCodeOptional().parse('00001')).toBe('00001');
+      expect(PostalCodeRequired().parse('00001')).toBe('00001');
     });
 
     it('should handle ZIP+4 with leading zeros', () => {
-      expect(zPostalCodeOptional().parse('12345-0001')).toBe('12345-0001');
-      expect(zPostalCodeOptional().parse('01234-0000')).toBe('01234-0000');
-      expect(zPostalCodeRequired().parse('01234-0123')).toBe('01234-0123');
+      expect(PostalCodeOptional().parse('12345-0001')).toBe('12345-0001');
+      expect(PostalCodeOptional().parse('01234-0000')).toBe('01234-0000');
+      expect(PostalCodeRequired().parse('01234-0123')).toBe('01234-0123');
     });
 
     it('should reject ZIP codes with special characters', () => {
       const invalidChars = ['12345@', '12345#', '12345$', '12345%', '12345*'];
       
       invalidChars.forEach(zip => {
-        expect(() => zPostalCodeOptional().parse(zip)).toThrow();
-        expect(() => zPostalCodeRequired().parse(zip)).toThrow();
+        expect(() => PostalCodeOptional().parse(zip)).toThrow();
+        expect(() => PostalCodeRequired().parse(zip)).toThrow();
       });
     });
 
@@ -248,8 +248,8 @@ describe('Postal Code Schemas', () => {
       ];
 
       internationalCodes.forEach(code => {
-        expect(() => zPostalCodeOptional().parse(code)).toThrow();
-        expect(() => zPostalCodeRequired().parse(code)).toThrow();
+        expect(() => PostalCodeOptional().parse(code)).toThrow();
+        expect(() => PostalCodeRequired().parse(code)).toThrow();
       });
     });
   });

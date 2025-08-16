@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { zPagination, zPaginationQuery, zCursorPagination, zOffsetPagination, zPaginationResponse, zPaginatedData } from '../src/schemas/pagination-schemas';
+import { Pagination, PaginationQuery, CursorPagination, OffsetPagination, PaginationResponse, PaginatedData } from '../src/schemas/pagination-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 
 // Tests for Pagination Schemas
 describe('Pagination Schemas', () => {
-  describe('zPagination', () => {
-    const schema = zPagination();
+  describe('Pagination', () => {
+    const schema = Pagination();
 
     it('should accept valid pagination with all fields', () => {
       const result = schema.parse({ page: 1, limit: 10, sort: 'name', order: 'asc' });
@@ -34,15 +34,15 @@ describe('Pagination Schemas', () => {
     });
 
     it('should use custom configurations', () => {
-      const customSchema = zPagination('Pagination', MsgType.FieldName, 25, 50);
+      const customSchema = Pagination('Pagination', MsgType.FieldName, 25, 50);
       const result = customSchema.parse({});
       expect(result.limit).toBe(25);
       expect(() => customSchema.parse({ limit: 60 })).toThrow();
     });
   });
 
-  describe('zPaginationQuery', () => {
-    const schema = zPaginationQuery();
+  describe('PaginationQuery', () => {
+    const schema = PaginationQuery();
 
     it('should parse string values to numbers', () => {
       const result = schema.parse({ page: '1', limit: '20' });
@@ -62,8 +62,8 @@ describe('Pagination Schemas', () => {
     });
   });
 
-  describe('zCursorPagination', () => {
-    const schema = zCursorPagination();
+  describe('CursorPagination', () => {
+    const schema = CursorPagination();
 
     it('should accept cursor pagination', () => {
       const result = schema.parse({ cursor: 'abc123', limit: 10 });
@@ -81,8 +81,8 @@ describe('Pagination Schemas', () => {
     });
   });
 
-  describe('zOffsetPagination', () => {
-    const schema = zOffsetPagination();
+  describe('OffsetPagination', () => {
+    const schema = OffsetPagination();
 
     it('should accept offset pagination', () => {
       const result = schema.parse({ offset: 50, limit: 25 });
@@ -101,8 +101,8 @@ describe('Pagination Schemas', () => {
     });
   });
 
-  describe('zPaginationResponse', () => {
-    const schema = zPaginationResponse();
+  describe('PaginationResponse', () => {
+    const schema = PaginationResponse();
 
     it('should accept valid pagination response', () => {
       const result = schema.parse({
@@ -134,9 +134,9 @@ describe('Pagination Schemas', () => {
     });
   });
 
-  describe('zPaginatedData', () => {
+  describe('PaginatedData', () => {
     const userSchema = z.object({ id: z.string(), name: z.string() });
-    const schema = zPaginatedData(z.array(userSchema));
+    const schema = PaginatedData(z.array(userSchema));
 
     it('should accept valid paginated data', () => {
       const result = schema.parse({
@@ -155,7 +155,7 @@ describe('Pagination Schemas', () => {
     });
 
     it('should work with different data types', () => {
-      const stringSchema = zPaginatedData(z.array(z.string()));
+      const stringSchema = PaginatedData(z.array(z.string()));
       const result = stringSchema.parse({
         data: ['apple', 'banana'],
         pagination: {

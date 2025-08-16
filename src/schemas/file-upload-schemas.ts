@@ -155,7 +155,7 @@ export const createFileUploadSchemas = (
    */
   const zFilename = (msg = "Filename", msgType: MsgType = MsgType.FieldName) =>
     stringSchemas
-      .zStringRequired({ msg, msgType })
+      .StringRequired({ msg, msgType })
       .refine((name) => FILENAME_INVALID_CHARS_PATTERN.test(name), {
         message: messageHandler.formatErrorMessage({
           group: "fileUpload",
@@ -209,8 +209,8 @@ export const createFileUploadSchemas = (
         ),
         mimetype: zMimeType(allowedTypes, "File Type", msgType),
         size: zFileSize(maxSize, "File Size", msgType),
-        encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
-        originalName: stringSchemas.zStringOptional({
+        encoding: stringSchemas.StringOptional({ msg: "Encoding", msgType }),
+        originalName: stringSchemas.StringOptional({
           msg: "Original Name",
           msgType,
         }),
@@ -273,8 +273,8 @@ export const createFileUploadSchemas = (
         ),
         mimetype: zMimeType(allowedTypes, "File Type", msgType),
         size: zFileSize(maxSize, "File Size", msgType),
-        encoding: stringSchemas.zStringOptional({ msg: "Encoding", msgType }),
-        originalName: stringSchemas.zStringOptional({
+        encoding: stringSchemas.StringOptional({ msg: "Encoding", msgType }),
+        originalName: stringSchemas.StringOptional({
           msg: "Original Name",
           msgType,
         }),
@@ -374,16 +374,33 @@ export const createFileUploadSchemas = (
       });
 
   return {
-    zFileSize,
-    zMimeType,
-    zFilename,
-    zFileUploadOptional,
-    zFileUploadRequired,
-    zImageUpload,
-    zDocumentUpload,
-    zMultipleFileUpload,
+    FileSize: zFileSize,
+    MimeType: zMimeType,
+    Filename: zFilename,
+    FileUploadOptional: zFileUploadOptional,
+    FileUploadRequired: zFileUploadRequired,
+    ImageUpload: zImageUpload,
+    DocumentUpload: zDocumentUpload,
+    MultipleFileUpload: zMultipleFileUpload,
   };
 };
+
+// Create a default message handler and export direct schemas
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+
+const defaultFileUploadSchemas = createFileUploadSchemas(
+  createTestMessageHandler(),
+);
+
+// Direct schema exports with clean naming
+export const FileSize = defaultFileUploadSchemas.FileSize;
+export const MimeType = defaultFileUploadSchemas.MimeType;
+export const Filename = defaultFileUploadSchemas.Filename;
+export const FileUploadOptional = defaultFileUploadSchemas.FileUploadOptional;
+export const FileUploadRequired = defaultFileUploadSchemas.FileUploadRequired;
+export const ImageUpload = defaultFileUploadSchemas.ImageUpload;
+export const DocumentUpload = defaultFileUploadSchemas.DocumentUpload;
+export const MultipleFileUpload = defaultFileUploadSchemas.MultipleFileUpload;
 
 // --- Utility Functions ---
 

@@ -13,11 +13,11 @@ The phantom-zod library provides a global configuration system that allows you t
 ### Setting Global Configuration
 
 ```typescript
-import { 
-  setLogger, 
-  setLocale, 
-  setLocalizationManager 
-} from 'phantom-zod/common/message-handler';
+import {
+  setLogger,
+  setLocale,
+  setLocalizationManager,
+} from "phantom-zod/common/message-handler";
 ```
 
 #### `setLogger(logger: Logger): void`
@@ -31,7 +31,7 @@ const customLogger = {
   },
   debug: (message: string, meta?: any) => {
     console.log(`[VALIDATION DEBUG]: ${message}`, meta);
-  }
+  },
 };
 
 setLogger(customLogger);
@@ -42,9 +42,9 @@ setLogger(customLogger);
 Sets the global locale used by all schemas for error message formatting.
 
 ```typescript
-setLocale('en'); // English
-setLocale('es'); // Spanish
-setLocale('fr'); // French
+setLocale("en"); // English
+setLocale("es"); // Spanish
+setLocale("fr"); // French
 // ... other supported locales
 ```
 
@@ -53,7 +53,7 @@ setLocale('fr'); // French
 Replaces the default localization manager with a custom implementation.
 
 ```typescript
-import { LocalizationManager } from 'phantom-zod/localization';
+import { LocalizationManager } from "phantom-zod/localization";
 
 const customManager = new LocalizationManager();
 // Configure your custom manager...
@@ -64,11 +64,11 @@ setLocalizationManager(customManager);
 ### Getting Current Configuration
 
 ```typescript
-import { 
-  getLogger, 
-  getLocale, 
-  getLocalizationManager 
-} from 'phantom-zod/common/message-handler';
+import {
+  getLogger,
+  getLocale,
+  getLocalizationManager,
+} from "phantom-zod/common/message-handler";
 ```
 
 #### `getLogger(): Logger`
@@ -86,26 +86,23 @@ Returns the current global localization manager instance.
 ## Usage Example
 
 ```typescript
-import { 
-  setLogger, 
-  setLocale 
-} from 'phantom-zod/common/message-handler';
-import { zStringRequired, zEmailRequired } from 'phantom-zod/schemas';
+import { setLogger, setLocale } from "phantom-zod/common/message-handler";
+import { pz } from "phantom-zod";
 
 // Set up global configuration once at app startup
 setLogger({
-  warn: (msg, meta) => console.error('VALIDATION:', msg, meta),
-  debug: (msg, meta) => console.log('DEBUG:', msg, meta)
+  warn: (msg, meta) => console.error("VALIDATION:", msg, meta),
+  debug: (msg, meta) => console.log("DEBUG:", msg, meta),
 });
-setLocale('en');
+setLocale("en");
 
 // All schemas will now use the global configuration
-const nameSchema = zStringRequired('Name');
-const emailSchema = zEmailRequired('Email');
+const nameSchema = pz.StringRequired({ msg: "Name" });
+const emailSchema = pz.EmailRequired({ msg: "Email" });
 
 // Validation errors will use the global logger and locale
 try {
-  nameSchema.parse(''); // Uses global logger and locale
+  nameSchema.parse(""); // Uses global logger and locale
 } catch (error) {
   console.log(error.issues[0].message);
 }
@@ -161,9 +158,19 @@ If you were previously passing `locale` or `localizationManager` parameters to i
 
 ```typescript
 // Before (per-schema configuration)
-const schema = zStringRequired('Name', MsgType.FieldName, 1, 50, 'en');
+const schema = pz.StringRequired({
+  msg: "Name",
+  msgType: MsgType.FieldName,
+  minLength: 1,
+  maxLength: 50,
+});
 
 // After (global configuration)
-setLocale('en'); // Set once globally
-const schema = zStringRequired('Name', MsgType.FieldName, 1, 50);
+setLocale("en"); // Set once globally
+const schema = pz.StringRequired({
+  msg: "Name",
+  msgType: MsgType.FieldName,
+  minLength: 1,
+  maxLength: 50,
+});
 ```

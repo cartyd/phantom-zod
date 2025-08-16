@@ -14,13 +14,13 @@ type EmailMessageKey = keyof EmailMessageParams;
  * @example
  * ```typescript
  * // Basic usage
- * const schema = zEmailRequired();
+ * const schema = EmailRequired();
  *
  * // Custom email pattern
- * const customSchema = zEmailRequired({ pattern: /^[a-z]+@company\.com$/ });
+ * const customSchema = EmailRequired({ pattern: /^[a-z]+@company\.com$/ });
  *
  * // Custom error messages
- * const customMessageSchema = zEmailRequired({
+ * const customMessageSchema = EmailRequired({
  *   msg: 'User Email',
  *   pattern: z.regexes.unicodeEmail
  * });
@@ -90,21 +90,21 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @example
    * ```typescript
    * // Basic optional email
-   * const schema = zEmailOptional();
+   * const schema = EmailOptional();
    *
    * // Optional email with custom pattern
-   * const companySchema = zEmailOptional({
+   * const companySchema = EmailOptional({
    *   pattern: /^[a-z]+@company\.com$/
    * });
    *
    * // Optional email with custom error message
-   * const customSchema = zEmailOptional({
+   * const customSchema = EmailOptional({
    *   msg: 'User Email',
    *   pattern: z.regexes.unicodeEmail
    * });
    * ```
    */
-  const zEmailOptional = (options: EmailSchemaOptions = {}) => {
+  const EmailOptional = (options: EmailSchemaOptions = {}) => {
     const { pattern } = options;
 
     const emailConfig: any = {
@@ -134,21 +134,21 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @example
    * ```typescript
    * // Basic required email
-   * const schema = zEmailRequired();
+   * const schema = EmailRequired();
    *
    * // Required email with custom pattern
-   * const companySchema = zEmailRequired({
+   * const companySchema = EmailRequired({
    *   pattern: /^[a-z]+@company\.com$/
    * });
    *
    * // Required email with custom error message
-   * const customSchema = zEmailRequired({
+   * const customSchema = EmailRequired({
    *   msg: 'User Email',
    *   pattern: z.regexes.html5Email
    * });
    * ```
    */
-  const zEmailRequired = (options: EmailSchemaOptions = {}) => {
+  const EmailRequired = (options: EmailSchemaOptions = {}) => {
     const { pattern } = options;
 
     const emailConfig: any = {
@@ -163,37 +163,14 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   return {
-    zEmailOptional,
-    zEmailRequired,
+    EmailOptional,
+    EmailRequired,
   };
 };
 
-// Create a test message handler for email validation
-const emailMessageHandler = createTestMessageHandler((options) => {
-  if (options.msgType === MsgType.Message) {
-    return options.msg;
-  }
-
-  // Email-specific error messages
-  switch (options.messageKey) {
-    case "required":
-      return `${options.msg} is required`;
-    case "mustBeValidEmail":
-      return `${options.msg} must be a valid email address`;
-    case "invalidFormat":
-      return `${options.msg} has invalid format: expected ${options.params?.expectedFormat || "user@example.com"}`;
-    case "domainInvalid":
-      return `${options.msg} has invalid domain: ${options.params?.domain || "missing or invalid"}`;
-    default:
-      return `${options.msg} is invalid`;
-  }
-});
-
 // Create schemas with default handler
-const {
-  zEmailOptional: baseZEmailOptional,
-  zEmailRequired: baseZEmailRequired,
-} = createEmailSchemas(emailMessageHandler);
+const testMessageHandler = createTestMessageHandler();
+const emailSchemas = createEmailSchemas(testMessageHandler);
 
 // Export schemas with updated API
 
@@ -208,18 +185,18 @@ const {
  *
  * @example
  * ```typescript
- * const schema = zEmailOptional();
+ * const schema = EmailOptional();
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('invalid-email');    // ✗ Throws error
  * schema.parse(undefined);          // ✓ Valid
  *
  * // With custom pattern for company emails
- * const companySchema = zEmailOptional({
+ * const companySchema = EmailOptional({
  *   pattern: /^[a-z.]+@company\.com$/
  * });
  * ```
  */
-export const zEmailOptional = baseZEmailOptional;
+export const EmailOptional = emailSchemas.EmailOptional;
 
 /**
  * Creates a required email schema that accepts only valid email addresses
@@ -232,23 +209,23 @@ export const zEmailOptional = baseZEmailOptional;
  *
  * @example
  * ```typescript
- * const schema = zEmailRequired();
+ * const schema = EmailRequired();
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('invalid-email');    // ✗ Throws error
  * schema.parse(undefined);          // ✗ Throws error
  *
  * // With HTML5 browser validation pattern
- * const html5Schema = zEmailRequired({
+ * const html5Schema = EmailRequired({
  *   pattern: z.regexes.html5Email
  * });
  *
  * // With unicode support for international emails
- * const unicodeSchema = zEmailRequired({
+ * const unicodeSchema = EmailRequired({
  *   pattern: z.regexes.unicodeEmail
  * });
  * ```
  */
-export const zEmailRequired = baseZEmailRequired;
+export const EmailRequired = emailSchemas.EmailRequired;
 
 // Export the options interface for external use
 export type { EmailSchemaOptions };
@@ -268,18 +245,21 @@ export type { EmailSchemaOptions };
  *
  * @example
  * ```typescript
- * const schema = zHtml5EmailRequired();
+ * const schema = Html5EmailRequired();
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('user+tag@example.com'); // ✓ Valid (supports plus addressing)
  *
  * // With custom error message
- * const customSchema = zHtml5EmailRequired({ msg: 'Registration Email' });
+ * const customSchema = Html5EmailRequired({ msg: 'Registration Email' });
  * ```
  */
-export const zHtml5EmailRequired = (
+export const Html5EmailRequired = (
   options: Omit<EmailSchemaOptions, "pattern"> = {},
 ) => {
-  return baseZEmailRequired({ ...options, pattern: z.regexes.html5Email });
+  return emailSchemas.EmailRequired({
+    ...options,
+    pattern: z.regexes.html5Email,
+  });
 };
 
 /**
@@ -288,10 +268,13 @@ export const zHtml5EmailRequired = (
  * @param options - Configuration options (pattern is pre-set to HTML5)
  * @returns Zod schema that accepts HTML5-compliant email addresses or undefined
  */
-export const zHtml5EmailOptional = (
+export const Html5EmailOptional = (
   options: Omit<EmailSchemaOptions, "pattern"> = {},
 ) => {
-  return baseZEmailOptional({ ...options, pattern: z.regexes.html5Email });
+  return emailSchemas.EmailOptional({
+    ...options,
+    pattern: z.regexes.html5Email,
+  });
 };
 
 /**
@@ -307,18 +290,21 @@ export const zHtml5EmailOptional = (
  *
  * @example
  * ```typescript
- * const schema = zRfc5322EmailRequired();
+ * const schema = Rfc5322EmailRequired();
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('very.long.email.address@example.com'); // ✓ Valid
  *
  * // For API endpoints requiring strict validation
- * const apiSchema = zRfc5322EmailRequired({ msg: 'API User Email' });
+ * const apiSchema = Rfc5322EmailRequired({ msg: 'API User Email' });
  * ```
  */
-export const zRfc5322EmailRequired = (
+export const Rfc5322EmailRequired = (
   options: Omit<EmailSchemaOptions, "pattern"> = {},
 ) => {
-  return baseZEmailRequired({ ...options, pattern: z.regexes.rfc5322Email });
+  return emailSchemas.EmailRequired({
+    ...options,
+    pattern: z.regexes.rfc5322Email,
+  });
 };
 
 /**
@@ -327,10 +313,13 @@ export const zRfc5322EmailRequired = (
  * @param options - Configuration options (pattern is pre-set to RFC 5322)
  * @returns Zod schema that accepts RFC 5322 compliant email addresses or undefined
  */
-export const zRfc5322EmailOptional = (
+export const Rfc5322EmailOptional = (
   options: Omit<EmailSchemaOptions, "pattern"> = {},
 ) => {
-  return baseZEmailOptional({ ...options, pattern: z.regexes.rfc5322Email });
+  return emailSchemas.EmailOptional({
+    ...options,
+    pattern: z.regexes.rfc5322Email,
+  });
 };
 
 /**
@@ -346,18 +335,21 @@ export const zRfc5322EmailOptional = (
  *
  * @example
  * ```typescript
- * const schema = zUnicodeEmailRequired();
+ * const schema = UnicodeEmailRequired();
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('用户@例え.テスト'); // ✓ Valid (international characters)
  *
  * // For international applications
- * const globalSchema = zUnicodeEmailRequired({ msg: 'International Email' });
+ * const globalSchema = UnicodeEmailRequired({ msg: 'International Email' });
  * ```
  */
-export const zUnicodeEmailRequired = (
+export const UnicodeEmailRequired = (
   options: Omit<EmailSchemaOptions, "pattern"> = {},
 ) => {
-  return baseZEmailRequired({ ...options, pattern: z.regexes.unicodeEmail });
+  return emailSchemas.EmailRequired({
+    ...options,
+    pattern: z.regexes.unicodeEmail,
+  });
 };
 
 /**
@@ -366,17 +358,20 @@ export const zUnicodeEmailRequired = (
  * @param options - Configuration options (pattern is pre-set to Unicode)
  * @returns Zod schema that accepts Unicode-friendly email addresses or undefined
  */
-export const zUnicodeEmailOptional = (
+export const UnicodeEmailOptional = (
   options: Omit<EmailSchemaOptions, "pattern"> = {},
 ) => {
-  return baseZEmailOptional({ ...options, pattern: z.regexes.unicodeEmail });
+  return emailSchemas.EmailOptional({
+    ...options,
+    pattern: z.regexes.unicodeEmail,
+  });
 };
 
 // --- Types ---
 type EmailSchemasFactory = ReturnType<typeof createEmailSchemas>;
 export type EmailOptional = z.infer<
-  ReturnType<EmailSchemasFactory["zEmailOptional"]>
+  ReturnType<EmailSchemasFactory["EmailOptional"]>
 >;
 export type EmailRequired = z.infer<
-  ReturnType<EmailSchemasFactory["zEmailRequired"]>
+  ReturnType<EmailSchemasFactory["EmailRequired"]>
 >;

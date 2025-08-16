@@ -477,13 +477,28 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   return {
-    zCurrencyCode,
-    zMoneyAmount,
-    zMoneyAmountFromString,
-    zMoneyOptional,
-    zMoneyRequired,
-    zMoneyFromString,
-    zPrice,
-    zPriceRange,
+    CurrencyCode: zCurrencyCode,
+    MoneyAmount: zMoneyAmount,
+    MoneyAmountFromString: zMoneyAmountFromString,
+    MoneyOptional: zMoneyOptional,
+    MoneyRequired: zMoneyRequired,
+    MoneyFromString: zMoneyFromString,
+    Price: zPrice,
+    PriceRange: zPriceRange,
   };
 };
+
+// Create a default message handler and export direct schemas
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
+
+const defaultMoneySchemas = createMoneySchemas(createTestMessageHandler());
+
+// Direct schema exports with clean naming
+export const CurrencyCode = defaultMoneySchemas.CurrencyCode;
+export const MoneyAmount = defaultMoneySchemas.MoneyAmount;
+export const MoneyAmountFromString = defaultMoneySchemas.MoneyAmountFromString;
+export const MoneyOptional = defaultMoneySchemas.MoneyOptional;
+export const MoneyRequired = defaultMoneySchemas.MoneyRequired;
+export const MoneyFromString = defaultMoneySchemas.MoneyFromString;
+export const Price = defaultMoneySchemas.Price;
+export const PriceRange = defaultMoneySchemas.PriceRange;

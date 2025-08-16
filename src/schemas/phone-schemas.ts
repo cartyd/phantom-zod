@@ -1,13 +1,8 @@
-import { createTestMessageHandler } from "../localization/types/message-handler.types";
-// Top-level exports for barrel usage
-export const zPhoneOptional = (options = {}) =>
-  createPhoneSchemas(createTestMessageHandler()).zPhoneOptional(options);
-export const zPhoneRequired = (options = {}) =>
-  createPhoneSchemas(createTestMessageHandler()).zPhoneRequired(options);
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import { trimOrUndefined, trimOrEmpty } from "../common/utils/string-utils";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import type { PhoneSchemaOptions } from "../common/types/schema-options.types";
 import {
   US_PHONE_E164_PATTERN,
@@ -38,10 +33,10 @@ function normalizePhone(val: string, format: PhoneFormat): string | null {
 // Note: These types reference the factory functions, so they need to be created from the factory
 type PhoneSchemasFactory = ReturnType<typeof createPhoneSchemas>;
 export type PhoneOptional = z.infer<
-  ReturnType<PhoneSchemasFactory["zPhoneOptional"]>
+  ReturnType<PhoneSchemasFactory["PhoneOptional"]>
 >;
 export type PhoneRequired = z.infer<
-  ReturnType<PhoneSchemasFactory["zPhoneRequired"]>
+  ReturnType<PhoneSchemasFactory["PhoneRequired"]>
 >;
 
 /**
@@ -82,13 +77,13 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
    *
    * @example
-   * const { zPhoneOptional } = createPhoneSchemas(messageHandler);
-   * const schema = zPhoneOptional({ msg: "Contact Phone", format: PhoneFormat.E164 });
+   * const { PhoneOptional } = createPhoneSchemas(messageHandler);
+   * const schema = PhoneOptional({ msg: "Contact Phone", format: PhoneFormat.E164 });
    * schema.parse("123-456-7890"); // "+11234567890"
    * schema.parse(undefined);       // undefined
    * schema.parse("");              // undefined
    */
-  const zPhoneOptional = (options: PhoneSchemaOptions = {}) => {
+  const PhoneOptional = (options: PhoneSchemaOptions = {}) => {
     const {
       msg = "Phone",
       msgType = MsgType.FieldName,
@@ -213,12 +208,12 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
    *
    * @example
-   * const { zPhoneRequired } = createPhoneSchemas(messageHandler);
-   * const schema = zPhoneRequired({ msg: "Contact Phone", format: PhoneFormat.National });
+   * const { PhoneRequired } = createPhoneSchemas(messageHandler);
+   * const schema = PhoneRequired({ msg: "Contact Phone", format: PhoneFormat.National });
    * schema.parse("123-456-7890"); // "1234567890"
    * schema.parse("");              // throws ZodError
    */
-  const zPhoneRequired = (options: PhoneSchemaOptions = {}) => {
+  const PhoneRequired = (options: PhoneSchemaOptions = {}) => {
     const {
       msg = "Phone",
       msgType = MsgType.FieldName,
@@ -334,7 +329,14 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   return {
-    zPhoneOptional,
-    zPhoneRequired,
+    PhoneOptional,
+    PhoneRequired,
   };
 };
+
+// Top-level exports using test message handler
+const testMessageHandler = createTestMessageHandler();
+const phoneSchemas = createPhoneSchemas(testMessageHandler);
+
+export const PhoneOptional = phoneSchemas.PhoneOptional;
+export const PhoneRequired = phoneSchemas.PhoneRequired;

@@ -30,13 +30,13 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod schema that validates an optional value matching one of the provided enum options.
    *
    * @example
-   * const { zEnumOptional } = createEnumSchemas(messageHandler);
-   * const statusSchema = zEnumOptional(["active", "inactive"], { msg: "Status" });
+   * const { EnumOptional } = createEnumSchemas(messageHandler);
+   * const statusSchema = EnumOptional(["active", "inactive"], { msg: "Status" });
    * statusSchema.parse("active"); // "active"
    * statusSchema.parse(undefined); // undefined
    * statusSchema.parse("other"); // throws ZodError
    */
-  const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
+  const EnumOptional = <TEnum extends readonly [string, ...string[]]>(
     values: TEnum,
     options: BaseSchemaOptions = {},
   ) => {
@@ -67,12 +67,12 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns Zod schema for a required enum value.
    *
    * @example
-   * const { zEnumRequired } = createEnumSchemas(messageHandler);
-   * const statusSchema = zEnumRequired(["active", "inactive"], { msg: "Status" });
+   * const { EnumRequired } = createEnumSchemas(messageHandler);
+   * const statusSchema = EnumRequired(["active", "inactive"], { msg: "Status" });
    * statusSchema.parse("active"); // "active"
    * statusSchema.parse("other"); // throws ZodError
    */
-  const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
+  const EnumRequired = <TEnum extends readonly [string, ...string[]]>(
     values: TEnum,
     options: BaseSchemaOptions = {},
   ) => {
@@ -90,20 +90,14 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   return {
-    zEnumOptional,
-    zEnumRequired,
+    EnumOptional,
+    EnumRequired,
   };
 };
 
 // Top-level exports for barrel usage
-export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
-  values: TEnum,
-  options: BaseSchemaOptions = {},
-) =>
-  createEnumSchemas(createTestMessageHandler()).zEnumOptional(values, options);
+const testMessageHandler = createTestMessageHandler();
+const enumSchemas = createEnumSchemas(testMessageHandler);
 
-export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
-  values: TEnum,
-  options: BaseSchemaOptions = {},
-) =>
-  createEnumSchemas(createTestMessageHandler()).zEnumRequired(values, options);
+export const EnumOptional = enumSchemas.EnumOptional;
+export const EnumRequired = enumSchemas.EnumRequired;

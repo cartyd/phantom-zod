@@ -1,15 +1,15 @@
 import {
   createDateSchemas,
-  zDateOptional,
-  zDateRequired,
-  zDateStringOptional,
-  zDateStringRequired,
-  zDateTimeOptional,
-  zDateTimeRequired,
-  zDateTimeStringOptional,
-  zDateTimeStringRequired,
-  zTimeStringOptional,
-  zTimeStringRequired,
+  DateOptional,
+  DateRequired,
+  DateStringOptional,
+  DateStringRequired,
+  DateTimeOptional,
+  DateTimeRequired,
+  DateTimeStringOptional,
+  DateTimeStringRequired,
+  TimeStringOptional,
+  TimeStringRequired,
   getDateExamples,
 } from '../src/schemas/date-schemas';
 import { MsgType } from '../src/common/types/msg-type';
@@ -19,8 +19,8 @@ import { runTableTests } from './setup';
 describe('Date Schemas', () => {
   const messageHandler = createTestMessageHandler();
   const schemas = createDateSchemas(messageHandler);
-  describe('zDateOptional', () => {
-    const schema = zDateOptional();
+  describe('DateOptional', () => {
+    const schema = DateOptional();
 
     runTableTests([
       {
@@ -66,19 +66,19 @@ describe('Date Schemas', () => {
 
     describe('Custom field name', () => {
       it('should use custom field name in error message', () => {
-        const customSchema = zDateOptional({ msg: 'Birth Date' });
+        const customSchema = DateOptional({ msg: 'Birth Date' });
         expect(() => customSchema.parse('invalid-date')).toThrow('Birth Date must be a valid date');
       });
 
       it('should use custom message when msgType is Message', () => {
-        const customSchema = zDateOptional({ msg: 'Invalid birth date format', msgType: MsgType.Message });
+        const customSchema = DateOptional({ msg: 'Invalid birth date format', msgType: MsgType.Message });
         expect(() => customSchema.parse('invalid-date')).toThrow('Invalid birth date format');
       });
     });
   });
 
-  describe('zDateRequired', () => {
-    const schema = zDateRequired();
+  describe('DateRequired', () => {
+    const schema = DateRequired();
 
     runTableTests([
       {
@@ -137,8 +137,8 @@ describe('Date Schemas', () => {
     });
   });
 
-  describe('zDateStringOptional', () => {
-    const schema = zDateStringOptional();
+  describe('DateStringOptional', () => {
+    const schema = DateStringOptional();
 
     runTableTests([
       {
@@ -171,8 +171,8 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zDateStringRequired', () => {
-    const schema = zDateStringRequired();
+  describe('DateStringRequired', () => {
+    const schema = DateStringRequired();
 
     runTableTests([
       {
@@ -206,8 +206,8 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zDateTimeOptional', () => {
-    const schema = zDateTimeOptional();
+  describe('DateTimeOptional', () => {
+    const schema = DateTimeOptional();
 
     runTableTests([
       {
@@ -257,8 +257,8 @@ describe('Date Schemas', () => {
     });
   });
 
-  describe('zDateTimeRequired', () => {
-    const schema = zDateTimeRequired();
+  describe('DateTimeRequired', () => {
+    const schema = DateTimeRequired();
 
     runTableTests([
       {
@@ -292,8 +292,8 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zDateTimeStringOptional', () => {
-    const schema = zDateTimeStringOptional();
+  describe('DateTimeStringOptional', () => {
+    const schema = DateTimeStringOptional();
 
     runTableTests([
       {
@@ -320,8 +320,8 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zDateTimeStringRequired', () => {
-    const schema = zDateTimeStringRequired();
+  describe('DateTimeStringRequired', () => {
+    const schema = DateTimeStringRequired();
 
     runTableTests([
       {
@@ -355,8 +355,8 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zTimeStringOptional', () => {
-    const schema = zTimeStringOptional();
+  describe('TimeStringOptional', () => {
+    const schema = TimeStringOptional();
 
     runTableTests([
       {
@@ -383,8 +383,8 @@ describe('Date Schemas', () => {
     ], (input) => schema.parse(input));
   });
 
-  describe('zTimeStringRequired', () => {
-    const schema = zTimeStringRequired();
+  describe('TimeStringRequired', () => {
+    const schema = TimeStringRequired();
 
     runTableTests([
       {
@@ -426,7 +426,7 @@ describe('Date Schemas', () => {
   describe('Date constraints', () => {
     it('should enforce minimum date constraint', () => {
       const minDate = new Date('2023-01-01');
-      const schema = zDateRequired({ min: minDate });
+      const schema = DateRequired({ min: minDate });
       
       expect(() => schema.parse(new Date('2022-12-31'))).toThrow();
       expect(schema.parse(new Date('2023-01-01'))).toEqual(expect.any(Date));
@@ -435,7 +435,7 @@ describe('Date Schemas', () => {
 
     it('should enforce maximum date constraint', () => {
       const maxDate = new Date('2023-12-31');
-      const schema = zDateRequired({ max: maxDate });
+      const schema = DateRequired({ max: maxDate });
       
       expect(schema.parse(new Date('2023-12-30'))).toEqual(expect.any(Date));
       expect(schema.parse(new Date('2023-12-31'))).toEqual(expect.any(Date));
@@ -445,7 +445,7 @@ describe('Date Schemas', () => {
     it('should enforce both min and max constraints', () => {
       const minDate = new Date('2023-01-01');
       const maxDate = new Date('2023-12-31');
-      const schema = zDateRequired({ min: minDate, max: maxDate });
+      const schema = DateRequired({ min: minDate, max: maxDate });
       
       expect(() => schema.parse(new Date('2022-12-31'))).toThrow();
       expect(schema.parse(new Date('2023-06-15'))).toEqual(expect.any(Date));
