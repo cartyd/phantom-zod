@@ -1,10 +1,7 @@
-import { createTestMessageHandler } from "../localization/types/message-handler.types";
-// Top-level export for barrel usage
-export const zBooleanRequired = (options = {}) =>
-  createBooleanSchemas(createTestMessageHandler()).zBooleanRequired(options);
 import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import { MsgType } from "../common/types/msg-type";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
@@ -161,3 +158,16 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
 };
 
 const baseBooleanStringSchema = z.union([z.string(), z.boolean()]);
+
+// Top-level exports for barrel usage
+export const BooleanOptional = (options: BaseSchemaOptions = {}) =>
+  createBooleanSchemas(createTestMessageHandler()).zBooleanOptional(options);
+
+export const BooleanRequired = (options: BaseSchemaOptions = {}) =>
+  createBooleanSchemas(createTestMessageHandler()).zBooleanRequired(options);
+
+export const BooleanStringOptional = (options: BaseSchemaOptions = {}) =>
+  createBooleanSchemas(createTestMessageHandler()).zBooleanStringOptional(options);
+
+export const BooleanStringRequired = (options: BaseSchemaOptions = {}) =>
+  createBooleanSchemas(createTestMessageHandler()).zBooleanStringRequired(options);

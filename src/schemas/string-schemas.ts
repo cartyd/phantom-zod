@@ -219,7 +219,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
 };
 
 // Top-level exports for barrel usage
-export const zStringOptional = (options = {}) =>
+export const StringOptional = (options = {}) =>
   createStringSchemas(createTestMessageHandler()).zStringOptional(options);
-export const zStringRequired = (options = {}) =>
+export const StringRequired = (options = {}) =>
   createStringSchemas(createTestMessageHandler()).zStringRequired(options);
