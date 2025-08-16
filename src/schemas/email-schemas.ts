@@ -168,7 +168,6 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-
 // Create schemas with default handler
 const testMessageHandler = createTestMessageHandler();
 const emailSchemas = createEmailSchemas(testMessageHandler);

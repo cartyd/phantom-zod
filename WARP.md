@@ -142,6 +142,8 @@ Localization messages are organized hierarchically by validation domain (string,
 
 **Build Process**: The build step copies localization JSON files from `src/localization/locales/` to `dist/localization/locales/` - ensure new locale files are included.
 
+**Branch Protection**: The main branch has protection rules enabled that prevent direct merges via CLI. Pull requests must be reviewed and approved through the GitHub web interface before merging.
+
 **Auto-Publishing**: The repository is configured with GitHub Actions to automatically publish to npm when the version in `package.json` changes on the main branch. To trigger a release:
 
 1. Update the version in `package.json` (e.g., from `1.2.0` to `1.3.0`)
