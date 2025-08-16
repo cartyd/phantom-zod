@@ -54,7 +54,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ip');   // ✗ Throws error
    * ```
    */
-  const zIPv4Optional = (options: NetworkSchemaOptions = {}) => {
+  const IPv4Optional = (options: NetworkSchemaOptions = {}) => {
     return makeOptional(
       z.ipv4({ message: createErrorMessage("mustBeValidIPv4", options) }),
     );
@@ -74,7 +74,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ip');   // ✗ Throws error
    * ```
    */
-  const zIPv4Required = (options: NetworkSchemaOptions = {}) => {
+  const IPv4Required = (options: NetworkSchemaOptions = {}) => {
     return z.ipv4({ message: createErrorMessage("mustBeValidIPv4", options) });
   };
 
@@ -92,7 +92,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ipv6');    // ✗ Throws error
    * ```
    */
-  const zIPv6Optional = (options: NetworkSchemaOptions = {}) => {
+  const IPv6Optional = (options: NetworkSchemaOptions = {}) => {
     return makeOptional(
       z.ipv6({ message: createErrorMessage("mustBeValidIPv6", options) }),
     );
@@ -112,7 +112,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ipv6');    // ✗ Throws error
    * ```
    */
-  const zIPv6Required = (options: NetworkSchemaOptions = {}) => {
+  const IPv6Required = (options: NetworkSchemaOptions = {}) => {
     return z.ipv6({ message: createErrorMessage("mustBeValidIPv6", options) });
   };
 
@@ -131,7 +131,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-mac');       // ✗ Throws error
    * ```
    */
-  const zMacAddressOptional = (options: NetworkSchemaOptions = {}) => {
+  const MacAddressOptional = (options: NetworkSchemaOptions = {}) => {
     return makeOptional(
       z.string().refine((val) => MAC_ADDRESS_PATTERN.test(val), {
         message: createErrorMessage("mustBeValidMacAddress", options),
@@ -154,7 +154,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-mac');       // ✗ Throws error
    * ```
    */
-  const zMacAddressRequired = (options: NetworkSchemaOptions = {}) => {
+  const MacAddressRequired = (options: NetworkSchemaOptions = {}) => {
     return z.string().refine((val) => MAC_ADDRESS_PATTERN.test(val), {
       message: createErrorMessage("mustBeValidMacAddress", options),
     });
@@ -176,7 +176,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-address');   // ✗ Throws error
    * ```
    */
-  const zNetworkAddressGeneric = (options: NetworkSchemaOptions = {}) => {
+  const NetworkAddressGeneric = (options: NetworkSchemaOptions = {}) => {
     return z.string().refine(
       (val) => {
         // Try IPv4 validation using Zod
@@ -208,7 +208,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ip');  // ✗ Throws error
    * ```
    */
-  const zIPAddressGeneric = (options: NetworkSchemaOptions = {}) => {
+  const IPAddressGeneric = (options: NetworkSchemaOptions = {}) => {
     return z.string().refine(
       (val) => {
         // Try IPv4 validation using Zod
@@ -241,7 +241,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('192.168.1.0/33');  // ✗ Throws error (invalid prefix)
    * ```
    */
-  const zIPv4CIDROptional = (options: NetworkSchemaOptions = {}) => {
+  const IPv4CIDROptional = (options: NetworkSchemaOptions = {}) => {
     return makeOptionalSimple(
       z.cidrv4({ message: createErrorMessage("mustBeValidIPv4", options) }),
     );
@@ -263,7 +263,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('192.168.1.0/33');  // ✗ Throws error (invalid prefix)
    * ```
    */
-  const zIPv4CIDRRequired = (options: NetworkSchemaOptions = {}) => {
+  const IPv4CIDRRequired = (options: NetworkSchemaOptions = {}) => {
     return z.cidrv4({
       message: createErrorMessage("mustBeValidIPv4", options),
     });
@@ -285,7 +285,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('2001:db8::/129');  // ✗ Throws error (invalid prefix)
    * ```
    */
-  const zIPv6CIDROptional = (options: NetworkSchemaOptions = {}) => {
+  const IPv6CIDROptional = (options: NetworkSchemaOptions = {}) => {
     return makeOptionalSimple(
       z.cidrv6({ message: createErrorMessage("mustBeValidIPv6", options) }),
     );
@@ -307,7 +307,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('2001:db8::/129');  // ✗ Throws error (invalid prefix)
    * ```
    */
-  const zIPv6CIDRRequired = (options: NetworkSchemaOptions = {}) => {
+  const IPv6CIDRRequired = (options: NetworkSchemaOptions = {}) => {
     return z.cidrv6({
       message: createErrorMessage("mustBeValidIPv6", options),
     });
@@ -327,7 +327,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-cidr');     // ✗ Throws error
    * ```
    */
-  const zCIDRGeneric = (options: NetworkSchemaOptions = {}) => {
+  const CIDRGeneric = (options: NetworkSchemaOptions = {}) => {
     return z.string().refine(
       (val) => {
         // Try IPv4 CIDR validation using Zod
@@ -358,19 +358,19 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   return {
-    zIPv4Optional,
-    zIPv4Required,
-    zIPv6Optional,
-    zIPv6Required,
-    zIPv4CIDROptional,
-    zIPv4CIDRRequired,
-    zIPv6CIDROptional,
-    zIPv6CIDRRequired,
-    zCIDRGeneric,
-    zMacAddressOptional,
-    zMacAddressRequired,
-    zNetworkAddressGeneric,
-    zIPAddressGeneric,
+    IPv4Optional,
+    IPv4Required,
+    IPv6Optional,
+    IPv6Required,
+    IPv4CIDROptional,
+    IPv4CIDRRequired,
+    IPv6CIDROptional,
+    IPv6CIDRRequired,
+    CIDRGeneric,
+    MacAddressOptional,
+    MacAddressRequired,
+    NetworkAddressGeneric,
+    IPAddressGeneric,
     getNetworkAddressExamples,
   };
 };
@@ -404,19 +404,19 @@ const networkMessageHandler = createTestMessageHandler((options) => {
 
 // Create schemas with default handler
 const {
-  zIPv4Optional: baseZIPv4Optional,
-  zIPv4Required: baseZIPv4Required,
-  zIPv6Optional: baseZIPv6Optional,
-  zIPv6Required: baseZIPv6Required,
-  zIPv4CIDROptional: baseZIPv4CIDROptional,
-  zIPv4CIDRRequired: baseZIPv4CIDRRequired,
-  zIPv6CIDROptional: baseZIPv6CIDROptional,
-  zIPv6CIDRRequired: baseZIPv6CIDRRequired,
-  zCIDRGeneric: baseZCIDRGeneric,
-  zMacAddressOptional: baseZMacAddressOptional,
-  zMacAddressRequired: baseZMacAddressRequired,
-  zNetworkAddressGeneric: baseZNetworkAddressGeneric,
-  zIPAddressGeneric: baseZIPAddressGeneric,
+  IPv4Optional: baseIPv4Optional,
+  IPv4Required: baseIPv4Required,
+  IPv6Optional: baseIPv6Optional,
+  IPv6Required: baseIPv6Required,
+  IPv4CIDROptional: baseIPv4CIDROptional,
+  IPv4CIDRRequired: baseIPv4CIDRRequired,
+  IPv6CIDROptional: baseIPv6CIDROptional,
+  IPv6CIDRRequired: baseIPv6CIDRRequired,
+  CIDRGeneric: baseCIDRGeneric,
+  MacAddressOptional: baseMacAddressOptional,
+  MacAddressRequired: baseMacAddressRequired,
+  NetworkAddressGeneric: baseNetworkAddressGeneric,
+  IPAddressGeneric: baseIPAddressGeneric,
   getNetworkAddressExamples: baseGetNetworkAddressExamples,
 } = createNetworkSchemas(networkMessageHandler);
 
@@ -436,7 +436,7 @@ const {
  * schema.parse('300.1.1.1');    // ✗ Throws error
  * ```
  */
-export const zIPv4Optional = baseZIPv4Optional;
+export const IPv4Optional = baseIPv4Optional;
 
 /**
  * Creates a required IPv4 address schema using Zod's built-in IP validation
@@ -452,7 +452,7 @@ export const zIPv4Optional = baseZIPv4Optional;
  * schema.parse('300.1.1.1');    // ✗ Throws error
  * ```
  */
-export const zIPv4Required = baseZIPv4Required;
+export const IPv4Required = baseIPv4Required;
 
 /**
  * Creates an optional IPv6 address schema using Zod's built-in IP validation
@@ -469,7 +469,7 @@ export const zIPv4Required = baseZIPv4Required;
  * schema.parse('invalid-ipv6');                   // ✗ Throws error
  * ```
  */
-export const zIPv6Optional = baseZIPv6Optional;
+export const IPv6Optional = baseIPv6Optional;
 
 /**
  * Creates a required IPv6 address schema using Zod's built-in IP validation
@@ -486,7 +486,7 @@ export const zIPv6Optional = baseZIPv6Optional;
  * schema.parse('invalid-ipv6');                   // ✗ Throws error
  * ```
  */
-export const zIPv6Required = baseZIPv6Required;
+export const IPv6Required = baseIPv6Required;
 
 /**
  * Creates an optional MAC address schema
@@ -506,7 +506,7 @@ export const zIPv6Required = baseZIPv6Required;
  * schema.parse('invalid-mac');       // ✗ Throws error
  * ```
  */
-export const zMacAddressOptional = baseZMacAddressOptional;
+export const MacAddressOptional = baseMacAddressOptional;
 
 /**
  * Creates a required MAC address schema
@@ -526,7 +526,7 @@ export const zMacAddressOptional = baseZMacAddressOptional;
  * schema.parse('invalid-mac');       // ✗ Throws error
  * ```
  */
-export const zMacAddressRequired = baseZMacAddressRequired;
+export const MacAddressRequired = baseMacAddressRequired;
 
 /**
  * Creates a generic network address schema that accepts IPv4, IPv6, or MAC addresses
@@ -546,7 +546,7 @@ export const zMacAddressRequired = baseZMacAddressRequired;
  * schema.parse('invalid-address');               // ✗ Throws error
  * ```
  */
-export const zNetworkAddressGeneric = baseZNetworkAddressGeneric;
+export const NetworkAddressGeneric = baseNetworkAddressGeneric;
 
 /**
  * Creates a schema that accepts any valid IP address (IPv4 or IPv6)
@@ -566,7 +566,7 @@ export const zNetworkAddressGeneric = baseZNetworkAddressGeneric;
  * schema.parse('invalid-ip');                    // ✗ Throws error
  * ```
  */
-export const zIPAddressGeneric = baseZIPAddressGeneric;
+export const IPAddressGeneric = baseIPAddressGeneric;
 
 /**
  * Creates an optional IPv4 CIDR block schema using Zod's built-in CIDR validation
@@ -590,7 +590,7 @@ export const zIPAddressGeneric = baseZIPAddressGeneric;
  * schema.parse('256.1.1.0/24');      // ✗ Throws error (invalid IP)
  * ```
  */
-export const zIPv4CIDROptional = baseZIPv4CIDROptional;
+export const IPv4CIDROptional = baseIPv4CIDROptional;
 
 /**
  * Creates a required IPv4 CIDR block schema using Zod's built-in CIDR validation
@@ -619,7 +619,7 @@ export const zIPv4CIDROptional = baseZIPv4CIDROptional;
  * });
  * ```
  */
-export const zIPv4CIDRRequired = baseZIPv4CIDRRequired;
+export const IPv4CIDRRequired = baseIPv4CIDRRequired;
 
 /**
  * Creates an optional IPv6 CIDR block schema using Zod's built-in CIDR validation
@@ -643,7 +643,7 @@ export const zIPv4CIDRRequired = baseZIPv4CIDRRequired;
  * schema.parse('invalid::/32');      // ✗ Throws error (invalid IPv6)
  * ```
  */
-export const zIPv6CIDROptional = baseZIPv6CIDROptional;
+export const IPv6CIDROptional = baseIPv6CIDROptional;
 
 /**
  * Creates a required IPv6 CIDR block schema using Zod's built-in CIDR validation
@@ -672,7 +672,7 @@ export const zIPv6CIDROptional = baseZIPv6CIDROptional;
  * });
  * ```
  */
-export const zIPv6CIDRRequired = baseZIPv6CIDRRequired;
+export const IPv6CIDRRequired = baseIPv6CIDRRequired;
 
 /**
  * Creates a generic CIDR block schema that accepts IPv4 or IPv6 CIDR blocks
@@ -701,7 +701,7 @@ export const zIPv6CIDRRequired = baseZIPv6CIDRRequired;
  * });
  * ```
  */
-export const zCIDRGeneric = baseZCIDRGeneric;
+export const CIDRGeneric = baseCIDRGeneric;
 
 /**
  * Returns example network address formats for user guidance
@@ -724,26 +724,26 @@ export type { NetworkSchemaOptions };
 // --- Types ---
 type NetworkSchemasFactory = ReturnType<typeof createNetworkSchemas>;
 export type IPv4Address = z.infer<
-  ReturnType<NetworkSchemasFactory["zIPv4Required"]>
+  ReturnType<NetworkSchemasFactory["IPv4Required"]>
 >;
 export type IPv6Address = z.infer<
-  ReturnType<NetworkSchemasFactory["zIPv6Required"]>
+  ReturnType<NetworkSchemasFactory["IPv6Required"]>
 >;
 export type IPv4CIDR = z.infer<
-  ReturnType<NetworkSchemasFactory["zIPv4CIDRRequired"]>
+  ReturnType<NetworkSchemasFactory["IPv4CIDRRequired"]>
 >;
 export type IPv6CIDR = z.infer<
-  ReturnType<NetworkSchemasFactory["zIPv6CIDRRequired"]>
+  ReturnType<NetworkSchemasFactory["IPv6CIDRRequired"]>
 >;
 export type CIDRBlock = z.infer<
-  ReturnType<NetworkSchemasFactory["zCIDRGeneric"]>
+  ReturnType<NetworkSchemasFactory["CIDRGeneric"]>
 >;
 export type MacAddress = z.infer<
-  ReturnType<NetworkSchemasFactory["zMacAddressRequired"]>
+  ReturnType<NetworkSchemasFactory["MacAddressRequired"]>
 >;
 export type NetworkAddress = z.infer<
-  ReturnType<NetworkSchemasFactory["zNetworkAddressGeneric"]>
+  ReturnType<NetworkSchemasFactory["NetworkAddressGeneric"]>
 >;
 export type IPAddress = z.infer<
-  ReturnType<NetworkSchemasFactory["zIPAddressGeneric"]>
+  ReturnType<NetworkSchemasFactory["IPAddressGeneric"]>
 >;
