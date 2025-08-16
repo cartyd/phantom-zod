@@ -6,6 +6,57 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 Phantom Zod is a TypeScript-first schema validation library built on top of Zod v4, providing pre-built validators for common data types with comprehensive error handling and customizable messages. The library features a unified `pz` namespace for easy access to all validation schemas and includes extensive localization support.
 
+## Git Workflow Requirements
+
+**CRITICAL**: NEVER make changes directly to the main branch. All changes must be made through feature branches.
+
+### Mandatory Branching Workflow
+
+1. **Always create a feature branch** before making any changes:
+   ```bash
+   git checkout -b feature/description-of-change
+   # or
+   git checkout -b fix/bug-description
+   # or  
+   git checkout -b docs/documentation-update
+   ```
+
+2. **Make your changes** on the feature branch
+3. **Test thoroughly** using the commands below
+4. **Format code** with `npm run format`
+5. **Commit changes** to the feature branch
+6. **Push feature branch** and create a pull request
+7. **Never merge directly to main** - all merges must go through GitHub PR review
+
+**Branch Naming Conventions:**
+- `feature/` - New features or enhancements
+- `fix/` - Bug fixes
+- `docs/` - Documentation updates
+- `refactor/` - Code refactoring
+- `test/` - Test additions or improvements
+
+**Example Workflow:**
+```bash
+# ❌ NEVER DO THIS - Direct changes to main
+git checkout main
+# Edit files...
+git add .
+git commit -m "Changes"
+git push origin main
+
+# ✅ ALWAYS DO THIS - Use feature branches
+git checkout main
+git pull origin main
+git checkout -b feature/add-new-schema
+# Edit files...
+npm run format
+npm test
+git add .
+git commit -m "Add new schema with tests and documentation"
+git push origin feature/add-new-schema
+# Create PR through GitHub interface
+```
+
 ## Development Commands
 
 ### Building & Development
