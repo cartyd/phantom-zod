@@ -1,34 +1,9 @@
 import { MsgType } from "../src/common/types/msg-type";
-import { createStringSchemas } from "../src/schemas/string-schemas";
+import { pz } from "../src/pz";
 import { generateTestData, runTableTests } from "./setup";
-import { createTestMessageHandler } from "../src/localization/types/message-handler.types";
 
-// Create a type-safe mock using the test helper
-const mockMessageHandler = createTestMessageHandler(
-  // Custom mock implementation (optional)
-  (options) => {
-    if (options.msgType === MsgType.Message) {
-      return options.msg;
-    }
-    
-    // Simple mock implementation for field name formatting
-    switch (options.messageKey) {
-      case "required":
-        return `${options.msg} is required`;
-      case "mustBeString":
-        return `${options.msg} must be a string`;
-      case "tooShort":
-        return `${options.msg} is too short (minimum: ${options.params?.min} characters)`;
-      case "tooLong":
-        return `${options.msg} is too long (maximum: ${options.params?.max} characters)`;
-      default:
-        return `${options.msg} is invalid`;
-    }
-  }
-);
-
-// Create schema functions with injected message handler
-const { StringOptional, StringRequired } = createStringSchemas(mockMessageHandler);
+// Use the pz barrel for testing the actual user experience
+const { StringOptional, StringRequired } = pz;
 
 describe('Type enforcement (mustBeString)', () => {
   const nonStringValues = [5, true, null, undefined, {}, [], Symbol('s')];
@@ -144,6 +119,29 @@ describe('String Schemas', () => {
         expect(schema.parse('test')).toBe('test');
       });
     });
+
+    describe('String parameter overload', () => {
+      it('should accept string parameter and work identically to options object', () => {
+        const stringParamSchema = StringOptional('User ID');
+        const optionsSchema = StringOptional({ msg: 'User ID' });
+        
+        // Both should produce same results
+        expect(stringParamSchema.parse('123')).toBe('123');
+        expect(optionsSchema.parse('123')).toBe('123');
+        
+        expect(stringParamSchema.parse(undefined)).toBe('');
+        expect(optionsSchema.parse(undefined)).toBe('');
+        
+        expect(stringParamSchema.parse('  test  ')).toBe('test');
+        expect(optionsSchema.parse('  test  ')).toBe('test');
+      });
+      
+      it('should use the provided field name in error messages', () => {
+        const schema = StringOptional('Profile Name');
+        // For non-string inputs, it should use 'Profile Name' in the error
+        expect(() => schema.parse(123)).toThrow(/Profile Name/);
+      });
+    });
   });
 
   describe('StringRequired', () => {
@@ -239,6 +237,31 @@ describe('String Schemas', () => {
       it('should use custom message when msgType is Message', () => {
         const schema = StringRequired({ msg: 'Please provide a value', msgType: MsgType.Message });
         expect(() => schema.parse('')).toThrow('Please provide a value');
+      });
+    });
+
+    describe('String parameter overload', () => {
+      it('should accept string parameter and work identically to options object', () => {
+        const stringParamSchema = StringRequired('Username');
+        const optionsSchema = StringRequired({ msg: 'Username' });
+        
+        // Both should produce same results for valid input
+        expect(stringParamSchema.parse('john_doe')).toBe('john_doe');
+        expect(optionsSchema.parse('john_doe')).toBe('john_doe');
+        
+        expect(stringParamSchema.parse('  alice  ')).toBe('alice');
+        expect(optionsSchema.parse('  alice  ')).toBe('alice');
+        
+        // Both should throw for invalid input
+        expect(() => stringParamSchema.parse('')).toThrow();
+        expect(() => optionsSchema.parse('')).toThrow();
+      });
+      
+      it('should use the provided field name in error messages', () => {
+        const schema = StringRequired('Account Name');
+        // Should use 'Account Name' in the error messages
+        expect(() => schema.parse('')).toThrow(/Account Name/);
+        expect(() => schema.parse(123)).toThrow(/Account Name/);
       });
     });
   });
