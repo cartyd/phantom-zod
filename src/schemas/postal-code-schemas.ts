@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MsgType } from "../common/types/msg-type";
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
+import { createTestMessageHandler } from "../localization/types/message-handler.types";
 import type { PostalCodeSchemaOptions } from "../common/types/schema-options.types";
 import { US_ZIP_CODE_PATTERN } from "../common/regex-patterns";
 
@@ -172,3 +173,10 @@ export const createPostalCodeSchemas = (
     zPostalCodeRequired,
   };
 };
+
+// Top-level exports for barrel usage
+export const zPostalCodeOptional = (options: PostalCodeSchemaOptions = {}) =>
+  createPostalCodeSchemas(createTestMessageHandler()).zPostalCodeOptional(options);
+
+export const zPostalCodeRequired = (options: PostalCodeSchemaOptions = {}) =>
+  createPostalCodeSchemas(createTestMessageHandler()).zPostalCodeRequired(options);
