@@ -96,14 +96,12 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
 };
 
 // Top-level exports for barrel usage
-export const zEnumOptional = <TEnum extends readonly [string, ...string[]]>(
+export const EnumOptional = <TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   options: BaseSchemaOptions = {},
-) =>
-  createEnumSchemas(createTestMessageHandler()).zEnumOptional(values, options);
+) => createEnumSchemas(createTestMessageHandler()).zEnumOptional(values, options);
 
-export const zEnumRequired = <TEnum extends readonly [string, ...string[]]>(
+export const EnumRequired = <TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   options: BaseSchemaOptions = {},
-) =>
-  createEnumSchemas(createTestMessageHandler()).zEnumRequired(values, options);
+) => createEnumSchemas(createTestMessageHandler()).zEnumRequired(values, options);

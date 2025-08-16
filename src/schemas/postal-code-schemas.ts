@@ -175,12 +175,12 @@ export const createPostalCodeSchemas = (
 };
 
 // Top-level exports for barrel usage
-export const zPostalCodeOptional = (options: PostalCodeSchemaOptions = {}) =>
+export const PostalCodeOptional = (options: PostalCodeSchemaOptions = {}) =>
   createPostalCodeSchemas(createTestMessageHandler()).zPostalCodeOptional(
     options,
   );
 
-export const zPostalCodeRequired = (options: PostalCodeSchemaOptions = {}) =>
+export const PostalCodeRequired = (options: PostalCodeSchemaOptions = {}) =>
   createPostalCodeSchemas(createTestMessageHandler()).zPostalCodeRequired(
     options,
   );
