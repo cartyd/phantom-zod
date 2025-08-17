@@ -375,51 +375,6 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 };
 
-// Create a test message handler for network validation
-const networkMessageHandler = createTestMessageHandler((options) => {
-  if (options.msgType === MsgType.Message) {
-    return options.msg;
-  }
-
-  // Network-specific error messages
-  switch (options.messageKey) {
-    case "required":
-      return `${options.msg} is required`;
-    case "mustBeValidIPv4":
-      return `${options.msg} must be a valid IPv4 address`;
-    case "mustBeValidIPv6":
-      return `${options.msg} must be a valid IPv6 address`;
-    case "mustBeValidMacAddress":
-      return `${options.msg} must be a valid MAC address`;
-    case "invalidIPv4Format":
-      return `${options.msg} is not a valid IPv4 address`;
-    case "invalidIPv6Format":
-      return `${options.msg} is not a valid IPv6 address`;
-    case "invalidMacFormat":
-      return `${options.msg} is not a valid MAC address`;
-    default:
-      return `${options.msg} is invalid`;
-  }
-});
-
-// Create schemas with default handler
-const {
-  IPv4Optional: baseIPv4Optional,
-  IPv4Required: baseIPv4Required,
-  IPv6Optional: baseIPv6Optional,
-  IPv6Required: baseIPv6Required,
-  IPv4CIDROptional: baseIPv4CIDROptional,
-  IPv4CIDRRequired: baseIPv4CIDRRequired,
-  IPv6CIDROptional: baseIPv6CIDROptional,
-  IPv6CIDRRequired: baseIPv6CIDRRequired,
-  CIDRGeneric: baseCIDRGeneric,
-  MacAddressOptional: baseMacAddressOptional,
-  MacAddressRequired: baseMacAddressRequired,
-  NetworkAddressGeneric: baseNetworkAddressGeneric,
-  IPAddressGeneric: baseIPAddressGeneric,
-  getNetworkAddressExamples: baseGetNetworkAddressExamples,
-} = createNetworkSchemas(networkMessageHandler);
-
 // Top-level exports using the same pattern as string-schemas.ts
 const testMessageHandler = createTestMessageHandler();
 const networkSchemas = createNetworkSchemas(testMessageHandler);
@@ -635,7 +590,8 @@ export const IPv6CIDRRequired = createIPv6CIDRRequiredOverload;
 export const CIDRGeneric = createCIDRGenericOverload;
 
 // Re-export utility functions
-export const getNetworkAddressExamples = networkSchemas.getNetworkAddressExamples;
+export const getNetworkAddressExamples =
+  networkSchemas.getNetworkAddressExamples;
 
 // Export the options interface for external use
 export type { NetworkSchemaOptions };

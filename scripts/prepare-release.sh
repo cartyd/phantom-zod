@@ -109,21 +109,12 @@ fi
 print_status "Formatting code with Prettier..."
 npm run format
 
-# Run linter
-print_status "Running linter..."
-if npm run lint; then
-    print_success "Linting passed!"
+# Run full validation (lint + test + build)
+print_status "Running full validation (lint + test + build)..."
+if npm run validate; then
+    print_success "All validation checks passed!"
 else
-    print_error "Linting failed. Please fix the issues before releasing."
-    exit 1
-fi
-
-# Run tests before release
-print_status "Running tests..."
-if npm test; then
-    print_success "All tests passed!"
-else
-    print_error "Tests failed. Please fix the issues before releasing."
+    print_error "Validation failed. Please fix the issues before releasing."
     exit 1
 fi
 

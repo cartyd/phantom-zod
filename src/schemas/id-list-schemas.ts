@@ -291,19 +291,6 @@ import { createTestMessageHandler } from "../localization/types/message-handler.
 
 const defaultIdListSchemas = createIdListSchemas(createTestMessageHandler());
 
-// Define types for function overloads
-type IdListSchemaOptions = {
-  msg?: string;
-  msgType?: MsgType;
-  minItems?: number;
-  maxItems?: number;
-};
-
-type SimpleIdSchemaOptions = {
-  msg?: string;
-  msgType?: MsgType;
-};
-
 // Helper functions with overloads to support both string and options object
 function createIdListOptionalOverload(
   msg: string,
@@ -442,7 +429,8 @@ export const IdListRequired = createIdListRequiredOverload;
 export const Id = createIdOverload;
 export const UniqueIdList = createUniqueIdListOverload;
 export const PaginatedIdList = defaultIdListSchemas.PaginatedIdList;
-export const BatchOperationResponse = defaultIdListSchemas.BatchOperationResponse;
+export const BatchOperationResponse =
+  defaultIdListSchemas.BatchOperationResponse;
 export const CustomId = createCustomIdOverload;
 export const MongoId = createMongoIdOverload;
 export const MongoIdList = createMongoIdListOverload;

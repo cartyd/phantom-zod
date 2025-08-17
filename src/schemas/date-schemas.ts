@@ -436,14 +436,6 @@ const dateMessageHandler = createTestMessageHandler((options) => {
 // Create schemas with default handler
 const defaultDateSchemas = createDateSchemas(dateMessageHandler);
 
-// Define simplified type for string parameter overloads
-type SimpleDateSchemaOptions = {
-  msg: string;
-  msgType?: MsgType;
-  min?: Date;
-  max?: Date;
-};
-
 // Helper functions with overloads to support both string and options object
 function createDateOptionalOverload(
   msg: string,

@@ -7,14 +7,6 @@ import {
   createTestMessageHandler,
 } from "../localization/types/message-handler.types";
 
-// Define simplified NumberSchemaOptions type for string parameter overloads
-type SimpleNumberSchemaOptions = {
-  msg: string;
-  msgType?: MsgType;
-  min?: number;
-  max?: number;
-};
-
 /**
  * Creates a factory function for number schemas with injected message handler
  * @param messageHandler - The message handler to use for error messages

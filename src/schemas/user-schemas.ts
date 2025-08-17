@@ -755,35 +755,6 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
 const testMessageHandler = createTestMessageHandler();
 const defaultUserSchemas = createUserSchemas(testMessageHandler);
 
-// Define types for function overloads
-type PasswordOptions = {
-  msg?: string;
-  msgType?: MsgType;
-  minLength?: number;
-  requireUppercase?: boolean;
-  requireLowercase?: boolean;
-  requireNumbers?: boolean;
-  requireSpecialChars?: boolean;
-};
-
-type UsernameOptions = {
-  msg?: string;
-  msgType?: MsgType;
-  minLength?: number;
-  maxLength?: number;
-};
-
-type DisplayNameOptions = {
-  msg?: string;
-  msgType?: MsgType;
-  maxLength?: number;
-};
-
-type SimpleUserSchemaOptions = {
-  msg?: string;
-  msgType?: MsgType;
-};
-
 // Helper functions with overloads to support both string and options object
 function createPasswordOverload(
   msg: string,
@@ -947,13 +918,15 @@ export const UserUpdate = createUserUpdateOverload;
 export const PasswordChange = createPasswordChangeOverload;
 export const PasswordReset = createPasswordResetOverload;
 export const AdminUserManagement = defaultUserSchemas.AdminUserManagement;
-export const PasswordWithWeaknessCheck = defaultUserSchemas.PasswordWithWeaknessCheck;
+export const PasswordWithWeaknessCheck =
+  defaultUserSchemas.PasswordWithWeaknessCheck;
 export const UserGenericValidation = defaultUserSchemas.UserGenericValidation;
 export const EmailUniqueness = defaultUserSchemas.EmailUniqueness;
 export const UsernameUniqueness = defaultUserSchemas.UsernameUniqueness;
 export const RoleValidation = defaultUserSchemas.RoleValidation;
 export const AccountTypeValidation = defaultUserSchemas.AccountTypeValidation;
-export const UserRegistrationWithUniqueness = defaultUserSchemas.UserRegistrationWithUniqueness;
+export const UserRegistrationWithUniqueness =
+  defaultUserSchemas.UserRegistrationWithUniqueness;
 
 // Export constants
 export const { USER_ROLES, USER_STATUS, ACCOUNT_TYPES } = defaultUserSchemas;

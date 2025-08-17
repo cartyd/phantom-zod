@@ -100,19 +100,21 @@ const testMessageHandler = createTestMessageHandler();
 const enumSchemas = createEnumSchemas(testMessageHandler);
 
 // Type aliases for clean overload signatures
-type EnumOptionalSchema<TEnum extends readonly [string, ...string[]]> = ReturnType<typeof enumSchemas.EnumOptional<TEnum>>;
-type EnumRequiredSchema<TEnum extends readonly [string, ...string[]]> = ReturnType<typeof enumSchemas.EnumRequired<TEnum>>;
+type EnumOptionalSchema<TEnum extends readonly [string, ...string[]]> =
+  ReturnType<typeof enumSchemas.EnumOptional<TEnum>>;
+type EnumRequiredSchema<TEnum extends readonly [string, ...string[]]> =
+  ReturnType<typeof enumSchemas.EnumRequired<TEnum>>;
 
 // Clean overload implementations
-function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
+function enumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg: string,
 ): EnumOptionalSchema<TEnum>;
-function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
+function enumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   options?: BaseSchemaOptions,
 ): EnumOptionalSchema<TEnum>;
-function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
+function enumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msgOrOptions?: string | BaseSchemaOptions,
 ): EnumOptionalSchema<TEnum> {
@@ -122,15 +124,15 @@ function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   return enumSchemas.EnumOptional(values, msgOrOptions);
 }
 
-function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
+function enumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg: string,
 ): EnumRequiredSchema<TEnum>;
-function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
+function enumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   options?: BaseSchemaOptions,
 ): EnumRequiredSchema<TEnum>;
-function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
+function enumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msgOrOptions?: string | BaseSchemaOptions,
 ): EnumRequiredSchema<TEnum> {
@@ -140,5 +142,5 @@ function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   return enumSchemas.EnumRequired(values, msgOrOptions);
 }
 
-export const EnumOptional = EnumOptionalOverload;
-export const EnumRequired = EnumRequiredOverload;
+export const EnumOptional = enumOptionalOverload;
+export const EnumRequired = enumRequiredOverload;

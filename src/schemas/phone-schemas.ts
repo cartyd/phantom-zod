@@ -212,23 +212,31 @@ type PhoneOptionalSchema = ReturnType<typeof phoneSchemas.PhoneOptional>;
 type PhoneRequiredSchema = ReturnType<typeof phoneSchemas.PhoneRequired>;
 
 // Clean overload implementations
-function PhoneOptionalOverload(msg: string): PhoneOptionalSchema;
-function PhoneOptionalOverload(options?: PhoneSchemaOptions): PhoneOptionalSchema;
-function PhoneOptionalOverload(msgOrOptions?: string | PhoneSchemaOptions): PhoneOptionalSchema {
+function phoneOptionalOverload(msg: string): PhoneOptionalSchema;
+function phoneOptionalOverload(
+  options?: PhoneSchemaOptions,
+): PhoneOptionalSchema;
+function phoneOptionalOverload(
+  msgOrOptions?: string | PhoneSchemaOptions,
+): PhoneOptionalSchema {
   if (typeof msgOrOptions === "string") {
     return phoneSchemas.PhoneOptional({ msg: msgOrOptions });
   }
   return phoneSchemas.PhoneOptional(msgOrOptions);
 }
 
-function PhoneRequiredOverload(msg: string): PhoneRequiredSchema;
-function PhoneRequiredOverload(options?: PhoneSchemaOptions): PhoneRequiredSchema;
-function PhoneRequiredOverload(msgOrOptions?: string | PhoneSchemaOptions): PhoneRequiredSchema {
+function phoneRequiredOverload(msg: string): PhoneRequiredSchema;
+function phoneRequiredOverload(
+  options?: PhoneSchemaOptions,
+): PhoneRequiredSchema;
+function phoneRequiredOverload(
+  msgOrOptions?: string | PhoneSchemaOptions,
+): PhoneRequiredSchema {
   if (typeof msgOrOptions === "string") {
     return phoneSchemas.PhoneRequired({ msg: msgOrOptions });
   }
   return phoneSchemas.PhoneRequired(msgOrOptions);
 }
 
-export const PhoneOptional = PhoneOptionalOverload;
-export const PhoneRequired = PhoneRequiredOverload;
+export const PhoneOptional = phoneOptionalOverload;
+export const PhoneRequired = phoneRequiredOverload;
