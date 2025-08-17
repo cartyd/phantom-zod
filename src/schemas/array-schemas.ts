@@ -370,18 +370,140 @@ export const createArraySchemas = (messageHandler: ErrorMessageFormatter) => {
 // Top-level exports with default message handler for convenience
 const defaultArraySchemas = createArraySchemas(createTestMessageHandler());
 
-export const {
-  ArrayOptional,
-  ArrayRequired,
-  StringArrayOptional,
-  StringArrayRequired,
-  NumberArrayOptional,
-  NumberArrayRequired,
-  BooleanArrayOptional,
-  BooleanArrayRequired,
-  UuidArrayOptional,
-  UuidArrayRequired,
-} = defaultArraySchemas;
+// Helper functions with overloads to support both string and options object
+function createStringArrayOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.StringArrayOptional>;
+function createStringArrayOptionalOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.StringArrayOptional>;
+function createStringArrayOptionalOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.StringArrayOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.StringArrayOptional({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.StringArrayOptional(msgOrOptions);
+}
+
+function createStringArrayRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.StringArrayRequired>;
+function createStringArrayRequiredOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.StringArrayRequired>;
+function createStringArrayRequiredOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.StringArrayRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.StringArrayRequired({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.StringArrayRequired(msgOrOptions);
+}
+
+function createNumberArrayOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.NumberArrayOptional>;
+function createNumberArrayOptionalOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.NumberArrayOptional>;
+function createNumberArrayOptionalOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.NumberArrayOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.NumberArrayOptional({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.NumberArrayOptional(msgOrOptions);
+}
+
+function createNumberArrayRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.NumberArrayRequired>;
+function createNumberArrayRequiredOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.NumberArrayRequired>;
+function createNumberArrayRequiredOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.NumberArrayRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.NumberArrayRequired({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.NumberArrayRequired(msgOrOptions);
+}
+
+function createBooleanArrayOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.BooleanArrayOptional>;
+function createBooleanArrayOptionalOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.BooleanArrayOptional>;
+function createBooleanArrayOptionalOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.BooleanArrayOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.BooleanArrayOptional({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.BooleanArrayOptional(msgOrOptions);
+}
+
+function createBooleanArrayRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.BooleanArrayRequired>;
+function createBooleanArrayRequiredOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.BooleanArrayRequired>;
+function createBooleanArrayRequiredOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.BooleanArrayRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.BooleanArrayRequired({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.BooleanArrayRequired(msgOrOptions);
+}
+
+function createUuidArrayOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.UuidArrayOptional>;
+function createUuidArrayOptionalOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.UuidArrayOptional>;
+function createUuidArrayOptionalOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.UuidArrayOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.UuidArrayOptional({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.UuidArrayOptional(msgOrOptions);
+}
+
+function createUuidArrayRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultArraySchemas.UuidArrayRequired>;
+function createUuidArrayRequiredOverload(
+  options?: GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.UuidArrayRequired>;
+function createUuidArrayRequiredOverload(
+  msgOrOptions?: string | GenericArraySchemaOptions,
+): ReturnType<typeof defaultArraySchemas.UuidArrayRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultArraySchemas.UuidArrayRequired({ msg: msgOrOptions });
+  }
+  return defaultArraySchemas.UuidArrayRequired(msgOrOptions);
+}
+
+// Export original generic functions without overloads (they don't take simple string parameters)
+export const ArrayOptional = defaultArraySchemas.ArrayOptional;
+export const ArrayRequired = defaultArraySchemas.ArrayRequired;
+
+// Export convenience functions with string parameter overloads
+export const StringArrayOptional = createStringArrayOptionalOverload;
+export const StringArrayRequired = createStringArrayRequiredOverload;
+export const NumberArrayOptional = createNumberArrayOptionalOverload;
+export const NumberArrayRequired = createNumberArrayRequiredOverload;
+export const BooleanArrayOptional = createBooleanArrayOptionalOverload;
+export const BooleanArrayRequired = createBooleanArrayRequiredOverload;
+export const UuidArrayOptional = createUuidArrayOptionalOverload;
+export const UuidArrayRequired = createUuidArrayRequiredOverload;
 
 // createArraySchemas is already exported above
 

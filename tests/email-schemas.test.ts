@@ -1,22 +1,12 @@
-import { 
-  createEmailSchemas, 
-  isEmail,
-  EmailOptional,
-  EmailRequired,
-  Html5EmailRequired,
-  Html5EmailOptional,
-  Rfc5322EmailRequired,
-  Rfc5322EmailOptional,
-  UnicodeEmailRequired,
-  UnicodeEmailOptional
-} from '../src/schemas/email-schemas';
+import { pz } from '../src/pz';
+import { isEmail } from '../src/schemas/email-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 import { runTableTests, generateTestData } from './setup';
 
+const { EmailOptional, EmailRequired, Html5EmailRequired, Html5EmailOptional, Rfc5322EmailRequired, Rfc5322EmailOptional, UnicodeEmailRequired, UnicodeEmailOptional } = pz;
+
 describe('Email Schemas', () => {
-  const messageHandler = createTestMessageHandler();
-  const { EmailOptional, EmailRequired } = createEmailSchemas(messageHandler);
   describe('EmailOptional', () => {
     const schema = EmailOptional();
 
@@ -371,6 +361,197 @@ describe('Email Schemas', () => {
       it('should use custom error messages', () => {
         const schema = UnicodeEmailRequired({ msg: 'International Email' });
         expect(() => schema.parse('invalid')).toThrow('International Email must be a valid email address');
+      });
+    });
+  });
+
+  describe('Email Schema String Parameter Overloads', () => {
+    describe('EmailOptional overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = EmailOptional('User Email');
+        const schema2 = EmailOptional({ msg: 'User Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid-email');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid-email');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = EmailOptional({ msg: 'Contact Email', msgType: MsgType.FieldName });
+        expect(schema.parse('user@example.com')).toBe('user@example.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow('Contact Email must be a valid email address');
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = EmailOptional();
+        expect(schema.parse('user@example.com')).toBe('user@example.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+
+      it('should work with custom pattern and string parameter', () => {
+        const pattern = /^[a-z]+@company\.com$/;
+        const schema = EmailOptional({ msg: 'Company Email', pattern });
+        
+        expect(schema.parse('user@company.com')).toBe('user@company.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('user@example.com')).toThrow('Company Email must be a valid email address');
+      });
+    });
+
+    describe('EmailRequired overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = EmailRequired('User Email');
+        const schema2 = EmailRequired({ msg: 'User Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid-email');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid-email');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = EmailRequired({ msg: 'Login Email', msgType: MsgType.FieldName });
+        expect(schema.parse('user@example.com')).toBe('user@example.com');
+        expect(() => schema.parse('invalid')).toThrow('Login Email must be a valid email address');
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = EmailRequired();
+        expect(schema.parse('user@example.com')).toBe('user@example.com');
+      });
+
+      it('should work with custom pattern and string parameter', () => {
+        const pattern = /^[a-z]+@company\.com$/;
+        const schema = EmailRequired({ msg: 'Corporate Email', pattern });
+        
+        expect(schema.parse('user@company.com')).toBe('user@company.com');
+        expect(() => schema.parse('user@example.com')).toThrow('Corporate Email must be a valid email address');
+      });
+    });
+
+    describe('Specialized email schema overloads', () => {
+      it('Html5EmailRequired should work with string parameter', () => {
+        const schema1 = Html5EmailRequired('HTML5 Email');
+        const schema2 = Html5EmailRequired({ msg: 'HTML5 Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+      });
+
+      it('Html5EmailOptional should work with string parameter', () => {
+        const schema1 = Html5EmailOptional('HTML5 Email');
+        const schema2 = Html5EmailOptional({ msg: 'HTML5 Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+      });
+
+      it('Rfc5322EmailRequired should work with string parameter', () => {
+        const schema1 = Rfc5322EmailRequired('RFC Email');
+        const schema2 = Rfc5322EmailRequired({ msg: 'RFC Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+      });
+
+      it('Rfc5322EmailOptional should work with string parameter', () => {
+        const schema1 = Rfc5322EmailOptional('RFC Email');
+        const schema2 = Rfc5322EmailOptional({ msg: 'RFC Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+      });
+
+      it('UnicodeEmailRequired should work with string parameter', () => {
+        const schema1 = UnicodeEmailRequired('Unicode Email');
+        const schema2 = UnicodeEmailRequired({ msg: 'Unicode Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+      });
+
+      it('UnicodeEmailOptional should work with string parameter', () => {
+        const schema1 = UnicodeEmailOptional('Unicode Email');
+        const schema2 = UnicodeEmailOptional({ msg: 'Unicode Email' });
+        
+        expect(schema1.parse('user@example.com')).toBe('user@example.com');
+        expect(schema2.parse('user@example.com')).toBe('user@example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+      });
+    });
+
+    describe('Real-world usage examples', () => {
+      it('should handle user registration form with overloaded schemas', () => {
+        const emailSchema = EmailRequired('Registration Email');
+        const confirmEmailSchema = EmailRequired('Confirm Email');
+        
+        const formData = {
+          email: 'user@example.com',
+          confirmEmail: 'user@example.com',
+        };
+        
+        const parsedData = {
+          email: emailSchema.parse(formData.email),
+          confirmEmail: confirmEmailSchema.parse(formData.confirmEmail),
+        };
+        
+        expect(parsedData.email).toBe('user@example.com');
+        expect(parsedData.confirmEmail).toBe('user@example.com');
+      });
+
+      it('should handle contact form validation with different email types', () => {
+        const personalEmailSchema = EmailOptional('Personal Email');
+        const workEmailSchema = Html5EmailRequired('Work Email');
+        
+        const contactData = {
+          personalEmail: undefined,
+          workEmail: 'work@company.com',
+        };
+        
+        expect(personalEmailSchema.parse(contactData.personalEmail)).toBeUndefined();
+        expect(workEmailSchema.parse(contactData.workEmail)).toBe('work@company.com');
+      });
+
+      it('should maintain type safety across all overloaded email schemas', () => {
+        const schemas = {
+          basic: EmailRequired('Basic'),
+          html5: Html5EmailRequired('HTML5'),
+          rfc: Rfc5322EmailRequired('RFC'),
+          unicode: UnicodeEmailRequired('Unicode'),
+          optional: EmailOptional('Optional'),
+        };
+        
+        const email = 'test@example.com';
+        
+        Object.values(schemas).forEach(schema => {
+          const result = schema.parse(email);
+          expect(typeof result).toBe('string');
+          expect(result).toBe(email);
+        });
       });
     });
   });

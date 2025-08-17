@@ -1,4 +1,6 @@
-import { UrlOptional, UrlRequired, HttpsUrlRequired, HttpsUrlOptional, HttpUrlRequired, HttpUrlOptional, WebUrlRequired, WebUrlOptional } from '../src/schemas/url-schemas';
+import { pz } from '../src/pz';
+
+const { UrlOptional, UrlRequired, HttpsUrlRequired, HttpsUrlOptional, HttpUrlRequired, HttpUrlOptional, WebUrlRequired, WebUrlOptional } = pz;
 import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests } from './setup';
 
@@ -542,6 +544,262 @@ describe('URL Schemas', () => {
           hostname: /^api\.company\.com$/ 
         });
         expect(() => schema.parse('https://example.com')).toThrow('API Endpoint has invalid domain: expected hostname');
+      });
+    });
+  });
+
+  describe('URL Schema String Parameter Overloads', () => {
+    describe('UrlOptional overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = UrlOptional('Website URL');
+        const schema2 = UrlOptional({ msg: 'Website URL' });
+        
+        const testUrl = 'https://example.com';
+        
+        expect(schema1.parse(testUrl)).toBe(testUrl);
+        expect(schema2.parse(testUrl)).toBe(testUrl);
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid-url');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid-url');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = UrlOptional({ msg: 'API Endpoint', msgType: MsgType.FieldName });
+        expect(schema.parse('https://api.example.com')).toBe('https://api.example.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = UrlOptional();
+        expect(schema.parse('https://example.com')).toBe('https://example.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+
+      it('should work with protocol constraints and string parameter', () => {
+        const schema = UrlOptional({ msg: 'Secure URL', protocol: /^https$/ });
+        
+        expect(schema.parse('https://example.com')).toBe('https://example.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('http://example.com')).toThrow('Secure URL has invalid protocol: non-HTTPS');
+      });
+
+      it('should work with hostname constraints and string parameter', () => {
+        const schema = UrlOptional({ msg: 'Company URL', hostname: /^.*\.company\.com$/ });
+        
+        expect(schema.parse('https://api.company.com')).toBe('https://api.company.com');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('https://example.com')).toThrow('Company URL has invalid domain: expected hostname');
+      });
+    });
+
+    describe('UrlRequired overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = UrlRequired('Website URL');
+        const schema2 = UrlRequired({ msg: 'Website URL' });
+        
+        const testUrl = 'https://example.com';
+        
+        expect(schema1.parse(testUrl)).toBe(testUrl);
+        expect(schema2.parse(testUrl)).toBe(testUrl);
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid-url');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid-url');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = UrlRequired({ msg: 'Homepage URL', msgType: MsgType.FieldName });
+        expect(schema.parse('https://homepage.com')).toBe('https://homepage.com');
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = UrlRequired();
+        expect(schema.parse('https://example.com')).toBe('https://example.com');
+      });
+
+      it('should work with combined protocol and hostname constraints', () => {
+        const schema = UrlRequired({
+          msg: 'Secure API URL',
+          protocol: /^https$/,
+          hostname: /^api\.company\.com$/
+        });
+        
+        expect(schema.parse('https://api.company.com')).toBe('https://api.company.com');
+        expect(() => schema.parse('http://api.company.com')).toThrow('Secure API URL is invalid: : protocol or hostname mismatch');
+        expect(() => schema.parse('https://api.example.com')).toThrow('Secure API URL is invalid: : protocol or hostname mismatch');
+      });
+    });
+
+    describe('Specialized URL schema overloads', () => {
+      it('HttpsUrlRequired should work with string parameter', () => {
+        const schema1 = HttpsUrlRequired('Secure URL');
+        const schema2 = HttpsUrlRequired({ msg: 'Secure URL' });
+        
+        expect(schema1.parse('https://example.com')).toBe('https://example.com');
+        expect(schema2.parse('https://example.com')).toBe('https://example.com');
+        
+        // Both should reject HTTP
+        expect(() => schema1.parse('http://example.com')).toThrow();
+        expect(() => schema2.parse('http://example.com')).toThrow();
+      });
+
+      it('HttpsUrlOptional should work with string parameter', () => {
+        const schema1 = HttpsUrlOptional('Secure URL');
+        const schema2 = HttpsUrlOptional({ msg: 'Secure URL' });
+        
+        expect(schema1.parse('https://example.com')).toBe('https://example.com');
+        expect(schema2.parse('https://example.com')).toBe('https://example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+      });
+
+      it('HttpUrlRequired should work with string parameter', () => {
+        const schema1 = HttpUrlRequired('HTTP URL');
+        const schema2 = HttpUrlRequired({ msg: 'HTTP URL' });
+        
+        expect(schema1.parse('http://example.com')).toBe('http://example.com');
+        expect(schema2.parse('http://example.com')).toBe('http://example.com');
+        
+        // Both should reject HTTPS
+        expect(() => schema1.parse('https://example.com')).toThrow();
+        expect(() => schema2.parse('https://example.com')).toThrow();
+      });
+
+      it('HttpUrlOptional should work with string parameter', () => {
+        const schema1 = HttpUrlOptional('HTTP URL');
+        const schema2 = HttpUrlOptional({ msg: 'HTTP URL' });
+        
+        expect(schema1.parse('http://example.com')).toBe('http://example.com');
+        expect(schema2.parse('http://example.com')).toBe('http://example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+      });
+
+      it('WebUrlRequired should work with string parameter', () => {
+        const schema1 = WebUrlRequired('Web URL');
+        const schema2 = WebUrlRequired({ msg: 'Web URL' });
+        
+        expect(schema1.parse('http://example.com')).toBe('http://example.com');
+        expect(schema2.parse('http://example.com')).toBe('http://example.com');
+        expect(schema1.parse('https://example.com')).toBe('https://example.com');
+        expect(schema2.parse('https://example.com')).toBe('https://example.com');
+        
+        // Both should reject other protocols
+        expect(() => schema1.parse('ftp://example.com')).toThrow();
+        expect(() => schema2.parse('ftp://example.com')).toThrow();
+      });
+
+      it('WebUrlOptional should work with string parameter', () => {
+        const schema1 = WebUrlOptional('Web URL');
+        const schema2 = WebUrlOptional({ msg: 'Web URL' });
+        
+        expect(schema1.parse('http://example.com')).toBe('http://example.com');
+        expect(schema2.parse('https://example.com')).toBe('https://example.com');
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+      });
+    });
+
+    describe('Real-world usage examples', () => {
+      it('should handle user profile form with overloaded schemas', () => {
+        const websiteSchema = UrlOptional('Website');
+        const portfolioSchema = HttpsUrlRequired('Portfolio URL');
+        const socialMediaSchema = WebUrlOptional('Social Media');
+        
+        const profileData = {
+          website: undefined,
+          portfolio: 'https://portfolio.example.com',
+          socialMedia: 'https://twitter.com/user',
+        };
+        
+        expect(websiteSchema.parse(profileData.website)).toBeUndefined();
+        expect(portfolioSchema.parse(profileData.portfolio)).toBe('https://portfolio.example.com');
+        expect(socialMediaSchema.parse(profileData.socialMedia)).toBe('https://twitter.com/user');
+      });
+
+      it('should handle API configuration with different URL types', () => {
+        const primaryApiSchema = HttpsUrlRequired('Primary API');
+        const fallbackApiSchema = HttpsUrlOptional('Fallback API');
+        const webhookSchema = UrlRequired('Webhook URL');
+        
+        const apiConfig = {
+          primaryApi: 'https://api.primary.com/v1',
+          fallbackApi: 'https://api.fallback.com/v1',
+          webhook: 'https://webhook.myapp.com/receive',
+        };
+        
+        expect(primaryApiSchema.parse(apiConfig.primaryApi)).toBe('https://api.primary.com/v1');
+        expect(fallbackApiSchema.parse(apiConfig.fallbackApi)).toBe('https://api.fallback.com/v1');
+        expect(webhookSchema.parse(apiConfig.webhook)).toBe('https://webhook.myapp.com/receive');
+      });
+
+      it('should handle service configuration with hostname restrictions', () => {
+        const internalApiSchema = UrlRequired({
+          msg: 'Internal API',
+          protocol: /^https$/,
+          hostname: /^.*\.internal\.company\.com$/
+        });
+        
+        const externalApiSchema = UrlOptional({
+          msg: 'External API',
+          protocol: /^https$/
+        });
+        
+        const serviceConfig = {
+          internalApi: 'https://users.internal.company.com',
+          externalApi: 'https://api.external-service.com',
+        };
+        
+        expect(internalApiSchema.parse(serviceConfig.internalApi)).toBe('https://users.internal.company.com');
+        expect(externalApiSchema.parse(serviceConfig.externalApi)).toBe('https://api.external-service.com');
+        
+        // Should reject external URL for internal API
+        expect(() => internalApiSchema.parse('https://api.external.com')).toThrow();
+      });
+
+      it('should maintain type safety across all overloaded URL schemas', () => {
+        const schemas = {
+          basic: UrlRequired('Basic URL'),
+          optional: UrlOptional('Optional URL'),
+          https: HttpsUrlRequired('HTTPS URL'),
+          httpsOptional: HttpsUrlOptional('HTTPS Optional'),
+          http: HttpUrlRequired('HTTP URL'),
+          web: WebUrlRequired('Web URL'),
+        };
+        
+        const testUrls = {
+          https: 'https://example.com',
+          http: 'http://example.com',
+        };
+        
+        expect(schemas.basic.parse(testUrls.https)).toBe(testUrls.https);
+        expect(schemas.optional.parse(testUrls.https)).toBe(testUrls.https);
+        expect(schemas.https.parse(testUrls.https)).toBe(testUrls.https);
+        expect(schemas.httpsOptional.parse(testUrls.https)).toBe(testUrls.https);
+        expect(schemas.http.parse(testUrls.http)).toBe(testUrls.http);
+        expect(schemas.web.parse(testUrls.https)).toBe(testUrls.https);
+        expect(schemas.web.parse(testUrls.http)).toBe(testUrls.http);
+        
+        // Test optional behavior
+        expect(schemas.optional.parse(undefined)).toBeUndefined();
+        expect(schemas.httpsOptional.parse(undefined)).toBeUndefined();
       });
     });
   });

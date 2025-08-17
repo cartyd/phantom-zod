@@ -147,6 +147,17 @@ export function createTestMessageHandler(
         return `${options.msg} must be a valid UUIDv6`;
       case "mustBeValidUuidV7":
         return `${options.msg} must be a valid UUIDv7`;
+      // Phone-specific error messages
+      case "mustBeValidPhone":
+        return `${options.msg} must be a valid phone number`;
+      case "invalidE164Format":
+        return `${options.msg} must be in E.164 format (+1XXXXXXXXXX)`;
+      case "invalidNationalFormat":
+        return `${options.msg} must be in national format (XXXXXXXXXX)`;
+      // Enum-specific error messages
+      case "mustBeOneOf":
+        const validOptions = (options.params as any)?.options || [];
+        return `${options.msg} must be one of: ${validOptions.join(", ")}`;
       // User-specific error messages
       case "passwordTooShort":
         return `${options.msg} password is too short (minimum: ${options.params?.min} characters)`;

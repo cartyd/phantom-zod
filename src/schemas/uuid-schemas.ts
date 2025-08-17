@@ -183,11 +183,11 @@ const uuidMessageHandler = createTestMessageHandler((options) => {
     case "mustBeValidUuid":
       return `${options.msg} must be a valid UUID`;
     case "mustBeValidUuidV4":
-      return `${options.msg} must be a valid UUID v4`;
+      return `${options.msg} must be a valid UUIDv4`;
     case "mustBeValidUuidV6":
-      return `${options.msg} must be a valid UUID v6`;
+      return `${options.msg} must be a valid UUIDv6`;
     case "mustBeValidUuidV7":
-      return `${options.msg} must be a valid UUID v7`;
+      return `${options.msg} must be a valid UUIDv7`;
     case "mustBeValidNanoid":
       return `${options.msg} must be a valid nanoid`;
     case "invalidFormat":
@@ -197,54 +197,171 @@ const uuidMessageHandler = createTestMessageHandler((options) => {
   }
 });
 
-// Create schemas with default handler
-const {
-  UuidOptional: baseUuidOptional,
-  UuidRequired: baseUuidRequired,
-  UuidV4Optional: baseUuidV4Optional,
-  UuidV4Required: baseUuidV4Required,
-  UuidV6Optional: baseUuidV6Optional,
-  UuidV6Required: baseUuidV6Required,
-  UuidV7Optional: baseUuidV7Optional,
-  UuidV7Required: baseUuidV7Required,
-  NanoidOptional: baseNanoidOptional,
-  NanoidRequired: baseNanoidRequired,
-  getUuidFormatErrorMessage: baseGetUuidFormatErrorMessage,
-  UuidWithFormatError: baseUuidWithFormatError,
-} = createUuidSchemas(uuidMessageHandler);
+// Top-level exports using the exact same pattern as string-schemas.ts
+const uuidSchemas = createUuidSchemas(uuidMessageHandler);
 
-// Export schemas for direct use
+// Helper functions with overloads to support both string and options object
+function createUuidOptionalOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidOptional>;
+function createUuidOptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidOptional>;
+function createUuidOptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidOptional> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidOptional({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidOptional(msgOrOptions);
+}
 
-/**
- * Creates an optional UUID schema that accepts valid UUIDs or undefined
- *
- * Accepts UUIDs of any version (v1-v8). For specific version validation,
- * use the version-specific schemas like zUuidV4Optional.
- *
- * @param options - Configuration options for UUID validation
- * @returns Zod schema that accepts valid UUIDs or undefined
- *
- * @example
- * ```typescript
- * const schema = zUuidOptional();
- * schema.parse('123e4567-e89b-12d3-a456-426614174000'); // ✓ Valid
- * schema.parse(undefined);                             // ✓ Valid
- * schema.parse('invalid-uuid');                        // ✗ Throws error
- * ```
- */
-export const UuidOptional = baseUuidOptional;
-export const UuidRequired = baseUuidRequired;
-export const NanoidOptional = baseNanoidOptional;
-export const NanoidRequired = baseNanoidRequired;
+function createUuidRequiredOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidRequired>;
+function createUuidRequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidRequired>;
+function createUuidRequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidRequired> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidRequired({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidRequired(msgOrOptions);
+}
 
-// Re-export UUID version-specific schemas
-export const UuidV4Optional = baseUuidV4Optional;
-export const UuidV4Required = baseUuidV4Required;
-export const UuidV6Optional = baseUuidV6Optional;
-export const UuidV6Required = baseUuidV6Required;
-export const UuidV7Optional = baseUuidV7Optional;
-export const UuidV7Required = baseUuidV7Required;
+function createUuidV4OptionalOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidV4Optional>;
+function createUuidV4OptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV4Optional>;
+function createUuidV4OptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV4Optional> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidV4Optional({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidV4Optional(msgOrOptions);
+}
+
+function createUuidV4RequiredOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidV4Required>;
+function createUuidV4RequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV4Required>;
+function createUuidV4RequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV4Required> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidV4Required({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidV4Required(msgOrOptions);
+}
+
+function createUuidV6OptionalOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidV6Optional>;
+function createUuidV6OptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV6Optional>;
+function createUuidV6OptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV6Optional> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidV6Optional({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidV6Optional(msgOrOptions);
+}
+
+function createUuidV6RequiredOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidV6Required>;
+function createUuidV6RequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV6Required>;
+function createUuidV6RequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV6Required> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidV6Required({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidV6Required(msgOrOptions);
+}
+
+function createUuidV7OptionalOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidV7Optional>;
+function createUuidV7OptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV7Optional>;
+function createUuidV7OptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV7Optional> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidV7Optional({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidV7Optional(msgOrOptions);
+}
+
+function createUuidV7RequiredOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.UuidV7Required>;
+function createUuidV7RequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV7Required>;
+function createUuidV7RequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.UuidV7Required> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.UuidV7Required({ msg: msgOrOptions });
+  }
+  return uuidSchemas.UuidV7Required(msgOrOptions);
+}
+
+function createNanoidOptionalOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.NanoidOptional>;
+function createNanoidOptionalOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.NanoidOptional>;
+function createNanoidOptionalOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.NanoidOptional> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.NanoidOptional({ msg: msgOrOptions });
+  }
+  return uuidSchemas.NanoidOptional(msgOrOptions);
+}
+
+function createNanoidRequiredOverload(
+  msg: string,
+): ReturnType<typeof uuidSchemas.NanoidRequired>;
+function createNanoidRequiredOverload(
+  options?: BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.NanoidRequired>;
+function createNanoidRequiredOverload(
+  msgOrOptions?: string | BaseSchemaOptions,
+): ReturnType<typeof uuidSchemas.NanoidRequired> {
+  if (typeof msgOrOptions === "string") {
+    return uuidSchemas.NanoidRequired({ msg: msgOrOptions });
+  }
+  return uuidSchemas.NanoidRequired(msgOrOptions);
+}
+
+export const UuidOptional = createUuidOptionalOverload;
+export const UuidRequired = createUuidRequiredOverload;
+export const UuidV4Optional = createUuidV4OptionalOverload;
+export const UuidV4Required = createUuidV4RequiredOverload;
+export const UuidV6Optional = createUuidV6OptionalOverload;
+export const UuidV6Required = createUuidV6RequiredOverload;
+export const UuidV7Optional = createUuidV7OptionalOverload;
+export const UuidV7Required = createUuidV7RequiredOverload;
+export const NanoidOptional = createNanoidOptionalOverload;
+export const NanoidRequired = createNanoidRequiredOverload;
 
 // Re-export utility functions
-export const getUuidFormatErrorMessage = baseGetUuidFormatErrorMessage;
-export const UuidWithFormatError = baseUuidWithFormatError;
+export const getUuidFormatErrorMessage = uuidSchemas.getUuidFormatErrorMessage;
+export const UuidWithFormatError = uuidSchemas.UuidWithFormatError;

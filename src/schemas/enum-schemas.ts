@@ -99,5 +99,46 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
 const testMessageHandler = createTestMessageHandler();
 const enumSchemas = createEnumSchemas(testMessageHandler);
 
-export const EnumOptional = enumSchemas.EnumOptional;
-export const EnumRequired = enumSchemas.EnumRequired;
+// Type aliases for clean overload signatures
+type EnumOptionalSchema<TEnum extends readonly [string, ...string[]]> = ReturnType<typeof enumSchemas.EnumOptional<TEnum>>;
+type EnumRequiredSchema<TEnum extends readonly [string, ...string[]]> = ReturnType<typeof enumSchemas.EnumRequired<TEnum>>;
+
+// Clean overload implementations
+function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  msg: string,
+): EnumOptionalSchema<TEnum>;
+function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  options?: BaseSchemaOptions,
+): EnumOptionalSchema<TEnum>;
+function EnumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  msgOrOptions?: string | BaseSchemaOptions,
+): EnumOptionalSchema<TEnum> {
+  if (typeof msgOrOptions === "string") {
+    return enumSchemas.EnumOptional(values, { msg: msgOrOptions });
+  }
+  return enumSchemas.EnumOptional(values, msgOrOptions);
+}
+
+function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  msg: string,
+): EnumRequiredSchema<TEnum>;
+function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  options?: BaseSchemaOptions,
+): EnumRequiredSchema<TEnum>;
+function EnumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
+  values: TEnum,
+  msgOrOptions?: string | BaseSchemaOptions,
+): EnumRequiredSchema<TEnum> {
+  if (typeof msgOrOptions === "string") {
+    return enumSchemas.EnumRequired(values, { msg: msgOrOptions });
+  }
+  return enumSchemas.EnumRequired(values, msgOrOptions);
+}
+
+export const EnumOptional = EnumOptionalOverload;
+export const EnumRequired = EnumRequiredOverload;

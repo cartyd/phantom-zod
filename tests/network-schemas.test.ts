@@ -1,4 +1,20 @@
-import { createNetworkSchemas } from "../src/schemas/network-schemas";
+import { 
+  createNetworkSchemas, 
+  IPv4Optional, 
+  IPv4Required, 
+  IPv6Optional, 
+  IPv6Required, 
+  IPv4CIDROptional,
+  IPv4CIDRRequired,
+  IPv6CIDROptional,
+  IPv6CIDRRequired,
+  CIDRGeneric,
+  MacAddressOptional, 
+  MacAddressRequired,
+  NetworkAddressGeneric,
+  IPAddressGeneric,
+  getNetworkAddressExamples
+} from "../src/schemas/network-schemas";
 import { INVALID_HEX_CHAR_PATTERN, IPV4_INVALID_OCTETS, LETTER_CASE_PATTERN, IPV4_INVALID_CHAR_PATTERN, IPV6_MULTIPLE_DOUBLE_COLON_PATTERN, MAC_SEPARATOR_PATTERN, VALID_MAC_FORMAT_PATTERN } from "../src/common/regex-patterns";
 import { MsgType } from "../src/common/types/msg-type";
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
@@ -235,35 +251,20 @@ const testOptionalSchema = (schemaName: string, createSchema: (...args: any[]) =
 
 describe("Network Schemas", () => {
   const messageHandler = createTestMessageHandler();
-  const schemas = createNetworkSchemas(messageHandler);
-  const { 
-    IPv4Optional, 
-    IPv4Required, 
-    IPv6Optional, 
-    IPv6Required, 
-    IPv4CIDROptional,
-    IPv4CIDRRequired,
-    IPv6CIDROptional,
-    IPv6CIDRRequired,
-    CIDRGeneric,
-    MacAddressOptional, 
-    MacAddressRequired,
-    NetworkAddressGeneric,
-    IPAddressGeneric,
-    getNetworkAddressExamples
-  } = schemas;
+  const factorySchemas = createNetworkSchemas(messageHandler);
+  // Use factory schemas for the basic tests that expect options object format
 
-  // MAC Address Tests
-  testRequiredSchema("MacAddressRequired", MacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
-  testOptionalSchema("MacAddressOptional", MacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
+  // MAC Address Tests (using factory functions for consistent options object testing)
+  testRequiredSchema("MacAddressRequired", factorySchemas.MacAddressRequired, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
+  testOptionalSchema("MacAddressOptional", factorySchemas.MacAddressOptional, TEST_DATA.validMacAddresses, TEST_DATA.invalidMacAddresses);
 
-  // IPv4 Tests
-  testRequiredSchema("IPv4Required", IPv4Required, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
-  testOptionalSchema("IPv4Optional", IPv4Optional, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
+  // IPv4 Tests (using factory functions for consistent options object testing)
+  testRequiredSchema("IPv4Required", factorySchemas.IPv4Required, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
+  testOptionalSchema("IPv4Optional", factorySchemas.IPv4Optional, TEST_DATA.validIPv4, TEST_DATA.invalidIPv4);
 
-  // IPv6 Tests
-  testRequiredSchema("IPv6Required", IPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
-  testOptionalSchema("IPv6Optional", IPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
+  // IPv6 Tests (using factory functions for consistent options object testing)
+  testRequiredSchema("IPv6Required", factorySchemas.IPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
+  testOptionalSchema("IPv6Optional", factorySchemas.IPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
 
   // New Schema Tests
   describe('NetworkAddressGeneric', () => {
@@ -331,6 +332,403 @@ describe("Network Schemas", () => {
         // Test custom message
         const messageSchema = schema({ msg: `Custom error for ${name}`, msgType: MsgType.Message });
         expect(() => messageSchema.parse(invalid)).toThrow(`Custom error for ${name}`);
+      });
+    });
+  });
+
+  // Tests for Network Schema String Parameter Overloads
+  describe('Network Schema String Parameter Overloads', () => {
+    describe('IPv4Required overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema = IPv4Required('Server IP');
+        
+        // Should work with valid values
+        expect(schema.parse('192.168.1.1')).toBe('192.168.1.1');
+        expect(schema.parse('10.0.0.1')).toBe('10.0.0.1');
+        expect(schema.parse('172.16.0.1')).toBe('172.16.0.1');
+        
+        // Should use the string as field name in error messages
+        try {
+          schema.parse('999.999.999.999');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Server IP');
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = IPv4Required({ msg: 'Gateway Address', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('192.168.1.1')).toBe('192.168.1.1');
+        try {
+          schema.parse('invalid-ip');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Gateway Address');
+        }
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = IPv4Required();
+        
+        expect(schema.parse('127.0.0.1')).toBe('127.0.0.1');
+        try {
+          schema.parse('300.300.300.300');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Network Address');
+        }
+      });
+    });
+
+    describe('IPv4Optional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv4Optional('Optional Server IP');
+        
+        expect(schema.parse('192.168.1.1')).toBe('192.168.1.1');
+        expect(schema.parse(undefined)).toBeUndefined();
+        
+        try {
+          schema.parse('invalid-ipv4');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional Server IP');
+        }
+      });
+
+      it('should still work with options object', () => {
+        const schema = IPv4Optional({ msg: 'Backup Server IP', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('10.0.0.1')).toBe('10.0.0.1');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+    });
+
+    describe('IPv6Required overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv6Required('IPv6 Address');
+        
+        expect(schema.parse('2001:db8::1')).toBe('2001:db8::1');
+        expect(schema.parse('::1')).toBe('::1');
+        expect(schema.parse('fe80::1')).toBe('fe80::1');
+        
+        try {
+          schema.parse('invalid-ipv6');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('IPv6 Address');
+        }
+      });
+
+      it('should still work with options object', () => {
+        const schema = IPv6Required({ msg: 'Server IPv6', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe('2001:0db8:85a3:0000:0000:8a2e:0370:7334');
+        try {
+          schema.parse('xyz::invalid');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Server IPv6');
+        }
+      });
+    });
+
+    describe('IPv6Optional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv6Optional('Optional IPv6');
+        
+        expect(schema.parse('2001:db8::1')).toBe('2001:db8::1');
+        expect(schema.parse(undefined)).toBeUndefined();
+        
+        try {
+          schema.parse('not-ipv6');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional IPv6');
+        }
+      });
+    });
+
+    describe('MacAddressRequired overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = MacAddressRequired('Network Interface');
+        
+        expect(schema.parse('00:1A:2B:3C:4D:5E')).toBe('00:1A:2B:3C:4D:5E');
+        expect(schema.parse('00-1A-2B-3C-4D-5E')).toBe('00-1A-2B-3C-4D-5E');
+        expect(schema.parse('001A2B3C4D5E')).toBe('001A2B3C4D5E');
+        
+        try {
+          schema.parse('invalid-mac');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Network Interface');
+        }
+      });
+
+      it('should still work with options object', () => {
+        const schema = MacAddressRequired({ msg: 'Ethernet MAC', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('AA:BB:CC:DD:EE:FF')).toBe('AA:BB:CC:DD:EE:FF');
+        try {
+          schema.parse('GG:HH:II:JJ:KK:LL');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Ethernet MAC');
+        }
+      });
+    });
+
+    describe('MacAddressOptional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = MacAddressOptional('Optional MAC');
+        
+        expect(schema.parse('00:1A:2B:3C:4D:5E')).toBe('00:1A:2B:3C:4D:5E');
+        expect(schema.parse(undefined)).toBeUndefined();
+        
+        try {
+          schema.parse('invalid-mac-addr');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional MAC');
+        }
+      });
+    });
+
+    describe('NetworkAddressGeneric overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = NetworkAddressGeneric('Network Address');
+        
+        // Should work with all valid network address types
+        expect(schema.parse('192.168.1.1')).toBe('192.168.1.1');
+        expect(schema.parse('2001:db8::1')).toBe('2001:db8::1');
+        expect(schema.parse('00:1A:2B:3C:4D:5E')).toBe('00:1A:2B:3C:4D:5E');
+        
+        try {
+          schema.parse('not-a-network-address');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Network Address');
+        }
+      });
+
+      it('should still work with options object', () => {
+        const schema = NetworkAddressGeneric({ msg: 'Device Address', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('fe80::1')).toBe('fe80::1');
+        expect(schema.parse('AABBCCDDEEFF')).toBe('AABBCCDDEEFF');
+      });
+    });
+
+    describe('IPAddressGeneric overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPAddressGeneric('IP Address');
+        
+        // Should work with IPv4 and IPv6 but not MAC
+        expect(schema.parse('10.0.0.1')).toBe('10.0.0.1');
+        expect(schema.parse('::1')).toBe('::1');
+        
+        try {
+          schema.parse('00:1A:2B:3C:4D:5E');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('IP Address');
+        }
+        
+        try {
+          schema.parse('not-an-ip');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('IP Address');
+        }
+      });
+    });
+
+    describe('IPv4CIDRRequired overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv4CIDRRequired('Network Subnet');
+        
+        expect(schema.parse('192.168.1.0/24')).toBe('192.168.1.0/24');
+        expect(schema.parse('10.0.0.0/8')).toBe('10.0.0.0/8');
+        expect(schema.parse('172.16.0.0/12')).toBe('172.16.0.0/12');
+        
+        try {
+          schema.parse('192.168.1.1');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Network Subnet');
+        }
+      });
+
+      it('should still work with options object', () => {
+        const schema = IPv4CIDRRequired({ msg: 'Subnet Range', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('0.0.0.0/0')).toBe('0.0.0.0/0');
+        try {
+          schema.parse('192.168.1.0/33');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Subnet Range');
+        }
+      });
+    });
+
+    describe('IPv4CIDROptional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv4CIDROptional('Optional Subnet');
+        
+        expect(schema.parse('192.168.0.0/16')).toBe('192.168.0.0/16');
+        expect(schema.parse(undefined)).toBeUndefined();
+        
+        try {
+          schema.parse('invalid-cidr');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional Subnet');
+        }
+      });
+    });
+
+    describe('IPv6CIDRRequired overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv6CIDRRequired('IPv6 Subnet');
+        
+        expect(schema.parse('2001:db8::/32')).toBe('2001:db8::/32');
+        expect(schema.parse('fe80::/10')).toBe('fe80::/10');
+        expect(schema.parse('::1/128')).toBe('::1/128');
+        
+        try {
+          schema.parse('2001:db8::1');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('IPv6 Subnet');
+        }
+      });
+    });
+
+    describe('IPv6CIDROptional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPv6CIDROptional('Optional IPv6 Subnet');
+        
+        expect(schema.parse('2001:db8::/64')).toBe('2001:db8::/64');
+        expect(schema.parse(undefined)).toBeUndefined();
+        
+        try {
+          schema.parse('invalid-ipv6-cidr');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional IPv6 Subnet');
+        }
+      });
+    });
+
+    describe('CIDRGeneric overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = CIDRGeneric('CIDR Block');
+        
+        // Should work with both IPv4 and IPv6 CIDR
+        expect(schema.parse('192.168.1.0/24')).toBe('192.168.1.0/24');
+        expect(schema.parse('2001:db8::/32')).toBe('2001:db8::/32');
+        
+        try {
+          schema.parse('not-a-cidr-block');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('CIDR Block');
+        }
+      });
+    });
+
+    describe('Real-world usage examples', () => {
+      it('should handle network infrastructure configuration with overloaded schemas', () => {
+        const gatewaySchema = IPv4Required('Gateway IP');
+        const subnetSchema = IPv4CIDRRequired('Network Subnet');
+        const serverIPv6Schema = IPv6Optional('Server IPv6');
+        const switchMACSchema = MacAddressRequired('Switch MAC');
+        
+        // Valid usage
+        expect(gatewaySchema.parse('192.168.1.1')).toBe('192.168.1.1');
+        expect(subnetSchema.parse('10.0.0.0/8')).toBe('10.0.0.0/8');
+        expect(serverIPv6Schema.parse('fe80::1')).toBe('fe80::1');
+        expect(switchMACSchema.parse('00:1A:2B:3C:4D:5E')).toBe('00:1A:2B:3C:4D:5E');
+        
+        // Invalid usage with proper error messages
+        try {
+          gatewaySchema.parse('999.999.999.999');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Gateway IP');
+        }
+        
+        try {
+          subnetSchema.parse('192.168.1.1');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Network Subnet');
+        }
+        
+        try {
+          switchMACSchema.parse('GG:HH:II:JJ:KK:LL');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Switch MAC');
+        }
+      });
+
+      it('should handle multi-protocol network validation', () => {
+        const networkAddrSchema = NetworkAddressGeneric('Device Address');
+        const ipOnlySchema = IPAddressGeneric('Router IP');
+        const anySubnetSchema = CIDRGeneric('Routing Table Entry');
+        
+        // Valid mixed protocol usage
+        expect(networkAddrSchema.parse('192.168.1.100')).toBe('192.168.1.100');
+        expect(networkAddrSchema.parse('2001:db8::42')).toBe('2001:db8::42');
+        expect(networkAddrSchema.parse('AA:BB:CC:DD:EE:FF')).toBe('AA:BB:CC:DD:EE:FF');
+        
+        expect(ipOnlySchema.parse('172.16.0.1')).toBe('172.16.0.1');
+        expect(ipOnlySchema.parse('::1')).toBe('::1');
+        
+        expect(anySubnetSchema.parse('10.0.0.0/16')).toBe('10.0.0.0/16');
+        expect(anySubnetSchema.parse('2001:db8::/64')).toBe('2001:db8::/64');
+        
+        // Invalid cases
+        try {
+          ipOnlySchema.parse('00:11:22:33:44:55');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Router IP');
+        }
+        
+        try {
+          anySubnetSchema.parse('192.168.1.1');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Routing Table Entry');
+        }
+      });
+
+      it('should maintain type safety across all overloaded network schemas', () => {
+        // Compile-time test to ensure all schemas work with both syntax types
+        const ipv4Schema1 = IPv4Required('Primary DNS');
+        const ipv4Schema2 = IPv4Required({ msg: 'Secondary DNS', msgType: MsgType.FieldName });
+        const ipv6Schema1 = IPv6Optional('IPv6 DNS');
+        const ipv6Schema2 = IPv6Optional({ msg: 'Backup IPv6 DNS', msgType: MsgType.FieldName });
+        const macSchema1 = MacAddressRequired('NIC MAC');
+        const macSchema2 = MacAddressRequired({ msg: 'WiFi MAC', msgType: MsgType.FieldName });
+        
+        // All should return the same schema type and work correctly
+        expect(typeof ipv4Schema1.parse).toBe('function');
+        expect(typeof ipv4Schema2.parse).toBe('function');
+        expect(typeof ipv6Schema1.parse).toBe('function');
+        expect(typeof ipv6Schema2.parse).toBe('function');
+        expect(typeof macSchema1.parse).toBe('function');
+        expect(typeof macSchema2.parse).toBe('function');
+        
+        expect(ipv4Schema1.parse('8.8.8.8')).toBe('8.8.8.8');
+        expect(ipv4Schema2.parse('8.8.4.4')).toBe('8.8.4.4');
+        expect(ipv6Schema1.parse('2001:4860:4860::8888')).toBe('2001:4860:4860::8888');
+        expect(ipv6Schema2.parse('2001:4860:4860::8844')).toBe('2001:4860:4860::8844');
+        expect(macSchema1.parse('00:50:56:C0:00:08')).toBe('00:50:56:C0:00:08');
+        expect(macSchema2.parse('02:42:AC:11:00:02')).toBe('02:42:AC:11:00:02');
       });
     });
   });

@@ -223,4 +223,198 @@ describe('Enum Schemas', () => {
       expect(schema.parse('short')).toBe('short');
     });
   });
+
+  describe('String Parameter Overloads', () => {
+    // Import the exported overloaded schemas for this test section  
+    const { EnumOptional: ExportedEnumOptional, EnumRequired: ExportedEnumRequired } = require('../src/schemas/enum-schemas');
+    
+    const statusValues = ['active', 'inactive', 'pending'] as const;
+    const roleValues = ['admin', 'user', 'guest'] as const;
+
+    describe('EnumOptional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = ExportedEnumOptional(statusValues, 'User Status');
+        expect(schema.parse('active')).toBe('active');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow(/User Status must be one of: active, inactive, pending/);
+      });
+
+      it('should work with options object', () => {
+        const schema = ExportedEnumOptional(statusValues, { msg: 'Account Status' });
+        expect(schema.parse('inactive')).toBe('inactive');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow(/Account Status must be one of: active, inactive, pending/);
+      });
+
+      it('should work with no second parameter (default)', () => {
+        const schema = ExportedEnumOptional(statusValues);
+        expect(schema.parse('pending')).toBe('pending');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow(/Value must be one of: active, inactive, pending/);
+      });
+
+      it('should work with message type override', () => {
+        const schema = ExportedEnumOptional(statusValues, { msg: 'Custom error message', msgType: MsgType.Message });
+        expect(schema.parse('active')).toBe('active');
+        expect(() => schema.parse('invalid')).toThrow(/Custom error message/);
+      });
+    });
+
+    describe('EnumRequired overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = ExportedEnumRequired(roleValues, 'User Role');
+        expect(schema.parse('admin')).toBe('admin');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(() => schema.parse('invalid')).toThrow(/User Role must be one of: admin, user, guest/);
+      });
+
+      it('should work with options object', () => {
+        const schema = ExportedEnumRequired(roleValues, { msg: 'Permission Level' });
+        expect(schema.parse('user')).toBe('user');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(() => schema.parse('invalid')).toThrow(/Permission Level must be one of: admin, user, guest/);
+      });
+
+      it('should work with no second parameter (default)', () => {
+        const schema = ExportedEnumRequired(roleValues);
+        expect(schema.parse('guest')).toBe('guest');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(() => schema.parse('invalid')).toThrow(/Value must be one of: admin, user, guest/);
+      });
+
+      it('should work with message type override', () => {
+        const schema = ExportedEnumRequired(roleValues, { msg: 'Invalid role provided', msgType: MsgType.Message });
+        expect(schema.parse('admin')).toBe('admin');
+        expect(() => schema.parse('invalid')).toThrow(/Invalid role provided/);
+      });
+    });
+
+    describe('Type safety', () => {
+      it('should maintain proper TypeScript types with string parameter', () => {
+        const schema = ExportedEnumRequired(['a', 'b', 'c'] as const, 'Letter');
+        const result = schema.parse('a');
+        // TypeScript should infer result as 'a' | 'b' | 'c'
+        expect(result).toBe('a');
+      });
+
+      it('should maintain proper TypeScript types with options object', () => {
+        const schema = ExportedEnumOptional(['x', 'y', 'z'] as const, { msg: 'Coordinate' });
+        const result = schema.parse('x');
+        // TypeScript should infer result as 'x' | 'y' | 'z' | undefined
+        expect(result).toBe('x');
+      });
+    });
+
+    describe('Real-world usage patterns', () => {
+      it('should work with HTTP status categories', () => {
+        const categories = ['1xx', '2xx', '3xx', '4xx', '5xx'] as const;
+        const schema = ExportedEnumRequired(categories, 'Status Category');
+        
+        expect(schema.parse('2xx')).toBe('2xx');
+        expect(schema.parse('4xx')).toBe('4xx');
+        expect(() => schema.parse('6xx')).toThrow(/Status Category must be one of: 1xx, 2xx, 3xx, 4xx, 5xx/);
+      });
+
+      it('should work with environment types', () => {
+        const environments = ['development', 'staging', 'production'] as const;
+        const schema = ExportedEnumOptional(environments, 'Environment');
+        
+        expect(schema.parse('development')).toBe('development');
+        expect(schema.parse('production')).toBe('production');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('test')).toThrow(/Environment must be one of: development, staging, production/);
+      });
+    });
+  });
+
+  describe('Exported Schema Overloads', () => {
+    // Import the exported overloaded schemas
+    const { EnumOptional: ExportedEnumOptional, EnumRequired: ExportedEnumRequired } = require('../src/schemas/enum-schemas');
+
+    const statusValues = ['active', 'inactive', 'pending'] as const;
+    const priorityValues = ['low', 'medium', 'high'] as const;
+
+    describe('ExportedEnumOptional overloads', () => {
+      it('should work with no parameters (default message)', () => {
+        const schema = ExportedEnumOptional(statusValues);
+        expect(schema.parse('active')).toBe('active');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow(/Value must be one of: active, inactive, pending/);
+      });
+
+      it('should work with string parameter', () => {
+        const schema = ExportedEnumOptional(statusValues, 'Order Status');
+        expect(schema.parse('inactive')).toBe('inactive');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow(/Order Status must be one of: active, inactive, pending/);
+      });
+
+      it('should work with options object', () => {
+        const schema = ExportedEnumOptional(statusValues, { msg: 'Task Status' });
+        expect(schema.parse('pending')).toBe('pending');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow(/Task Status must be one of: active, inactive, pending/);
+      });
+
+      it('should work with message type override', () => {
+        const schema = ExportedEnumOptional(statusValues, { msg: 'Status validation failed', msgType: MsgType.Message });
+        expect(schema.parse('active')).toBe('active');
+        expect(() => schema.parse('invalid')).toThrow(/Status validation failed/);
+      });
+    });
+
+    describe('ExportedEnumRequired overloads', () => {
+      it('should work with no parameters (default message)', () => {
+        const schema = ExportedEnumRequired(priorityValues);
+        expect(schema.parse('low')).toBe('low');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(() => schema.parse('invalid')).toThrow(/Value must be one of: low, medium, high/);
+      });
+
+      it('should work with string parameter', () => {
+        const schema = ExportedEnumRequired(priorityValues, 'Task Priority');
+        expect(schema.parse('medium')).toBe('medium');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(() => schema.parse('invalid')).toThrow(/Task Priority must be one of: low, medium, high/);
+      });
+
+      it('should work with options object', () => {
+        const schema = ExportedEnumRequired(priorityValues, { msg: 'Ticket Priority' });
+        expect(schema.parse('high')).toBe('high');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(() => schema.parse('invalid')).toThrow(/Ticket Priority must be one of: low, medium, high/);
+      });
+
+      it('should work with message type override', () => {
+        const schema = ExportedEnumRequired(priorityValues, { msg: 'Priority validation failed', msgType: MsgType.Message });
+        expect(schema.parse('low')).toBe('low');
+        expect(() => schema.parse('invalid')).toThrow(/Priority validation failed/);
+      });
+    });
+
+    describe('Complex enum scenarios', () => {
+      it('should work with single-value enum', () => {
+        const schema = ExportedEnumRequired(['only'], 'Single Value');
+        expect(schema.parse('only')).toBe('only');
+        expect(() => schema.parse('other')).toThrow(/Single Value must be one of: only/);
+      });
+
+      it('should work with many values', () => {
+        const manyValues = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'] as const;
+        const schema = ExportedEnumOptional(manyValues, 'Letter');
+        expect(schema.parse('a')).toBe('a');
+        expect(schema.parse('j')).toBe('j');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('k')).toThrow(/Letter must be one of: a, b, c, d, e, f, g, h, i, j/);
+      });
+
+      it('should work with special characters', () => {
+        const specialValues = ['@', '#', '$', '%'] as const;
+        const schema = ExportedEnumRequired(specialValues, 'Symbol');
+        expect(schema.parse('@')).toBe('@');
+        expect(schema.parse('#')).toBe('#');
+        expect(() => schema.parse('&')).toThrow(/Symbol must be one of: @, #, \$, %/);
+      });
+    });
+  });
 });

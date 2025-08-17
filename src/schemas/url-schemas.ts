@@ -85,7 +85,7 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
 
     if (protocol && hostname) {
       return createErrorMessage("invalid", options, {
-        reason: "protocol or hostname mismatch",
+        reason: ": protocol or hostname mismatch",
       });
     } else if (protocol) {
       // Determine the specific error message based on protocol type
@@ -325,6 +325,22 @@ export type { UrlSchemaOptions };
 
 // Convenience functions for common protocol validations
 
+// Helper functions for HTTPS URL overloads
+function createHttpsUrlRequiredOverload(
+  msg: string,
+): ReturnType<typeof baseUrlRequired>;
+function createHttpsUrlRequiredOverload(
+  options?: Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlRequired>;
+function createHttpsUrlRequiredOverload(
+  msgOrOptions?: string | Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlRequired> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlRequired({ msg: msgOrOptions, protocol: /^https$/ });
+  }
+  return baseUrlRequired({ ...msgOrOptions, protocol: /^https$/ });
+}
+
 /**
  * Creates a required URL schema that only accepts HTTPS URLs
  *
@@ -339,23 +355,38 @@ export type { UrlSchemaOptions };
  *
  * @example
  * ```typescript
- * const schema = zHttpsUrlRequired();
+ * const schema = HttpsUrlRequired();
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse('http://example.com');  // ✗ Throws error
  *
+ * // New string parameter syntax
+ * const simpleSchema = HttpsUrlRequired('Secure API URL');
+ *
  * // With hostname validation
- * const apiSchema = zHttpsUrlRequired({
+ * const apiSchema = HttpsUrlRequired({
  *   hostname: /^api\.company\.com$/
  * });
  * apiSchema.parse('https://api.company.com'); // ✓ Valid
  * apiSchema.parse('https://example.com');     // ✗ Throws error
  * ```
  */
-export const HttpsUrlRequired = (
-  options: Omit<UrlSchemaOptions, "protocol"> = {},
-) => {
-  return baseUrlRequired({ ...options, protocol: /^https$/ });
-};
+export const HttpsUrlRequired = createHttpsUrlRequiredOverload;
+
+// Helper functions for HTTPS URL optional overloads
+function createHttpsUrlOptionalOverload(
+  msg: string,
+): ReturnType<typeof baseUrlOptional>;
+function createHttpsUrlOptionalOverload(
+  options?: Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlOptional>;
+function createHttpsUrlOptionalOverload(
+  msgOrOptions?: string | Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlOptional> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlOptional({ msg: msgOrOptions, protocol: /^https$/ });
+  }
+  return baseUrlOptional({ ...msgOrOptions, protocol: /^https$/ });
+}
 
 /**
  * Creates an optional URL schema that only accepts HTTPS URLs or undefined
@@ -376,17 +407,32 @@ export const HttpsUrlRequired = (
  * schema.parse(undefined);             // ✓ Valid
  * schema.parse('http://example.com');  // ✗ Throws error
  *
+ * // New string parameter syntax
+ * const simpleSchema = HttpsUrlOptional('Secure URL');
+ *
  * // With hostname validation
  * const apiSchema = HttpsUrlOptional({
  *   hostname: /^api\.company\.com$/
  * });
  * ```
  */
-export const HttpsUrlOptional = (
-  options: Omit<UrlSchemaOptions, "protocol"> = {},
-) => {
-  return baseUrlOptional({ ...options, protocol: /^https$/ });
-};
+export const HttpsUrlOptional = createHttpsUrlOptionalOverload;
+
+// Helper functions for HTTP URL overloads
+function createHttpUrlRequiredOverload(
+  msg: string,
+): ReturnType<typeof baseUrlRequired>;
+function createHttpUrlRequiredOverload(
+  options?: Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlRequired>;
+function createHttpUrlRequiredOverload(
+  msgOrOptions?: string | Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlRequired> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlRequired({ msg: msgOrOptions, protocol: /^http$/ });
+  }
+  return baseUrlRequired({ ...msgOrOptions, protocol: /^http$/ });
+}
 
 /**
  * Creates a required URL schema that only accepts HTTP URLs
@@ -407,17 +453,32 @@ export const HttpsUrlOptional = (
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse('https://example.com'); // ✗ Throws error
  *
+ * // New string parameter syntax
+ * const simpleSchema = HttpUrlRequired('HTTP API URL');
+ *
  * // With hostname validation for internal services
  * const internalSchema = HttpUrlRequired({
  *   hostname: /^internal\.company\.local$/
  * });
  * ```
  */
-export const HttpUrlRequired = (
-  options: Omit<UrlSchemaOptions, "protocol"> = {},
-) => {
-  return baseUrlRequired({ ...options, protocol: /^http$/ });
-};
+export const HttpUrlRequired = createHttpUrlRequiredOverload;
+
+// Helper functions for HTTP URL optional overloads
+function createHttpUrlOptionalOverload(
+  msg: string,
+): ReturnType<typeof baseUrlOptional>;
+function createHttpUrlOptionalOverload(
+  options?: Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlOptional>;
+function createHttpUrlOptionalOverload(
+  msgOrOptions?: string | Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlOptional> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlOptional({ msg: msgOrOptions, protocol: /^http$/ });
+  }
+  return baseUrlOptional({ ...msgOrOptions, protocol: /^http$/ });
+}
 
 /**
  * Creates an optional URL schema that only accepts HTTP URLs or undefined
@@ -437,13 +498,43 @@ export const HttpUrlRequired = (
  * schema.parse('http://example.com');  // ✓ Valid
  * schema.parse(undefined);             // ✓ Valid
  * schema.parse('https://example.com'); // ✗ Throws error
+ *
+ * // New string parameter syntax
+ * const simpleSchema = HttpUrlOptional('HTTP URL');
  * ```
  */
-export const HttpUrlOptional = (
-  options: Omit<UrlSchemaOptions, "protocol"> = {},
-) => {
-  return baseUrlOptional({ ...options, protocol: /^http$/ });
-};
+export const HttpUrlOptional = createHttpUrlOptionalOverload;
+
+// Helper functions for Web URL overloads
+function createWebUrlRequiredOverload(
+  msg: string,
+): ReturnType<typeof baseUrlRequired>;
+function createWebUrlRequiredOverload(
+  options?: Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlRequired>;
+function createWebUrlRequiredOverload(
+  msgOrOptions?: string | Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlRequired> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlRequired({ msg: msgOrOptions, protocol: /^https?$/ });
+  }
+  return baseUrlRequired({ ...msgOrOptions, protocol: /^https?$/ });
+}
+
+function createWebUrlOptionalOverload(
+  msg: string,
+): ReturnType<typeof baseUrlOptional>;
+function createWebUrlOptionalOverload(
+  options?: Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlOptional>;
+function createWebUrlOptionalOverload(
+  msgOrOptions?: string | Omit<UrlSchemaOptions, "protocol">,
+): ReturnType<typeof baseUrlOptional> {
+  if (typeof msgOrOptions === "string") {
+    return baseUrlOptional({ msg: msgOrOptions, protocol: /^https?$/ });
+  }
+  return baseUrlOptional({ ...msgOrOptions, protocol: /^https?$/ });
+}
 
 /**
  * Creates a required URL schema that accepts both HTTP and HTTPS URLs
@@ -464,17 +555,16 @@ export const HttpUrlOptional = (
  * schema.parse('https://example.com'); // ✓ Valid
  * schema.parse('ftp://example.com');   // ✗ Throws error
  *
+ * // New string parameter syntax
+ * const simpleSchema = WebUrlRequired('Website URL');
+ *
  * // With hostname validation for specific websites
  * const websiteSchema = WebUrlRequired({
  *   hostname: /^(www\.)?company\.com$/
  * });
  * ```
  */
-export const WebUrlRequired = (
-  options: Omit<UrlSchemaOptions, "protocol"> = {},
-) => {
-  return baseUrlRequired({ ...options, protocol: /^https?$/ });
-};
+export const WebUrlRequired = createWebUrlRequiredOverload;
 
 /**
  * Creates an optional URL schema that accepts both HTTP and HTTPS URLs or undefined
@@ -496,6 +586,9 @@ export const WebUrlRequired = (
  * schema.parse(undefined);             // ✓ Valid
  * schema.parse('ftp://example.com');   // ✗ Throws error
  *
+ * // New string parameter syntax
+ * const simpleSchema = WebUrlOptional('Website URL');
+ *
  * // For optional website fields
  * const profileSchema = z.object({
  *   name: z.string(),
@@ -503,8 +596,4 @@ export const WebUrlRequired = (
  * });
  * ```
  */
-export const WebUrlOptional = (
-  options: Omit<UrlSchemaOptions, "protocol"> = {},
-) => {
-  return baseUrlOptional({ ...options, protocol: /^https?$/ });
-};
+export const WebUrlOptional = createWebUrlOptionalOverload;

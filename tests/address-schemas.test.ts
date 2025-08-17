@@ -26,14 +26,13 @@ describe('US_STATE_CODES', () => {
     expect(US_STATE_CODES).not.toContain('USA');
   });
 });
-import { createAddressSchemas } from '../src/schemas/address-schemas';
+import { pz } from '../src/pz';
 import { MsgType } from '../src/common/types/msg-type';
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 
+const { AddressOptional, AddressRequired, AddressSimple, AddressUS } = pz;
+
 describe('Address Schemas', () => {
-  const messageHandler = createTestMessageHandler();
-  const schemas = createAddressSchemas(messageHandler);
-  const { AddressOptional, AddressRequired, AddressSimple, AddressUS } = schemas;
 
   describe('AddressOptional', () => {
     const schema = AddressOptional();
@@ -99,8 +98,8 @@ describe('Address Schemas', () => {
       expect(() => customSchema.parse('invalid')).toThrow('Shipping Address is invalid');
     });
 
-    it('should use custom message when msgType is Message', () => {
-      const customSchema = AddressOptional('Invalid address format', MsgType.Message);
+  it('should use custom message when msgType is Message', () => {
+      const customSchema = AddressOptional({ msg: 'Invalid address format', msgType: MsgType.Message });
       expect(() => customSchema.parse('invalid')).toThrow('Invalid address format');
     });
 
@@ -182,8 +181,8 @@ describe('Address Schemas', () => {
       expect(() => customSchema.parse(undefined)).toThrow('Billing Address is required');
     });
 
-    it('should use custom message when msgType is Message', () => {
-      const customSchema = AddressRequired('Address is mandatory', MsgType.Message);
+  it('should use custom message when msgType is Message', () => {
+      const customSchema = AddressRequired({ msg: 'Address is mandatory', msgType: MsgType.Message });
       expect(() => customSchema.parse(undefined)).toThrow('Address is mandatory');
     });
 
@@ -418,6 +417,194 @@ describe('Address Schemas', () => {
       expect(result.city).toBe('New York');
       expect(result.state).toBe('NY');
       expect(result.country).toBe('US');
+    });
+  });
+
+  describe('Address Schema String Parameter Overloads', () => {
+    describe('AddressOptional overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = AddressOptional('My Address');
+        const schema2 = AddressOptional({ msg: 'My Address' });
+        
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+          country: 'US',
+        };
+        
+        expect(schema1.parse(validAddress)).toEqual(schema2.parse(validAddress));
+        expect(schema1.parse(undefined)).toEqual(schema2.parse(undefined));
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = AddressOptional({ msg: 'Home Address', msgType: MsgType.FieldName });
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+          country: 'US',
+        };
+        expect(schema.parse(validAddress)).toEqual(validAddress);
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = AddressOptional();
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+          country: 'US',
+        };
+        expect(schema.parse(validAddress)).toEqual(validAddress);
+      });
+    });
+
+    describe('AddressRequired overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = AddressRequired('My Address');
+        const schema2 = AddressRequired({ msg: 'My Address' });
+        
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+          country: 'US',
+        };
+        
+        expect(schema1.parse(validAddress)).toEqual(schema2.parse(validAddress));
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = AddressRequired({ msg: 'Billing Address', msgType: MsgType.FieldName });
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+          country: 'US',
+        };
+        expect(schema.parse(validAddress)).toEqual(validAddress);
+      });
+    });
+
+    describe('AddressSimple overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = AddressSimple('Simple Address');
+        const schema2 = AddressSimple({ msg: 'Simple Address' });
+        
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          country: 'US',
+        };
+        
+        expect(schema1.parse(validAddress)).toEqual(schema2.parse(validAddress));
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = AddressSimple({ msg: 'Basic Address', msgType: MsgType.FieldName });
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          country: 'US',
+        };
+        expect(schema.parse(validAddress)).toEqual(validAddress);
+      });
+    });
+
+    describe('AddressUS overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = AddressUS('US Address');
+        const schema2 = AddressUS({ msg: 'US Address' });
+        
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+        };
+        
+        const result1 = schema1.parse(validAddress);
+        const result2 = schema2.parse(validAddress);
+        expect(result1).toEqual(result2);
+        expect(result1.country).toBe('US');
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = AddressUS({ msg: 'US Shipping Address', msgType: MsgType.FieldName });
+        const validAddress = {
+          street: '123 Main St',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+        };
+        const result = schema.parse(validAddress);
+        expect(result.country).toBe('US');
+      });
+    });
+
+    describe('Real-world usage examples', () => {
+      it('should handle user registration form with overloaded schemas', () => {
+        const billingAddressSchema = AddressRequired('Billing Address');
+        const shippingAddressSchema = AddressOptional('Shipping Address');
+        
+        const formData = {
+          billing: {
+            street: '123 Billing St',
+            city: 'New York',
+            state: 'NY',
+            postalCode: '10001',
+            country: 'US',
+          },
+          shipping: undefined,
+        };
+        
+        const parsedData = {
+          billing: billingAddressSchema.parse(formData.billing),
+          shipping: shippingAddressSchema.parse(formData.shipping),
+        };
+        
+        expect(parsedData.billing).toEqual(formData.billing);
+        expect(parsedData.shipping).toBeUndefined();
+      });
+
+      it('should handle international address validation', () => {
+        const generalAddressSchema = AddressSimple('Mailing Address');
+        const usAddressSchema = AddressUS('US Address');
+        
+        const internationalAddress = {
+          street: '123 International St',
+          city: 'London',
+          country: 'UK',
+        };
+        
+        const usAddress = {
+          street: '456 US Ave',
+          city: 'Chicago',
+          state: 'IL',
+          postalCode: '60601',
+        };
+        
+        expect(generalAddressSchema.parse(internationalAddress)).toEqual(internationalAddress);
+        const parsedUSAddress = usAddressSchema.parse(usAddress);
+        expect(parsedUSAddress.country).toBe('US');
+      });
     });
   });
 });

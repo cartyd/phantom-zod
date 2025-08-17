@@ -392,15 +392,139 @@ const defaultFileUploadSchemas = createFileUploadSchemas(
   createTestMessageHandler(),
 );
 
-// Direct schema exports with clean naming
+// Define types for function overloads
+type FileUploadConfig = {
+  maxSize?: number;
+  allowedTypes?: readonly string[];
+  requireExtension?: boolean;
+};
+
+// Helper functions with overloads to support both string and config parameters
+function createFileUploadOptionalOverload(
+  config: FileUploadConfig,
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.FileUploadOptional>;
+function createFileUploadOptionalOverload(
+  config?: FileUploadConfig,
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultFileUploadSchemas.FileUploadOptional>;
+function createFileUploadOptionalOverload(
+  config: FileUploadConfig = {},
+  msg: string = "File",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultFileUploadSchemas.FileUploadOptional> {
+  return defaultFileUploadSchemas.FileUploadOptional(config, msg, msgType);
+}
+
+function createFileUploadRequiredOverload(
+  config: FileUploadConfig,
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.FileUploadRequired>;
+function createFileUploadRequiredOverload(
+  config?: FileUploadConfig,
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultFileUploadSchemas.FileUploadRequired>;
+function createFileUploadRequiredOverload(
+  config: FileUploadConfig = {},
+  msg: string = "File",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultFileUploadSchemas.FileUploadRequired> {
+  return defaultFileUploadSchemas.FileUploadRequired(config, msg, msgType);
+}
+
+function createImageUploadOverload(
+  maxSize: number,
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.ImageUpload>;
+function createImageUploadOverload(
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.ImageUpload>;
+function createImageUploadOverload(
+  maxSizeOrMsg?: number | string,
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultFileUploadSchemas.ImageUpload> {
+  if (typeof maxSizeOrMsg === "string") {
+    // First overload: msg as first parameter
+    return defaultFileUploadSchemas.ImageUpload(
+      5 * 1024 * 1024, // default 5MB
+      maxSizeOrMsg,
+      msgType || MsgType.FieldName,
+    );
+  } else {
+    // Second overload: maxSize as first parameter
+    return defaultFileUploadSchemas.ImageUpload(
+      maxSizeOrMsg || 5 * 1024 * 1024,
+      msg || "Image",
+      msgType || MsgType.FieldName,
+    );
+  }
+}
+
+function createDocumentUploadOverload(
+  maxSize: number,
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.DocumentUpload>;
+function createDocumentUploadOverload(
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.DocumentUpload>;
+function createDocumentUploadOverload(
+  maxSizeOrMsg?: number | string,
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultFileUploadSchemas.DocumentUpload> {
+  if (typeof maxSizeOrMsg === "string") {
+    // First overload: msg as first parameter
+    return defaultFileUploadSchemas.DocumentUpload(
+      10 * 1024 * 1024, // default 10MB
+      maxSizeOrMsg,
+      msgType || MsgType.FieldName,
+    );
+  } else {
+    // Second overload: maxSize as first parameter
+    return defaultFileUploadSchemas.DocumentUpload(
+      maxSizeOrMsg || 10 * 1024 * 1024,
+      msg || "Document",
+      msgType || MsgType.FieldName,
+    );
+  }
+}
+
+function createMultipleFileUploadOverload(
+  config: FileUploadConfig,
+  msg: string,
+): ReturnType<typeof defaultFileUploadSchemas.MultipleFileUpload>;
+function createMultipleFileUploadOverload(
+  config?: FileUploadConfig,
+  msg?: string,
+  msgType?: MsgType,
+  maxFiles?: number,
+): ReturnType<typeof defaultFileUploadSchemas.MultipleFileUpload>;
+function createMultipleFileUploadOverload(
+  config: FileUploadConfig = {},
+  msg: string = "Files",
+  msgType: MsgType = MsgType.FieldName,
+  maxFiles: number = 5,
+): ReturnType<typeof defaultFileUploadSchemas.MultipleFileUpload> {
+  return defaultFileUploadSchemas.MultipleFileUpload(
+    config,
+    msg,
+    msgType,
+    maxFiles,
+  );
+}
+
+// Export schemas with overloads for simplified usage
 export const FileSize = defaultFileUploadSchemas.FileSize;
 export const MimeType = defaultFileUploadSchemas.MimeType;
 export const Filename = defaultFileUploadSchemas.Filename;
-export const FileUploadOptional = defaultFileUploadSchemas.FileUploadOptional;
-export const FileUploadRequired = defaultFileUploadSchemas.FileUploadRequired;
-export const ImageUpload = defaultFileUploadSchemas.ImageUpload;
-export const DocumentUpload = defaultFileUploadSchemas.DocumentUpload;
-export const MultipleFileUpload = defaultFileUploadSchemas.MultipleFileUpload;
+export const FileUploadOptional = createFileUploadOptionalOverload;
+export const FileUploadRequired = createFileUploadRequiredOverload;
+export const ImageUpload = createImageUploadOverload;
+export const DocumentUpload = createDocumentUploadOverload;
+export const MultipleFileUpload = createMultipleFileUploadOverload;
 
 // --- Utility Functions ---
 

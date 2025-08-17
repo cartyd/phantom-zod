@@ -434,48 +434,178 @@ const dateMessageHandler = createTestMessageHandler((options) => {
 });
 
 // Create schemas with default handler
-const {
-  DateOptional: baseZDateOptional,
-  DateRequired: baseZDateRequired,
-  DateStringOptional: baseZDateStringOptional,
-  DateStringRequired: baseZDateStringRequired,
-  DateTimeOptional: baseZDateTimeOptional,
-  DateTimeRequired: baseZDateTimeRequired,
-  DateTimeStringOptional: baseZDateTimeStringOptional,
-  DateTimeStringRequired: baseZDateTimeStringRequired,
-  TimeStringOptional: baseZTimeStringOptional,
-  TimeStringRequired: baseZTimeStringRequired,
-  getDateExamples: baseGetDateExamples,
-} = createDateSchemas(dateMessageHandler);
+const defaultDateSchemas = createDateSchemas(dateMessageHandler);
 
-// Export schemas for direct use
+// Define simplified type for string parameter overloads
+type SimpleDateSchemaOptions = {
+  msg: string;
+  msgType?: MsgType;
+  min?: Date;
+  max?: Date;
+};
 
-/**
- * Creates an optional Date schema that accepts both Date objects and date strings
- *
- * @param options - Configuration options for date validation
- * @returns Zod schema that accepts valid Date instances, date strings, or undefined
- *
- * @example
- * ```typescript
- * const schema = zDateOptional();
- * schema.parse(new Date());     // ✓ Valid (returns Date)
- * schema.parse("2023-01-01");   // ✓ Valid (returns Date)
- * schema.parse(undefined);      // ✓ Valid (returns undefined)
- * ```
- */
+// Helper functions with overloads to support both string and options object
+function createDateOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateOptional>;
+function createDateOptionalOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateOptional>;
+function createDateOptionalOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateOptional({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateOptional(msgOrOptions);
+}
 
-// Export without z prefix for new naming convention
-export const DateOptional = baseZDateOptional;
-export const DateRequired = baseZDateRequired;
-export const DateStringOptional = baseZDateStringOptional;
-export const DateStringRequired = baseZDateStringRequired;
-export const DateTimeOptional = baseZDateTimeOptional;
-export const DateTimeRequired = baseZDateTimeRequired;
-export const DateTimeStringOptional = baseZDateTimeStringOptional;
-export const DateTimeStringRequired = baseZDateTimeStringRequired;
-export const TimeStringOptional = baseZTimeStringOptional;
-export const TimeStringRequired = baseZTimeStringRequired;
+function createDateRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateRequired>;
+function createDateRequiredOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateRequired>;
+function createDateRequiredOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateRequired({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateRequired(msgOrOptions);
+}
+
+function createDateStringOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateStringOptional>;
+function createDateStringOptionalOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateStringOptional>;
+function createDateStringOptionalOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateStringOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateStringOptional({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateStringOptional(msgOrOptions);
+}
+
+function createDateStringRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateStringRequired>;
+function createDateStringRequiredOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateStringRequired>;
+function createDateStringRequiredOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateStringRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateStringRequired({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateStringRequired(msgOrOptions);
+}
+
+function createDateTimeOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateTimeOptional>;
+function createDateTimeOptionalOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeOptional>;
+function createDateTimeOptionalOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateTimeOptional({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateTimeOptional(msgOrOptions);
+}
+
+function createDateTimeRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateTimeRequired>;
+function createDateTimeRequiredOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeRequired>;
+function createDateTimeRequiredOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateTimeRequired({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateTimeRequired(msgOrOptions);
+}
+
+function createDateTimeStringOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateTimeStringOptional>;
+function createDateTimeStringOptionalOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeStringOptional>;
+function createDateTimeStringOptionalOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeStringOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateTimeStringOptional({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateTimeStringOptional(msgOrOptions);
+}
+
+function createDateTimeStringRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.DateTimeStringRequired>;
+function createDateTimeStringRequiredOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeStringRequired>;
+function createDateTimeStringRequiredOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.DateTimeStringRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.DateTimeStringRequired({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.DateTimeStringRequired(msgOrOptions);
+}
+
+function createTimeStringOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.TimeStringOptional>;
+function createTimeStringOptionalOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimeStringOptional>;
+function createTimeStringOptionalOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimeStringOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.TimeStringOptional({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.TimeStringOptional(msgOrOptions);
+}
+
+function createTimeStringRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.TimeStringRequired>;
+function createTimeStringRequiredOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimeStringRequired>;
+function createTimeStringRequiredOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimeStringRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.TimeStringRequired({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.TimeStringRequired(msgOrOptions);
+}
+
+// Export schemas with string parameter overloads
+export const DateOptional = createDateOptionalOverload;
+export const DateRequired = createDateRequiredOverload;
+export const DateStringOptional = createDateStringOptionalOverload;
+export const DateStringRequired = createDateStringRequiredOverload;
+export const DateTimeOptional = createDateTimeOptionalOverload;
+export const DateTimeRequired = createDateTimeRequiredOverload;
+export const DateTimeStringOptional = createDateTimeStringOptionalOverload;
+export const DateTimeStringRequired = createDateTimeStringRequiredOverload;
+export const TimeStringOptional = createTimeStringOptionalOverload;
+export const TimeStringRequired = createTimeStringRequiredOverload;
 
 /**
  * Returns example date and time formats for user guidance
@@ -490,7 +620,7 @@ export const TimeStringRequired = baseZTimeStringRequired;
  * console.log(examples.time);     // "10:30:00"
  * ```
  */
-export const getDateExamples = baseGetDateExamples;
+export const getDateExamples = defaultDateSchemas.getDateExamples;
 
 // Export the options interface for external use
 export type { DateSchemaOptions };

@@ -291,15 +291,159 @@ import { createTestMessageHandler } from "../localization/types/message-handler.
 
 const defaultIdListSchemas = createIdListSchemas(createTestMessageHandler());
 
-// Direct schema exports with clean naming
-export const IdListOptional = defaultIdListSchemas.IdListOptional;
-export const IdListRequired = defaultIdListSchemas.IdListRequired;
-export const Id = defaultIdListSchemas.Id;
-export const UniqueIdList = defaultIdListSchemas.UniqueIdList;
+// Define types for function overloads
+type IdListSchemaOptions = {
+  msg?: string;
+  msgType?: MsgType;
+  minItems?: number;
+  maxItems?: number;
+};
+
+type SimpleIdSchemaOptions = {
+  msg?: string;
+  msgType?: MsgType;
+};
+
+// Helper functions with overloads to support both string and options object
+function createIdListOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.IdListOptional>;
+function createIdListOptionalOverload(
+  msg?: string,
+  msgType?: MsgType,
+  minItems?: number,
+  maxItems?: number,
+): ReturnType<typeof defaultIdListSchemas.IdListOptional>;
+function createIdListOptionalOverload(
+  msg: string = "ID List",
+  msgType: MsgType = MsgType.FieldName,
+  minItems: number = 1,
+  maxItems: number = 1000,
+): ReturnType<typeof defaultIdListSchemas.IdListOptional> {
+  return defaultIdListSchemas.IdListOptional(msg, msgType, minItems, maxItems);
+}
+
+function createIdListRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.IdListRequired>;
+function createIdListRequiredOverload(
+  msg?: string,
+  msgType?: MsgType,
+  minItems?: number,
+  maxItems?: number,
+): ReturnType<typeof defaultIdListSchemas.IdListRequired>;
+function createIdListRequiredOverload(
+  msg: string = "ID List",
+  msgType: MsgType = MsgType.FieldName,
+  minItems: number = 1,
+  maxItems: number = 1000,
+): ReturnType<typeof defaultIdListSchemas.IdListRequired> {
+  return defaultIdListSchemas.IdListRequired(msg, msgType, minItems, maxItems);
+}
+
+function createIdOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.Id>;
+function createIdOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultIdListSchemas.Id>;
+function createIdOverload(
+  msg: string = "ID",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultIdListSchemas.Id> {
+  return defaultIdListSchemas.Id(msg, msgType);
+}
+
+function createUniqueIdListOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.UniqueIdList>;
+function createUniqueIdListOverload(
+  msg?: string,
+  msgType?: MsgType,
+  minItems?: number,
+  maxItems?: number,
+): ReturnType<typeof defaultIdListSchemas.UniqueIdList>;
+function createUniqueIdListOverload(
+  msg: string = "Unique ID List",
+  msgType: MsgType = MsgType.FieldName,
+  minItems: number = 1,
+  maxItems: number = 1000,
+): ReturnType<typeof defaultIdListSchemas.UniqueIdList> {
+  return defaultIdListSchemas.UniqueIdList(msg, msgType, minItems, maxItems);
+}
+
+function createCustomIdOverload(
+  validateFn: (val: string) => boolean,
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.CustomId>;
+function createCustomIdOverload(
+  validateFn: (val: string) => boolean,
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultIdListSchemas.CustomId>;
+function createCustomIdOverload(
+  validateFn: (val: string) => boolean,
+  msg: string = "Custom ID",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultIdListSchemas.CustomId> {
+  return defaultIdListSchemas.CustomId(validateFn, msg, msgType);
+}
+
+function createMongoIdOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.MongoId>;
+function createMongoIdOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultIdListSchemas.MongoId>;
+function createMongoIdOverload(
+  msg: string = "MongoDB ObjectId",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultIdListSchemas.MongoId> {
+  return defaultIdListSchemas.MongoId(msg, msgType);
+}
+
+function createMongoIdListOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.MongoIdList>;
+function createMongoIdListOverload(
+  msg?: string,
+  msgType?: MsgType,
+  minItems?: number,
+  maxItems?: number,
+): ReturnType<typeof defaultIdListSchemas.MongoIdList>;
+function createMongoIdListOverload(
+  msg: string = "MongoDB ObjectId List",
+  msgType: MsgType = MsgType.FieldName,
+  minItems: number = 1,
+  maxItems: number = 1000,
+): ReturnType<typeof defaultIdListSchemas.MongoIdList> {
+  return defaultIdListSchemas.MongoIdList(msg, msgType, minItems, maxItems);
+}
+
+function createFlexibleIdOverload(
+  msg: string,
+): ReturnType<typeof defaultIdListSchemas.FlexibleId>;
+function createFlexibleIdOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultIdListSchemas.FlexibleId>;
+function createFlexibleIdOverload(
+  msg: string = "ID",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultIdListSchemas.FlexibleId> {
+  return defaultIdListSchemas.FlexibleId(msg, msgType);
+}
+
+// Export schemas with string parameter overloads
+export const IdListOptional = createIdListOptionalOverload;
+export const IdListRequired = createIdListRequiredOverload;
+export const Id = createIdOverload;
+export const UniqueIdList = createUniqueIdListOverload;
 export const PaginatedIdList = defaultIdListSchemas.PaginatedIdList;
-export const BatchOperationResponse =
-  defaultIdListSchemas.BatchOperationResponse;
-export const CustomId = defaultIdListSchemas.CustomId;
-export const MongoId = defaultIdListSchemas.MongoId;
-export const MongoIdList = defaultIdListSchemas.MongoIdList;
-export const FlexibleId = defaultIdListSchemas.FlexibleId;
+export const BatchOperationResponse = defaultIdListSchemas.BatchOperationResponse;
+export const CustomId = createCustomIdOverload;
+export const MongoId = createMongoIdOverload;
+export const MongoIdList = createMongoIdListOverload;
+export const FlexibleId = createFlexibleIdOverload;

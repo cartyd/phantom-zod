@@ -420,303 +420,222 @@ const {
   getNetworkAddressExamples: baseGetNetworkAddressExamples,
 } = createNetworkSchemas(networkMessageHandler);
 
-// Export schemas for direct use
+// Top-level exports using the same pattern as string-schemas.ts
+const testMessageHandler = createTestMessageHandler();
+const networkSchemas = createNetworkSchemas(testMessageHandler);
 
-/**
- * Creates an optional IPv4 address schema using Zod's built-in IP validation
- *
- * @param options - Configuration options for IPv4 validation
- * @returns Zod schema that accepts valid IPv4 addresses or undefined
- *
- * @example
- * ```typescript
- * const schema = zIPv4Optional();
- * schema.parse('192.168.1.1');  // ✓ Valid
- * schema.parse(undefined);      // ✓ Valid
- * schema.parse('300.1.1.1');    // ✗ Throws error
- * ```
- */
-export const IPv4Optional = baseIPv4Optional;
+// Helper functions with overloads to support both string and options object
+function createIPv4OptionalOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv4Optional>;
+function createIPv4OptionalOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4Optional>;
+function createIPv4OptionalOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4Optional> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv4Optional({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv4Optional(msgOrOptions);
+}
 
-/**
- * Creates a required IPv4 address schema using Zod's built-in IP validation
- *
- * @param options - Configuration options for IPv4 validation
- * @returns Zod schema that accepts only valid IPv4 addresses
- *
- * @example
- * ```typescript
- * const schema = zIPv4Required();
- * schema.parse('192.168.1.1');  // ✓ Valid
- * schema.parse(undefined);      // ✗ Throws error
- * schema.parse('300.1.1.1');    // ✗ Throws error
- * ```
- */
-export const IPv4Required = baseIPv4Required;
+function createIPv4RequiredOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv4Required>;
+function createIPv4RequiredOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4Required>;
+function createIPv4RequiredOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4Required> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv4Required({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv4Required(msgOrOptions);
+}
 
-/**
- * Creates an optional IPv6 address schema using Zod's built-in IP validation
- *
- * @param options - Configuration options for IPv6 validation
- * @returns Zod schema that accepts valid IPv6 addresses or undefined
- *
- * @example
- * ```typescript
- * const schema = zIPv6Optional();
- * schema.parse('2001:0db8:85a3::8a2e:0370:7334'); // ✓ Valid
- * schema.parse('::1');                            // ✓ Valid (localhost)
- * schema.parse(undefined);                        // ✓ Valid
- * schema.parse('invalid-ipv6');                   // ✗ Throws error
- * ```
- */
-export const IPv6Optional = baseIPv6Optional;
+function createIPv6OptionalOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv6Optional>;
+function createIPv6OptionalOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6Optional>;
+function createIPv6OptionalOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6Optional> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv6Optional({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv6Optional(msgOrOptions);
+}
 
-/**
- * Creates a required IPv6 address schema using Zod's built-in IP validation
- *
- * @param options - Configuration options for IPv6 validation
- * @returns Zod schema that accepts only valid IPv6 addresses
- *
- * @example
- * ```typescript
- * const schema = zIPv6Required();
- * schema.parse('2001:0db8:85a3::8a2e:0370:7334'); // ✓ Valid
- * schema.parse('::1');                            // ✓ Valid (localhost)
- * schema.parse(undefined);                        // ✗ Throws error
- * schema.parse('invalid-ipv6');                   // ✗ Throws error
- * ```
- */
-export const IPv6Required = baseIPv6Required;
+function createIPv6RequiredOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv6Required>;
+function createIPv6RequiredOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6Required>;
+function createIPv6RequiredOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6Required> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv6Required({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv6Required(msgOrOptions);
+}
 
-/**
- * Creates an optional MAC address schema
- *
- * Supports common MAC address formats including colon, hyphen, and dot separators.
- *
- * @param options - Configuration options for MAC address validation
- * @returns Zod schema that accepts valid MAC addresses or undefined
- *
- * @example
- * ```typescript
- * const schema = zMacAddressOptional();
- * schema.parse('00:1A:2B:3C:4D:5E'); // ✓ Valid (colon format)
- * schema.parse('00-1A-2B-3C-4D-5E'); // ✓ Valid (hyphen format)
- * schema.parse('001A2B3C4D5E');      // ✓ Valid (no separators)
- * schema.parse(undefined);           // ✓ Valid
- * schema.parse('invalid-mac');       // ✗ Throws error
- * ```
- */
-export const MacAddressOptional = baseMacAddressOptional;
+function createMacAddressOptionalOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.MacAddressOptional>;
+function createMacAddressOptionalOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.MacAddressOptional>;
+function createMacAddressOptionalOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.MacAddressOptional> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.MacAddressOptional({ msg: msgOrOptions });
+  }
+  return networkSchemas.MacAddressOptional(msgOrOptions);
+}
 
-/**
- * Creates a required MAC address schema
- *
- * Supports common MAC address formats including colon, hyphen, and dot separators.
- *
- * @param options - Configuration options for MAC address validation
- * @returns Zod schema that accepts only valid MAC addresses
- *
- * @example
- * ```typescript
- * const schema = zMacAddressRequired();
- * schema.parse('00:1A:2B:3C:4D:5E'); // ✓ Valid (colon format)
- * schema.parse('00-1A-2B-3C-4D-5E'); // ✓ Valid (hyphen format)
- * schema.parse('001A2B3C4D5E');      // ✓ Valid (no separators)
- * schema.parse(undefined);           // ✗ Throws error
- * schema.parse('invalid-mac');       // ✗ Throws error
- * ```
- */
-export const MacAddressRequired = baseMacAddressRequired;
+function createMacAddressRequiredOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.MacAddressRequired>;
+function createMacAddressRequiredOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.MacAddressRequired>;
+function createMacAddressRequiredOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.MacAddressRequired> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.MacAddressRequired({ msg: msgOrOptions });
+  }
+  return networkSchemas.MacAddressRequired(msgOrOptions);
+}
 
-/**
- * Creates a generic network address schema that accepts IPv4, IPv6, or MAC addresses
- *
- * Uses Zod's built-in IP validation for IPv4/IPv6 and regex for MAC addresses.
- * This is useful when you need to accept any type of network address.
- *
- * @param options - Configuration options for network address validation
- * @returns Zod schema that accepts valid network addresses
- *
- * @example
- * ```typescript
- * const schema = zNetworkAddressGeneric();
- * schema.parse('192.168.1.1');                   // ✓ Valid IPv4
- * schema.parse('2001:0db8:85a3::8a2e:0370:7334'); // ✓ Valid IPv6
- * schema.parse('00:1A:2B:3C:4D:5E');             // ✓ Valid MAC
- * schema.parse('invalid-address');               // ✗ Throws error
- * ```
- */
-export const NetworkAddressGeneric = baseNetworkAddressGeneric;
+function createNetworkAddressGenericOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.NetworkAddressGeneric>;
+function createNetworkAddressGenericOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.NetworkAddressGeneric>;
+function createNetworkAddressGenericOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.NetworkAddressGeneric> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.NetworkAddressGeneric({ msg: msgOrOptions });
+  }
+  return networkSchemas.NetworkAddressGeneric(msgOrOptions);
+}
 
-/**
- * Creates a schema that accepts any valid IP address (IPv4 or IPv6)
- *
- * Uses Zod's built-in IP validation without version constraint.
- * This is useful when you specifically need IP addresses but don't care about the version.
- *
- * @param options - Configuration options for IP address validation
- * @returns Zod schema that accepts valid IP addresses
- *
- * @example
- * ```typescript
- * const schema = zIPAddressGeneric();
- * schema.parse('192.168.1.1');                   // ✓ Valid IPv4
- * schema.parse('2001:0db8:85a3::8a2e:0370:7334'); // ✓ Valid IPv6
- * schema.parse('00:1A:2B:3C:4D:5E');             // ✗ Throws error (MAC not allowed)
- * schema.parse('invalid-ip');                    // ✗ Throws error
- * ```
- */
-export const IPAddressGeneric = baseIPAddressGeneric;
+function createIPAddressGenericOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPAddressGeneric>;
+function createIPAddressGenericOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPAddressGeneric>;
+function createIPAddressGenericOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPAddressGeneric> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPAddressGeneric({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPAddressGeneric(msgOrOptions);
+}
 
-/**
- * Creates an optional IPv4 CIDR block schema using Zod's built-in CIDR validation
- *
- * CIDR (Classless Inter-Domain Routing) notation specifies an IP network and its prefix length.
- * IPv4 CIDR blocks use slash notation like "192.168.1.0/24" where 24 is the prefix length.
- *
- * @param options - Configuration options for IPv4 CIDR validation
- * @returns Zod schema that accepts valid IPv4 CIDR blocks or undefined
- *
- * @example
- * ```typescript
- * const schema = zIPv4CIDROptional();
- * schema.parse('192.168.1.0/24');     // ✓ Valid (private network)
- * schema.parse('10.0.0.0/8');        // ✓ Valid (class A private)
- * schema.parse('172.16.0.0/12');     // ✓ Valid (class B private)
- * schema.parse('0.0.0.0/0');         // ✓ Valid (default route)
- * schema.parse(undefined);           // ✓ Valid
- * schema.parse('192.168.1.1');       // ✗ Throws error (missing /prefix)
- * schema.parse('192.168.1.0/33');    // ✗ Throws error (invalid prefix > 32)
- * schema.parse('256.1.1.0/24');      // ✗ Throws error (invalid IP)
- * ```
- */
-export const IPv4CIDROptional = baseIPv4CIDROptional;
+function createIPv4CIDROptionalOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv4CIDROptional>;
+function createIPv4CIDROptionalOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4CIDROptional>;
+function createIPv4CIDROptionalOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4CIDROptional> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv4CIDROptional({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv4CIDROptional(msgOrOptions);
+}
 
-/**
- * Creates a required IPv4 CIDR block schema using Zod's built-in CIDR validation
- *
- * CIDR (Classless Inter-Domain Routing) notation specifies an IP network and its prefix length.
- * IPv4 CIDR blocks use slash notation like "192.168.1.0/24" where 24 is the prefix length.
- *
- * @param options - Configuration options for IPv4 CIDR validation
- * @returns Zod schema that accepts only valid IPv4 CIDR blocks
- *
- * @example
- * ```typescript
- * const schema = zIPv4CIDRRequired();
- * schema.parse('192.168.1.0/24');     // ✓ Valid (private network)
- * schema.parse('10.0.0.0/8');        // ✓ Valid (class A private)
- * schema.parse('172.16.0.0/12');     // ✓ Valid (class B private)
- * schema.parse('0.0.0.0/0');         // ✓ Valid (default route)
- * schema.parse(undefined);           // ✗ Throws error
- * schema.parse('192.168.1.1');       // ✗ Throws error (missing /prefix)
- * schema.parse('192.168.1.0/33');    // ✗ Throws error (invalid prefix > 32)
- *
- * // For network configuration
- * const networkConfig = z.object({
- *   subnet: zIPv4CIDRRequired({ msg: 'Network Subnet' }),
- *   gateway: zIPv4Required({ msg: 'Gateway IP' })
- * });
- * ```
- */
-export const IPv4CIDRRequired = baseIPv4CIDRRequired;
+function createIPv4CIDRRequiredOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv4CIDRRequired>;
+function createIPv4CIDRRequiredOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4CIDRRequired>;
+function createIPv4CIDRRequiredOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv4CIDRRequired> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv4CIDRRequired({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv4CIDRRequired(msgOrOptions);
+}
 
-/**
- * Creates an optional IPv6 CIDR block schema using Zod's built-in CIDR validation
- *
- * IPv6 CIDR blocks use slash notation like "2001:db8::/32" where 32 is the prefix length.
- * IPv6 supports prefix lengths from 0 to 128.
- *
- * @param options - Configuration options for IPv6 CIDR validation
- * @returns Zod schema that accepts valid IPv6 CIDR blocks or undefined
- *
- * @example
- * ```typescript
- * const schema = zIPv6CIDROptional();
- * schema.parse('2001:db8::/32');      // ✓ Valid (documentation prefix)
- * schema.parse('fe80::/10');         // ✓ Valid (link-local)
- * schema.parse('::1/128');           // ✓ Valid (localhost with /128)
- * schema.parse('::/0');              // ✓ Valid (default route)
- * schema.parse(undefined);           // ✓ Valid
- * schema.parse('2001:db8::1');       // ✗ Throws error (missing /prefix)
- * schema.parse('2001:db8::/129');    // ✗ Throws error (invalid prefix > 128)
- * schema.parse('invalid::/32');      // ✗ Throws error (invalid IPv6)
- * ```
- */
-export const IPv6CIDROptional = baseIPv6CIDROptional;
+function createIPv6CIDROptionalOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv6CIDROptional>;
+function createIPv6CIDROptionalOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6CIDROptional>;
+function createIPv6CIDROptionalOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6CIDROptional> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv6CIDROptional({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv6CIDROptional(msgOrOptions);
+}
 
-/**
- * Creates a required IPv6 CIDR block schema using Zod's built-in CIDR validation
- *
- * IPv6 CIDR blocks use slash notation like "2001:db8::/32" where 32 is the prefix length.
- * IPv6 supports prefix lengths from 0 to 128.
- *
- * @param options - Configuration options for IPv6 CIDR validation
- * @returns Zod schema that accepts only valid IPv6 CIDR blocks
- *
- * @example
- * ```typescript
- * const schema = zIPv6CIDRRequired();
- * schema.parse('2001:db8::/32');      // ✓ Valid (documentation prefix)
- * schema.parse('fe80::/10');         // ✓ Valid (link-local)
- * schema.parse('::1/128');           // ✓ Valid (localhost with /128)
- * schema.parse('::/0');              // ✓ Valid (default route)
- * schema.parse(undefined);           // ✗ Throws error
- * schema.parse('2001:db8::1');       // ✗ Throws error (missing /prefix)
- * schema.parse('2001:db8::/129');    // ✗ Throws error (invalid prefix > 128)
- *
- * // For IPv6 network configuration
- * const ipv6Config = z.object({
- *   prefix: zIPv6CIDRRequired({ msg: 'IPv6 Prefix' }),
- *   gateway: zIPv6Required({ msg: 'IPv6 Gateway' })
- * });
- * ```
- */
-export const IPv6CIDRRequired = baseIPv6CIDRRequired;
+function createIPv6CIDRRequiredOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPv6CIDRRequired>;
+function createIPv6CIDRRequiredOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6CIDRRequired>;
+function createIPv6CIDRRequiredOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPv6CIDRRequired> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPv6CIDRRequired({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPv6CIDRRequired(msgOrOptions);
+}
 
-/**
- * Creates a generic CIDR block schema that accepts IPv4 or IPv6 CIDR blocks
- *
- * This schema accepts both IPv4 and IPv6 CIDR notation, making it useful for
- * applications that need to handle mixed IP version environments.
- *
- * @param options - Configuration options for CIDR validation
- * @returns Zod schema that accepts valid CIDR blocks (IPv4 or IPv6)
- *
- * @example
- * ```typescript
- * const schema = zCIDRGeneric();
- * schema.parse('192.168.1.0/24');     // ✓ Valid IPv4 CIDR
- * schema.parse('10.0.0.0/8');        // ✓ Valid IPv4 CIDR
- * schema.parse('2001:db8::/32');      // ✓ Valid IPv6 CIDR
- * schema.parse('fe80::/10');         // ✓ Valid IPv6 CIDR
- * schema.parse('invalid-cidr');       // ✗ Throws error
- * schema.parse('192.168.1.1');       // ✗ Throws error (missing /prefix)
- *
- * // For dual-stack network configurations
- * const routeConfig = z.object({
- *   destination: zCIDRGeneric({ msg: 'Route Destination' }),
- *   gateway: zIPAddressGeneric({ msg: 'Route Gateway' }),
- *   metric: z.number().int().positive()
- * });
- * ```
- */
-export const CIDRGeneric = baseCIDRGeneric;
+function createCIDRGenericOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.CIDRGeneric>;
+function createCIDRGenericOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.CIDRGeneric>;
+function createCIDRGenericOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.CIDRGeneric> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.CIDRGeneric({ msg: msgOrOptions });
+  }
+  return networkSchemas.CIDRGeneric(msgOrOptions);
+}
 
-/**
- * Returns example network address formats for user guidance
- *
- * @returns Object containing example addresses for each supported format
- *
- * @example
- * ```typescript
- * const examples = getNetworkAddressExamples();
- * console.log(examples.ipv4); // "192.168.1.1"
- * console.log(examples.ipv6); // "2001:db8::1"
- * console.log(examples.mac);  // "00:1A:2B:3C:4D:5E"
- * ```
- */
-export const getNetworkAddressExamples = baseGetNetworkAddressExamples;
+export const IPv4Optional = createIPv4OptionalOverload;
+export const IPv4Required = createIPv4RequiredOverload;
+export const IPv6Optional = createIPv6OptionalOverload;
+export const IPv6Required = createIPv6RequiredOverload;
+export const MacAddressOptional = createMacAddressOptionalOverload;
+export const MacAddressRequired = createMacAddressRequiredOverload;
+export const NetworkAddressGeneric = createNetworkAddressGenericOverload;
+export const IPAddressGeneric = createIPAddressGenericOverload;
+export const IPv4CIDROptional = createIPv4CIDROptionalOverload;
+export const IPv4CIDRRequired = createIPv4CIDRRequiredOverload;
+export const IPv6CIDROptional = createIPv6CIDROptionalOverload;
+export const IPv6CIDRRequired = createIPv6CIDRRequiredOverload;
+export const CIDRGeneric = createCIDRGenericOverload;
+
+// Re-export utility functions
+export const getNetworkAddressExamples = networkSchemas.getNetworkAddressExamples;
 
 // Export the options interface for external use
 export type { NetworkSchemaOptions };
