@@ -280,9 +280,15 @@ function createHtml5EmailRequiredOverload(
   msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
 ): ReturnType<typeof emailSchemas.EmailRequired> {
   if (typeof msgOrOptions === "string") {
-    return emailSchemas.EmailRequired({ msg: msgOrOptions, pattern: z.regexes.html5Email });
+    return emailSchemas.EmailRequired({
+      msg: msgOrOptions,
+      pattern: z.regexes.html5Email,
+    });
   }
-  return emailSchemas.EmailRequired({ ...msgOrOptions, pattern: z.regexes.html5Email });
+  return emailSchemas.EmailRequired({
+    ...msgOrOptions,
+    pattern: z.regexes.html5Email,
+  });
 }
 
 /**
@@ -322,9 +328,15 @@ function createHtml5EmailOptionalOverload(
   msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
 ): ReturnType<typeof emailSchemas.EmailOptional> {
   if (typeof msgOrOptions === "string") {
-    return emailSchemas.EmailOptional({ msg: msgOrOptions, pattern: z.regexes.html5Email });
+    return emailSchemas.EmailOptional({
+      msg: msgOrOptions,
+      pattern: z.regexes.html5Email,
+    });
   }
-  return emailSchemas.EmailOptional({ ...msgOrOptions, pattern: z.regexes.html5Email });
+  return emailSchemas.EmailOptional({
+    ...msgOrOptions,
+    pattern: z.regexes.html5Email,
+  });
 }
 
 // Helper functions for RFC 5322 email overloads
@@ -338,9 +350,15 @@ function createRfc5322EmailRequiredOverload(
   msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
 ): ReturnType<typeof emailSchemas.EmailRequired> {
   if (typeof msgOrOptions === "string") {
-    return emailSchemas.EmailRequired({ msg: msgOrOptions, pattern: z.regexes.rfc5322Email });
+    return emailSchemas.EmailRequired({
+      msg: msgOrOptions,
+      pattern: z.regexes.rfc5322Email,
+    });
   }
-  return emailSchemas.EmailRequired({ ...msgOrOptions, pattern: z.regexes.rfc5322Email });
+  return emailSchemas.EmailRequired({
+    ...msgOrOptions,
+    pattern: z.regexes.rfc5322Email,
+  });
 }
 
 function createRfc5322EmailOptionalOverload(
@@ -353,9 +371,15 @@ function createRfc5322EmailOptionalOverload(
   msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
 ): ReturnType<typeof emailSchemas.EmailOptional> {
   if (typeof msgOrOptions === "string") {
-    return emailSchemas.EmailOptional({ msg: msgOrOptions, pattern: z.regexes.rfc5322Email });
+    return emailSchemas.EmailOptional({
+      msg: msgOrOptions,
+      pattern: z.regexes.rfc5322Email,
+    });
   }
-  return emailSchemas.EmailOptional({ ...msgOrOptions, pattern: z.regexes.rfc5322Email });
+  return emailSchemas.EmailOptional({
+    ...msgOrOptions,
+    pattern: z.regexes.rfc5322Email,
+  });
 }
 
 // Helper functions for Unicode email overloads
@@ -369,9 +393,15 @@ function createUnicodeEmailRequiredOverload(
   msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
 ): ReturnType<typeof emailSchemas.EmailRequired> {
   if (typeof msgOrOptions === "string") {
-    return emailSchemas.EmailRequired({ msg: msgOrOptions, pattern: z.regexes.unicodeEmail });
+    return emailSchemas.EmailRequired({
+      msg: msgOrOptions,
+      pattern: z.regexes.unicodeEmail,
+    });
   }
-  return emailSchemas.EmailRequired({ ...msgOrOptions, pattern: z.regexes.unicodeEmail });
+  return emailSchemas.EmailRequired({
+    ...msgOrOptions,
+    pattern: z.regexes.unicodeEmail,
+  });
 }
 
 function createUnicodeEmailOptionalOverload(
@@ -384,9 +414,15 @@ function createUnicodeEmailOptionalOverload(
   msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
 ): ReturnType<typeof emailSchemas.EmailOptional> {
   if (typeof msgOrOptions === "string") {
-    return emailSchemas.EmailOptional({ msg: msgOrOptions, pattern: z.regexes.unicodeEmail });
+    return emailSchemas.EmailOptional({
+      msg: msgOrOptions,
+      pattern: z.regexes.unicodeEmail,
+    });
   }
-  return emailSchemas.EmailOptional({ ...msgOrOptions, pattern: z.regexes.unicodeEmail });
+  return emailSchemas.EmailOptional({
+    ...msgOrOptions,
+    pattern: z.regexes.unicodeEmail,
+  });
 }
 
 /**
