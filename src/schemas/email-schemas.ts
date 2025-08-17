@@ -174,6 +174,37 @@ const emailSchemas = createEmailSchemas(testMessageHandler);
 
 // Export schemas with updated API
 
+// Helper functions with overloads to support both string and options object
+function createEmailOptionalOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createEmailOptionalOverload(
+  options?: EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createEmailOptionalOverload(
+  msgOrOptions?: string | EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailOptional> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailOptional({ msg: msgOrOptions });
+  }
+  return emailSchemas.EmailOptional(msgOrOptions);
+}
+
+function createEmailRequiredOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createEmailRequiredOverload(
+  options?: EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createEmailRequiredOverload(
+  msgOrOptions?: string | EmailSchemaOptions,
+): ReturnType<typeof emailSchemas.EmailRequired> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailRequired({ msg: msgOrOptions });
+  }
+  return emailSchemas.EmailRequired(msgOrOptions);
+}
+
 /**
  * Creates an optional email schema that accepts valid email addresses or undefined
  *
@@ -194,9 +225,12 @@ const emailSchemas = createEmailSchemas(testMessageHandler);
  * const companySchema = EmailOptional({
  *   pattern: /^[a-z.]+@company\.com$/
  * });
+ *
+ * // New string parameter syntax
+ * const simpleSchema = EmailOptional('User Email');
  * ```
  */
-export const EmailOptional = emailSchemas.EmailOptional;
+export const EmailOptional = createEmailOptionalOverload;
 
 /**
  * Creates a required email schema that accepts only valid email addresses
@@ -223,14 +257,39 @@ export const EmailOptional = emailSchemas.EmailOptional;
  * const unicodeSchema = EmailRequired({
  *   pattern: z.regexes.unicodeEmail
  * });
+ *
+ * // New string parameter syntax
+ * const simpleSchema = EmailRequired('Contact Email');
  * ```
  */
-export const EmailRequired = emailSchemas.EmailRequired;
+export const EmailRequired = createEmailRequiredOverload;
 
 // Export the options interface for external use
 export type { EmailSchemaOptions };
 
 // Convenience functions for common email validation patterns
+
+// Helper functions for HTML5 email overloads
+function createHtml5EmailRequiredOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createHtml5EmailRequiredOverload(
+  options?: Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createHtml5EmailRequiredOverload(
+  msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailRequired> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailRequired({
+      msg: msgOrOptions,
+      pattern: z.regexes.html5Email,
+    });
+  }
+  return emailSchemas.EmailRequired({
+    ...msgOrOptions,
+    pattern: z.regexes.html5Email,
+  });
+}
 
 /**
  * Creates a required email schema using HTML5 browser validation pattern
@@ -249,33 +308,140 @@ export type { EmailSchemaOptions };
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('user+tag@example.com'); // ✓ Valid (supports plus addressing)
  *
+ * // New string parameter syntax
+ * const simpleSchema = Html5EmailRequired('Registration Email');
+ *
  * // With custom error message
  * const customSchema = Html5EmailRequired({ msg: 'Registration Email' });
  * ```
  */
-export const Html5EmailRequired = (
-  options: Omit<EmailSchemaOptions, "pattern"> = {},
-) => {
-  return emailSchemas.EmailRequired({
-    ...options,
+export const Html5EmailRequired = createHtml5EmailRequiredOverload;
+
+// Helper functions for Html5EmailOptional overloads
+function createHtml5EmailOptionalOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createHtml5EmailOptionalOverload(
+  options?: Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createHtml5EmailOptionalOverload(
+  msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailOptional> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailOptional({
+      msg: msgOrOptions,
+      pattern: z.regexes.html5Email,
+    });
+  }
+  return emailSchemas.EmailOptional({
+    ...msgOrOptions,
     pattern: z.regexes.html5Email,
   });
-};
+}
+
+// Helper functions for RFC 5322 email overloads
+function createRfc5322EmailRequiredOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createRfc5322EmailRequiredOverload(
+  options?: Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createRfc5322EmailRequiredOverload(
+  msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailRequired> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailRequired({
+      msg: msgOrOptions,
+      pattern: z.regexes.rfc5322Email,
+    });
+  }
+  return emailSchemas.EmailRequired({
+    ...msgOrOptions,
+    pattern: z.regexes.rfc5322Email,
+  });
+}
+
+function createRfc5322EmailOptionalOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createRfc5322EmailOptionalOverload(
+  options?: Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createRfc5322EmailOptionalOverload(
+  msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailOptional> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailOptional({
+      msg: msgOrOptions,
+      pattern: z.regexes.rfc5322Email,
+    });
+  }
+  return emailSchemas.EmailOptional({
+    ...msgOrOptions,
+    pattern: z.regexes.rfc5322Email,
+  });
+}
+
+// Helper functions for Unicode email overloads
+function createUnicodeEmailRequiredOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createUnicodeEmailRequiredOverload(
+  options?: Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailRequired>;
+function createUnicodeEmailRequiredOverload(
+  msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailRequired> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailRequired({
+      msg: msgOrOptions,
+      pattern: z.regexes.unicodeEmail,
+    });
+  }
+  return emailSchemas.EmailRequired({
+    ...msgOrOptions,
+    pattern: z.regexes.unicodeEmail,
+  });
+}
+
+function createUnicodeEmailOptionalOverload(
+  msg: string,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createUnicodeEmailOptionalOverload(
+  options?: Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailOptional>;
+function createUnicodeEmailOptionalOverload(
+  msgOrOptions?: string | Omit<EmailSchemaOptions, "pattern">,
+): ReturnType<typeof emailSchemas.EmailOptional> {
+  if (typeof msgOrOptions === "string") {
+    return emailSchemas.EmailOptional({
+      msg: msgOrOptions,
+      pattern: z.regexes.unicodeEmail,
+    });
+  }
+  return emailSchemas.EmailOptional({
+    ...msgOrOptions,
+    pattern: z.regexes.unicodeEmail,
+  });
+}
 
 /**
  * Creates an optional email schema using HTML5 browser validation pattern
  *
  * @param options - Configuration options (pattern is pre-set to HTML5)
  * @returns Zod schema that accepts HTML5-compliant email addresses or undefined
+ *
+ * @example
+ * ```typescript
+ * const schema = Html5EmailOptional();
+ * schema.parse('user@example.com'); // ✓ Valid
+ * schema.parse(undefined); // ✓ Valid
+ *
+ * // New string parameter syntax
+ * const simpleSchema = Html5EmailOptional('HTML5 Email');
+ * ```
  */
-export const Html5EmailOptional = (
-  options: Omit<EmailSchemaOptions, "pattern"> = {},
-) => {
-  return emailSchemas.EmailOptional({
-    ...options,
-    pattern: z.regexes.html5Email,
-  });
-};
+export const Html5EmailOptional = createHtml5EmailOptionalOverload;
 
 /**
  * Creates a required email schema using RFC 5322 compliant validation
@@ -294,33 +460,32 @@ export const Html5EmailOptional = (
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('very.long.email.address@example.com'); // ✓ Valid
  *
+ * // New string parameter syntax
+ * const simpleSchema = Rfc5322EmailRequired('RFC Email');
+ *
  * // For API endpoints requiring strict validation
  * const apiSchema = Rfc5322EmailRequired({ msg: 'API User Email' });
  * ```
  */
-export const Rfc5322EmailRequired = (
-  options: Omit<EmailSchemaOptions, "pattern"> = {},
-) => {
-  return emailSchemas.EmailRequired({
-    ...options,
-    pattern: z.regexes.rfc5322Email,
-  });
-};
+export const Rfc5322EmailRequired = createRfc5322EmailRequiredOverload;
 
 /**
  * Creates an optional email schema using RFC 5322 compliant validation
  *
  * @param options - Configuration options (pattern is pre-set to RFC 5322)
  * @returns Zod schema that accepts RFC 5322 compliant email addresses or undefined
+ *
+ * @example
+ * ```typescript
+ * const schema = Rfc5322EmailOptional();
+ * schema.parse('user@example.com'); // ✓ Valid
+ * schema.parse(undefined); // ✓ Valid
+ *
+ * // New string parameter syntax
+ * const simpleSchema = Rfc5322EmailOptional('RFC Email');
+ * ```
  */
-export const Rfc5322EmailOptional = (
-  options: Omit<EmailSchemaOptions, "pattern"> = {},
-) => {
-  return emailSchemas.EmailOptional({
-    ...options,
-    pattern: z.regexes.rfc5322Email,
-  });
-};
+export const Rfc5322EmailOptional = createRfc5322EmailOptionalOverload;
 
 /**
  * Creates a required email schema with Unicode support for international emails
@@ -339,33 +504,32 @@ export const Rfc5322EmailOptional = (
  * schema.parse('user@example.com'); // ✓ Valid
  * schema.parse('用户@例え.テスト'); // ✓ Valid (international characters)
  *
+ * // New string parameter syntax
+ * const simpleSchema = UnicodeEmailRequired('Unicode Email');
+ *
  * // For international applications
  * const globalSchema = UnicodeEmailRequired({ msg: 'International Email' });
  * ```
  */
-export const UnicodeEmailRequired = (
-  options: Omit<EmailSchemaOptions, "pattern"> = {},
-) => {
-  return emailSchemas.EmailRequired({
-    ...options,
-    pattern: z.regexes.unicodeEmail,
-  });
-};
+export const UnicodeEmailRequired = createUnicodeEmailRequiredOverload;
 
 /**
  * Creates an optional email schema with Unicode support for international emails
  *
  * @param options - Configuration options (pattern is pre-set to Unicode)
  * @returns Zod schema that accepts Unicode-friendly email addresses or undefined
+ *
+ * @example
+ * ```typescript
+ * const schema = UnicodeEmailOptional();
+ * schema.parse('user@example.com'); // ✓ Valid
+ * schema.parse(undefined); // ✓ Valid
+ *
+ * // New string parameter syntax
+ * const simpleSchema = UnicodeEmailOptional('Unicode Email');
+ * ```
  */
-export const UnicodeEmailOptional = (
-  options: Omit<EmailSchemaOptions, "pattern"> = {},
-) => {
-  return emailSchemas.EmailOptional({
-    ...options,
-    pattern: z.regexes.unicodeEmail,
-  });
-};
+export const UnicodeEmailOptional = createUnicodeEmailOptionalOverload;
 
 // --- Types ---
 type EmailSchemasFactory = ReturnType<typeof createEmailSchemas>;

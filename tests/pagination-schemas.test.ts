@@ -34,10 +34,22 @@ describe('Pagination Schemas', () => {
     });
 
     it('should use custom configurations', () => {
-      const customSchema = Pagination('Pagination', MsgType.FieldName, 25, 50);
+      const customSchema = Pagination({
+        msg: 'Pagination',
+        msgType: MsgType.FieldName,
+        defaultLimit: 25,
+        maxLimit: 50
+      });
       const result = customSchema.parse({});
       expect(result.limit).toBe(25);
       expect(() => customSchema.parse({ limit: 60 })).toThrow();
+    });
+
+    it('should support string parameter overload', () => {
+      const stringSchema = Pagination('Custom Pagination');
+      const result = stringSchema.parse({});
+      expect(result.page).toBe(0);
+      expect(result.limit).toBe(10); // default values
     });
   });
 

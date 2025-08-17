@@ -1,9 +1,11 @@
-import { createBooleanSchemas } from '../src/schemas/boolean-schemas';
+import { pz } from '../src/pz';
 import { MsgType } from '../src/common/types/msg-type';
 import { runTableTests, extractZodIssueMessage } from './setup';
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
 
-// Create a type-safe mock using the test helper
+const { BooleanOptional, BooleanRequired, BooleanStringOptional, BooleanStringRequired } = pz;
+
+// Create a type-safe mock using the test helper for message testing
 const mockMessageHandler = createTestMessageHandler(
   (options) => {
     const params = options.params || {};
@@ -75,9 +77,6 @@ describe('BooleanMessageParams contract coverage', () => {
     expect(msg).toContain('valid: true, false');
   });
 });
-
-// Create schema functions with injected message handler
-const { BooleanOptional, BooleanRequired, BooleanStringOptional, BooleanStringRequired } = createBooleanSchemas(mockMessageHandler);
 
 describe('Boolean Schemas', () => {
 
@@ -469,6 +468,223 @@ describe('Boolean Schemas', () => {
         if (value !== 'False') { // 'False' is actually valid
           expect(() => schema.parse(value)).toThrow();
         }
+      });
+    });
+  });
+
+  describe('Boolean Schema String Parameter Overloads', () => {
+    describe('BooleanOptional overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = BooleanOptional('Is Active');
+        const schema2 = BooleanOptional({ msg: 'Is Active' });
+        
+        expect(schema1.parse(true)).toBe(true);
+        expect(schema2.parse(true)).toBe(true);
+        expect(schema1.parse(false)).toBe(false);
+        expect(schema2.parse(false)).toBe(false);
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = BooleanOptional({ msg: 'Feature Flag', msgType: MsgType.FieldName });
+        expect(schema.parse(true)).toBe(true);
+        expect(schema.parse(false)).toBe(false);
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = BooleanOptional();
+        expect(schema.parse(true)).toBe(true);
+        expect(schema.parse(false)).toBe(false);
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+    });
+
+    describe('BooleanRequired overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = BooleanRequired('Is Active');
+        const schema2 = BooleanRequired({ msg: 'Is Active' });
+        
+        expect(schema1.parse(true)).toBe(true);
+        expect(schema2.parse(true)).toBe(true);
+        expect(schema1.parse(false)).toBe(false);
+        expect(schema2.parse(false)).toBe(false);
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = BooleanRequired({ msg: 'Terms Accepted', msgType: MsgType.FieldName });
+        expect(schema.parse(true)).toBe(true);
+        expect(schema.parse(false)).toBe(false);
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = BooleanRequired();
+        expect(schema.parse(true)).toBe(true);
+        expect(schema.parse(false)).toBe(false);
+      });
+    });
+
+    describe('BooleanStringOptional overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = BooleanStringOptional('Newsletter Subscription');
+        const schema2 = BooleanStringOptional({ msg: 'Newsletter Subscription' });
+        
+        expect(schema1.parse(true)).toBe('true');
+        expect(schema2.parse(true)).toBe('true');
+        expect(schema1.parse(false)).toBe('false');
+        expect(schema2.parse(false)).toBe('false');
+        expect(schema1.parse('true')).toBe('true');
+        expect(schema2.parse('true')).toBe('true');
+        expect(schema1.parse(undefined)).toBeUndefined();
+        expect(schema2.parse(undefined)).toBeUndefined();
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = BooleanStringOptional({ msg: 'Email Notifications', msgType: MsgType.FieldName });
+        expect(schema.parse(true)).toBe('true');
+        expect(schema.parse('FALSE')).toBe('false');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = BooleanStringOptional();
+        expect(schema.parse(true)).toBe('true');
+        expect(schema.parse('false')).toBe('false');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+    });
+
+    describe('BooleanStringRequired overloads', () => {
+      it('should work with string parameter (new simple syntax)', () => {
+        const schema1 = BooleanStringRequired('Marketing Consent');
+        const schema2 = BooleanStringRequired({ msg: 'Marketing Consent' });
+        
+        expect(schema1.parse(true)).toBe('true');
+        expect(schema2.parse(true)).toBe('true');
+        expect(schema1.parse(false)).toBe('false');
+        expect(schema2.parse(false)).toBe('false');
+        expect(schema1.parse('TRUE')).toBe('true');
+        expect(schema2.parse('TRUE')).toBe('true');
+        
+        // Test error message consistency
+        try {
+          schema1.parse('invalid');
+        } catch (error1) {
+          try {
+            schema2.parse('invalid');
+          } catch (error2) {
+            expect((error1 as Error).message).toEqual((error2 as Error).message);
+          }
+        }
+      });
+
+      it('should still work with options object (backward compatibility)', () => {
+        const schema = BooleanStringRequired({ msg: 'Privacy Agreement', msgType: MsgType.FieldName });
+        expect(schema.parse(true)).toBe('true');
+        expect(schema.parse('false')).toBe('false');
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = BooleanStringRequired();
+        expect(schema.parse(true)).toBe('true');
+        expect(schema.parse('False')).toBe('false');
+      });
+    });
+
+    describe('Real-world usage examples', () => {
+      it('should handle user preference form with overloaded schemas', () => {
+        const emailNotificationsSchema = BooleanRequired('Email Notifications');
+        const marketingConsentSchema = BooleanStringOptional('Marketing Consent');
+        const darkModeSchema = BooleanOptional('Dark Mode');
+        
+        const preferences = {
+          emailNotifications: true,
+          marketingConsent: 'false',
+          darkMode: undefined,
+        };
+        
+        const parsedPreferences = {
+          emailNotifications: emailNotificationsSchema.parse(preferences.emailNotifications),
+          marketingConsent: marketingConsentSchema.parse(preferences.marketingConsent),
+          darkMode: darkModeSchema.parse(preferences.darkMode),
+        };
+        
+        expect(parsedPreferences.emailNotifications).toBe(true);
+        expect(parsedPreferences.marketingConsent).toBe('false');
+        expect(parsedPreferences.darkMode).toBeUndefined();
+      });
+
+      it('should handle form validation with different boolean formats', () => {
+        const agreeToTermsSchema = BooleanRequired('Terms Agreement');
+        const subscribeNewsletterSchema = BooleanStringRequired('Newsletter Subscription');
+        const enableTwoFactorSchema = BooleanOptional('Two Factor Authentication');
+        
+        const formData = {
+          agreeToTerms: true,
+          subscribeNewsletter: 'TRUE',
+          enableTwoFactor: false,
+        };
+        
+        expect(agreeToTermsSchema.parse(formData.agreeToTerms)).toBe(true);
+        expect(subscribeNewsletterSchema.parse(formData.subscribeNewsletter)).toBe('true');
+        expect(enableTwoFactorSchema.parse(formData.enableTwoFactor)).toBe(false);
+      });
+
+      it('should maintain type safety across all overloaded boolean schemas', () => {
+        const schemas = {
+          required: BooleanRequired('Required'),
+          optional: BooleanOptional('Optional'),
+          stringRequired: BooleanStringRequired('String Required'),
+          stringOptional: BooleanStringOptional('String Optional'),
+        };
+        
+        // Test boolean inputs
+        expect(schemas.required.parse(true)).toBe(true);
+        expect(schemas.optional.parse(false)).toBe(false);
+        expect(schemas.stringRequired.parse(true)).toBe('true');
+        expect(schemas.stringOptional.parse(false)).toBe('false');
+        
+        // Test string inputs
+        expect(schemas.stringRequired.parse('TRUE')).toBe('true');
+        expect(schemas.stringOptional.parse('False')).toBe('false');
+        
+        // Test undefined/optional behavior
+        expect(schemas.optional.parse(undefined)).toBeUndefined();
+        expect(schemas.stringOptional.parse(undefined)).toBeUndefined();
       });
     });
   });

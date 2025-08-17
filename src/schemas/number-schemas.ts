@@ -425,49 +425,239 @@ const numberMessageHandler = createTestMessageHandler((options) => {
   }
 });
 
-// Create schemas with default handler and export them directly - eliminates all repetitive export patterns
-const {
-  NumberOptional,
-  NumberRequired,
-  NumberStringOptional,
-  NumberStringRequired,
-  IntegerRequired,
-  IntegerOptional,
-  PositiveRequired,
-  PositiveOptional,
-  NegativeRequired,
-  NegativeOptional,
-  NonNegativeRequired,
-  NonNegativeOptional,
-  NonPositiveRequired,
-  NonPositiveOptional,
-  FiniteRequired,
-  FiniteOptional,
-  SafeIntegerRequired,
-  SafeIntegerOptional,
-} = createNumberSchemas(numberMessageHandler);
+// Create schemas with default handler
+const defaultNumberSchemas = createNumberSchemas(numberMessageHandler);
 
-// Export schemas for direct use - single destructuring and export eliminates all repetitive patterns
-export {
-  NumberOptional,
-  NumberRequired,
-  NumberStringOptional,
-  NumberStringRequired,
-  IntegerRequired,
-  IntegerOptional,
-  PositiveRequired,
-  PositiveOptional,
-  NegativeRequired,
-  NegativeOptional,
-  NonNegativeRequired,
-  NonNegativeOptional,
-  NonPositiveRequired,
-  NonPositiveOptional,
-  FiniteRequired,
-  FiniteOptional,
-  SafeIntegerRequired,
-  SafeIntegerOptional,
-};
+// Helper functions with overloads to support both string and options object
+function createIntegerRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.IntegerRequired>;
+function createIntegerRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.IntegerRequired>;
+function createIntegerRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.IntegerRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.IntegerRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.IntegerRequired(msgOrOptions);
+}
+
+function createIntegerOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.IntegerOptional>;
+function createIntegerOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.IntegerOptional>;
+function createIntegerOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.IntegerOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.IntegerOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.IntegerOptional(msgOrOptions);
+}
+
+function createPositiveRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.PositiveRequired>;
+function createPositiveRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.PositiveRequired>;
+function createPositiveRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.PositiveRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.PositiveRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.PositiveRequired(msgOrOptions);
+}
+
+function createPositiveOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.PositiveOptional>;
+function createPositiveOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.PositiveOptional>;
+function createPositiveOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.PositiveOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.PositiveOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.PositiveOptional(msgOrOptions);
+}
+
+function createNegativeRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NegativeRequired>;
+function createNegativeRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NegativeRequired>;
+function createNegativeRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NegativeRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NegativeRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NegativeRequired(msgOrOptions);
+}
+
+function createNegativeOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NegativeOptional>;
+function createNegativeOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NegativeOptional>;
+function createNegativeOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NegativeOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NegativeOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NegativeOptional(msgOrOptions);
+}
+
+function createNonNegativeRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NonNegativeRequired>;
+function createNonNegativeRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonNegativeRequired>;
+function createNonNegativeRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonNegativeRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NonNegativeRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NonNegativeRequired(msgOrOptions);
+}
+
+function createNonNegativeOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NonNegativeOptional>;
+function createNonNegativeOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonNegativeOptional>;
+function createNonNegativeOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonNegativeOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NonNegativeOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NonNegativeOptional(msgOrOptions);
+}
+
+function createNonPositiveRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NonPositiveRequired>;
+function createNonPositiveRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonPositiveRequired>;
+function createNonPositiveRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonPositiveRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NonPositiveRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NonPositiveRequired(msgOrOptions);
+}
+
+function createNonPositiveOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NonPositiveOptional>;
+function createNonPositiveOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonPositiveOptional>;
+function createNonPositiveOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NonPositiveOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NonPositiveOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NonPositiveOptional(msgOrOptions);
+}
+
+function createFiniteRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.FiniteRequired>;
+function createFiniteRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.FiniteRequired>;
+function createFiniteRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.FiniteRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.FiniteRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.FiniteRequired(msgOrOptions);
+}
+
+function createFiniteOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.FiniteOptional>;
+function createFiniteOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.FiniteOptional>;
+function createFiniteOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.FiniteOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.FiniteOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.FiniteOptional(msgOrOptions);
+}
+
+function createSafeIntegerRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.SafeIntegerRequired>;
+function createSafeIntegerRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.SafeIntegerRequired>;
+function createSafeIntegerRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.SafeIntegerRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.SafeIntegerRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.SafeIntegerRequired(msgOrOptions);
+}
+
+function createSafeIntegerOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.SafeIntegerOptional>;
+function createSafeIntegerOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.SafeIntegerOptional>;
+function createSafeIntegerOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.SafeIntegerOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.SafeIntegerOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.SafeIntegerOptional(msgOrOptions);
+}
+
+// Export schemas with string parameter overloads
+export const NumberOptional = defaultNumberSchemas.NumberOptional;
+export const NumberRequired = defaultNumberSchemas.NumberRequired;
+export const NumberStringOptional = defaultNumberSchemas.NumberStringOptional;
+export const NumberStringRequired = defaultNumberSchemas.NumberStringRequired;
+export const IntegerRequired = createIntegerRequiredOverload;
+export const IntegerOptional = createIntegerOptionalOverload;
+export const PositiveRequired = createPositiveRequiredOverload;
+export const PositiveOptional = createPositiveOptionalOverload;
+export const NegativeRequired = createNegativeRequiredOverload;
+export const NegativeOptional = createNegativeOptionalOverload;
+export const NonNegativeRequired = createNonNegativeRequiredOverload;
+export const NonNegativeOptional = createNonNegativeOptionalOverload;
+export const NonPositiveRequired = createNonPositiveRequiredOverload;
+export const NonPositiveOptional = createNonPositiveOptionalOverload;
+export const FiniteRequired = createFiniteRequiredOverload;
+export const FiniteOptional = createFiniteOptionalOverload;
+export const SafeIntegerRequired = createSafeIntegerRequiredOverload;
+export const SafeIntegerOptional = createSafeIntegerOptionalOverload;
 
 // Export the options interface for external use
 export type { NumberSchemaOptions };

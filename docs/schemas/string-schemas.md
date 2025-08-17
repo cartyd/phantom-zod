@@ -6,6 +6,38 @@ String schemas provide validation for text data with automatic trimming, length 
 
 All string schemas in Phantom Zod automatically trim whitespace and provide consistent error handling through the localization system. They support both required and optional validation patterns.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all string schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const nameTraditional = pz.StringRequired({ msg: "Full Name" });
+
+// Simplified string parameter (equivalent)
+const nameSimple = pz.StringRequired("Full Name");
+
+// Both produce the same validation behavior
+nameTraditional.parse("John Doe"); // ✅ "John Doe"
+nameSimple.parse("John Doe");      // ✅ "John Doe"
+
+// Error messages are identical
+nameTraditional.parse("");        // ❌ "Full Name is required"
+nameSimple.parse("");             // ❌ "Full Name is required"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Cleaner, more concise code
+- Default constraints are sufficient
+
+**When to use options objects:**
+- Length constraints needed (`minLength`, `maxLength`)
+- Custom message types (`MsgType.Message`)
+- Locale-specific configurations
+
 ## Available Schemas
 
 ### StringRequired
@@ -31,9 +63,13 @@ pz.StringRequired(options?: StringSchemaOptions)
 ```typescript
 import { pz } from "phantom-zod";
 
+// Options object approach
 const schema = pz.StringRequired({ msg: "Full Name" });
 
-// Valid inputs
+// String parameter approach (v1.5+)
+const schemaSimple = pz.StringRequired("Full Name");
+
+// Valid inputs (both schemas work identically)
 schema.parse("John Doe");        // ✅ "John Doe"
 schema.parse("  Alice  ");       // ✅ "Alice" (trimmed)
 schema.parse("X");               // ✅ "X"

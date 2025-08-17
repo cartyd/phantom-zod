@@ -12,6 +12,38 @@ All email schemas in Phantom Zod use Zod's robust email validation engine with a
 - **Consistent error handling** through localization
 - **Type safety** with TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all email schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const emailTraditional = pz.EmailRequired({ msg: "Email Address" });
+
+// Simplified string parameter (equivalent)
+const emailSimple = pz.EmailRequired("Email Address");
+
+// Both produce the same validation behavior
+emailTraditional.parse("user@example.com"); // ✅ "user@example.com"
+emailSimple.parse("user@example.com");      // ✅ "user@example.com"
+
+// Error messages are identical
+emailTraditional.parse("invalid");         // ❌ "Email Address must be a valid email address"
+emailSimple.parse("invalid");              // ❌ "Email Address must be a valid email address"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation patterns are sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom validation patterns needed (`pattern`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### Core Email Schemas

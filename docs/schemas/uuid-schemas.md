@@ -14,6 +14,38 @@ All UUID schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Type safety** with TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all UUID schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const userIdTraditional = pz.UuidRequired({ msg: "User ID" });
+
+// Simplified string parameter (equivalent)
+const userIdSimple = pz.UuidRequired("User ID");
+
+// Both produce the same validation behavior
+const validUuid = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+userIdTraditional.parse(validUuid); // ✅ "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+userIdSimple.parse(validUuid);      // ✅ "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+
+// Error messages are identical
+userIdTraditional.parse("invalid"); // ❌ "User ID must be a valid UUID"
+userIdSimple.parse("invalid");      // ❌ "User ID must be a valid UUID"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### Universal UUID Schemas

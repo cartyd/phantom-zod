@@ -87,3 +87,30 @@ export interface PostalCodeSchemaOptions extends BaseSchemaOptions {
 export interface CurrencySchemaOptions extends BaseSchemaOptions {
   // Currency schemas only need the base options
 }
+
+/**
+ * Generic interface for schema functions with string parameter overloads.
+ * Can be extended for schemas that need additional parameters.
+ */
+export interface SchemaFunction<
+  TSchema,
+  TOptions extends BaseSchemaOptions = BaseSchemaOptions,
+> {
+  (): TSchema;
+  (msg: string): TSchema;
+  (options: TOptions): TSchema;
+}
+
+/**
+ * Generic interface for schema functions that take additional parameters (like enum values)
+ * along with string parameter overloads.
+ */
+export interface ParameterizedSchemaFunction<
+  TParams extends readonly any[],
+  TSchema,
+  TOptions extends BaseSchemaOptions = BaseSchemaOptions,
+> {
+  (...args: [...TParams]): TSchema;
+  (...args: [...TParams, string]): TSchema;
+  (...args: [...TParams, TOptions]): TSchema;
+}

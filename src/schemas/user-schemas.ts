@@ -8,42 +8,7 @@ import { createEmailSchemas } from "./email-schemas";
 import { createEnumSchemas } from "./enum-schemas";
 
 // --- User Role Constants ---
-
-/**
- * Common user roles.
- */
-export const USER_ROLES = [
-  "admin",
-  "moderator",
-  "user",
-  "guest",
-  "subscriber",
-  "editor",
-  "author",
-  "contributor",
-] as const;
-
-/**
- * User account status options.
- */
-export const USER_STATUS = [
-  "active",
-  "inactive",
-  "pending",
-  "suspended",
-  "banned",
-  "deleted",
-] as const;
-
-/**
- * User account types.
- */
-export const ACCOUNT_TYPES = [
-  "individual",
-  "business",
-  "organization",
-  "admin",
-] as const;
+// Note: Constants will be exported from the factory function to avoid redeclaration
 
 /**
  * Calculate password strength score (0-4).
@@ -76,6 +41,34 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   const stringSchemas = createStringSchemas(messageHandler);
   const emailSchemas = createEmailSchemas(messageHandler);
   const enumSchemas = createEnumSchemas(messageHandler);
+
+  // Define constants as tuples for enum compatibility
+  const USER_ROLES = [
+    "admin",
+    "moderator",
+    "user",
+    "guest",
+    "subscriber",
+    "editor",
+    "author",
+    "contributor",
+  ] as const;
+
+  const USER_STATUS = [
+    "active",
+    "inactive",
+    "pending",
+    "suspended",
+    "banned",
+    "deleted",
+  ] as const;
+
+  const ACCOUNT_TYPES = [
+    "individual",
+    "business",
+    "organization",
+    "admin",
+  ] as const;
 
   /**
    * Password strength validation schema.
@@ -306,15 +299,15 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
         lastName: stringSchemas.StringOptional({ msg: "Last Name", msgType }),
-        role: enumSchemas.EnumRequired([...USER_ROLES], {
+        role: enumSchemas.EnumRequired(USER_ROLES, {
           msg: "Role",
           msgType,
         }),
-        status: enumSchemas.EnumRequired([...USER_STATUS], {
+        status: enumSchemas.EnumRequired(USER_STATUS, {
           msg: "Status",
           msgType,
         }),
-        accountType: enumSchemas.EnumOptional([...ACCOUNT_TYPES], {
+        accountType: enumSchemas.EnumOptional(ACCOUNT_TYPES, {
           msg: "Account Type",
           msgType,
         }),
@@ -355,15 +348,15 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
           msgType,
         }),
         lastName: stringSchemas.StringOptional({ msg: "Last Name", msgType }),
-        role: enumSchemas.EnumRequired([...USER_ROLES], {
+        role: enumSchemas.EnumRequired(USER_ROLES, {
           msg: "Role",
           msgType,
         }),
-        status: enumSchemas.EnumRequired([...USER_STATUS], {
+        status: enumSchemas.EnumRequired(USER_STATUS, {
           msg: "Status",
           msgType,
         }),
-        accountType: enumSchemas.EnumOptional([...ACCOUNT_TYPES], {
+        accountType: enumSchemas.EnumOptional(ACCOUNT_TYPES, {
           msg: "Account Type",
           msgType,
         }),
@@ -492,11 +485,11 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
     z.object(
       {
         userId: stringSchemas.StringRequired({ msg: "User ID", msgType }),
-        role: enumSchemas.EnumOptional([...USER_ROLES], {
+        role: enumSchemas.EnumOptional(USER_ROLES, {
           msg: "Role",
           msgType,
         }),
-        status: enumSchemas.EnumOptional([...USER_STATUS], {
+        status: enumSchemas.EnumOptional(USER_STATUS, {
           msg: "Status",
           msgType,
         }),
@@ -760,6 +753,180 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
 
 // Top-level exports using test message handler
 const testMessageHandler = createTestMessageHandler();
-const userSchemas = createUserSchemas(testMessageHandler);
+const defaultUserSchemas = createUserSchemas(testMessageHandler);
 
-export const UserOptional = userSchemas.UserOptional;
+// Helper functions with overloads to support both string and options object
+function createPasswordOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.Password>;
+function createPasswordOverload(
+  msg?: string,
+  msgType?: MsgType,
+  minLength?: number,
+  requireUppercase?: boolean,
+  requireLowercase?: boolean,
+  requireNumbers?: boolean,
+  requireSpecialChars?: boolean,
+): ReturnType<typeof defaultUserSchemas.Password>;
+function createPasswordOverload(
+  msg: string = "Password",
+  msgType: MsgType = MsgType.FieldName,
+  minLength: number = 8,
+  requireUppercase: boolean = true,
+  requireLowercase: boolean = true,
+  requireNumbers: boolean = true,
+  requireSpecialChars: boolean = true,
+): ReturnType<typeof defaultUserSchemas.Password> {
+  return defaultUserSchemas.Password(
+    msg,
+    msgType,
+    minLength,
+    requireUppercase,
+    requireLowercase,
+    requireNumbers,
+    requireSpecialChars,
+  );
+}
+
+function createUsernameOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.Username>;
+function createUsernameOverload(
+  msg?: string,
+  msgType?: MsgType,
+  minLength?: number,
+  maxLength?: number,
+): ReturnType<typeof defaultUserSchemas.Username>;
+function createUsernameOverload(
+  msg: string = "Username",
+  msgType: MsgType = MsgType.FieldName,
+  minLength: number = 3,
+  maxLength: number = 30,
+): ReturnType<typeof defaultUserSchemas.Username> {
+  return defaultUserSchemas.Username(msg, msgType, minLength, maxLength);
+}
+
+function createDisplayNameOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.DisplayName>;
+function createDisplayNameOverload(
+  msg?: string,
+  msgType?: MsgType,
+  maxLength?: number,
+): ReturnType<typeof defaultUserSchemas.DisplayName>;
+function createDisplayNameOverload(
+  msg: string = "Display Name",
+  msgType: MsgType = MsgType.FieldName,
+  maxLength: number = 50,
+): ReturnType<typeof defaultUserSchemas.DisplayName> {
+  return defaultUserSchemas.DisplayName(msg, msgType, maxLength);
+}
+
+function createUserRegistrationOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.UserRegistration>;
+function createUserRegistrationOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultUserSchemas.UserRegistration>;
+function createUserRegistrationOverload(
+  msg: string = "User Registration",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultUserSchemas.UserRegistration> {
+  return defaultUserSchemas.UserRegistration(msg, msgType);
+}
+
+function createUserLoginOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.UserLogin>;
+function createUserLoginOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultUserSchemas.UserLogin>;
+function createUserLoginOverload(
+  msg: string = "User Login",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultUserSchemas.UserLogin> {
+  return defaultUserSchemas.UserLogin(msg, msgType);
+}
+
+function createUserRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.UserRequired>;
+function createUserRequiredOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultUserSchemas.UserRequired>;
+function createUserRequiredOverload(
+  msg: string = "User",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultUserSchemas.UserRequired> {
+  return defaultUserSchemas.UserRequired(msg, msgType);
+}
+
+function createUserUpdateOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.UserUpdate>;
+function createUserUpdateOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultUserSchemas.UserUpdate>;
+function createUserUpdateOverload(
+  msg: string = "User Update",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultUserSchemas.UserUpdate> {
+  return defaultUserSchemas.UserUpdate(msg, msgType);
+}
+
+function createPasswordChangeOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.PasswordChange>;
+function createPasswordChangeOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultUserSchemas.PasswordChange>;
+function createPasswordChangeOverload(
+  msg: string = "Password Change",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultUserSchemas.PasswordChange> {
+  return defaultUserSchemas.PasswordChange(msg, msgType);
+}
+
+function createPasswordResetOverload(
+  msg: string,
+): ReturnType<typeof defaultUserSchemas.PasswordReset>;
+function createPasswordResetOverload(
+  msg?: string,
+  msgType?: MsgType,
+): ReturnType<typeof defaultUserSchemas.PasswordReset>;
+function createPasswordResetOverload(
+  msg: string = "Password Reset",
+  msgType: MsgType = MsgType.FieldName,
+): ReturnType<typeof defaultUserSchemas.PasswordReset> {
+  return defaultUserSchemas.PasswordReset(msg, msgType);
+}
+
+// Export schemas with string parameter overloads
+export const Password = createPasswordOverload;
+export const Username = createUsernameOverload;
+export const DisplayName = createDisplayNameOverload;
+export const UserRegistration = createUserRegistrationOverload;
+export const UserLogin = createUserLoginOverload;
+export const UserOptional = defaultUserSchemas.UserOptional;
+export const UserRequired = createUserRequiredOverload;
+export const UserUpdate = createUserUpdateOverload;
+export const PasswordChange = createPasswordChangeOverload;
+export const PasswordReset = createPasswordResetOverload;
+export const AdminUserManagement = defaultUserSchemas.AdminUserManagement;
+export const PasswordWithWeaknessCheck =
+  defaultUserSchemas.PasswordWithWeaknessCheck;
+export const UserGenericValidation = defaultUserSchemas.UserGenericValidation;
+export const EmailUniqueness = defaultUserSchemas.EmailUniqueness;
+export const UsernameUniqueness = defaultUserSchemas.UsernameUniqueness;
+export const RoleValidation = defaultUserSchemas.RoleValidation;
+export const AccountTypeValidation = defaultUserSchemas.AccountTypeValidation;
+export const UserRegistrationWithUniqueness =
+  defaultUserSchemas.UserRegistrationWithUniqueness;
+
+// Export constants
+export const { USER_ROLES, USER_STATUS, ACCOUNT_TYPES } = defaultUserSchemas;

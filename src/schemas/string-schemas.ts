@@ -222,5 +222,36 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
 const testMessageHandler = createTestMessageHandler();
 const stringSchemas = createStringSchemas(testMessageHandler);
 
-export const StringOptional = stringSchemas.StringOptional;
-export const StringRequired = stringSchemas.StringRequired;
+// Helper function with overloads to support both string and options object
+function createStringOptionalOverload(
+  msg: string,
+): ReturnType<typeof stringSchemas.StringOptional>;
+function createStringOptionalOverload(
+  options?: StringSchemaOptions,
+): ReturnType<typeof stringSchemas.StringOptional>;
+function createStringOptionalOverload(
+  msgOrOptions?: string | StringSchemaOptions,
+): ReturnType<typeof stringSchemas.StringOptional> {
+  if (typeof msgOrOptions === "string") {
+    return stringSchemas.StringOptional({ msg: msgOrOptions });
+  }
+  return stringSchemas.StringOptional(msgOrOptions);
+}
+
+function createStringRequiredOverload(
+  msg: string,
+): ReturnType<typeof stringSchemas.StringRequired>;
+function createStringRequiredOverload(
+  options?: StringSchemaOptions,
+): ReturnType<typeof stringSchemas.StringRequired>;
+function createStringRequiredOverload(
+  msgOrOptions?: string | StringSchemaOptions,
+): ReturnType<typeof stringSchemas.StringRequired> {
+  if (typeof msgOrOptions === "string") {
+    return stringSchemas.StringRequired({ msg: msgOrOptions });
+  }
+  return stringSchemas.StringRequired(msgOrOptions);
+}
+
+export const StringOptional = createStringOptionalOverload;
+export const StringRequired = createStringRequiredOverload;

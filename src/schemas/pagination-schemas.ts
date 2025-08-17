@@ -390,12 +390,139 @@ export const createPaginationSchemas = (
 const defaultPaginationSchemas = createPaginationSchemas(
   createTestMessageHandler(),
 );
+// Define type for pagination options
+type PaginationOptions = {
+  msg?: string;
+  msgType?: MsgType;
+  defaultLimit?: number;
+  maxLimit?: number;
+};
+
+// Helper functions with overloads to support both string and options object
+function createPaginationOverload(
+  msg: string,
+): ReturnType<typeof defaultPaginationSchemas.Pagination>;
+function createPaginationOverload(
+  options?: PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.Pagination>;
+function createPaginationOverload(
+  msgOrOptions?: string | PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.Pagination> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPaginationSchemas.Pagination(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultPaginationSchemas.Pagination();
+  }
+  return defaultPaginationSchemas.Pagination(
+    msgOrOptions.msg,
+    msgOrOptions.msgType,
+    msgOrOptions.defaultLimit,
+    msgOrOptions.maxLimit,
+  );
+}
+
+function createPaginationQueryOverload(
+  msg: string,
+): ReturnType<typeof defaultPaginationSchemas.PaginationQuery>;
+function createPaginationQueryOverload(
+  options?: PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.PaginationQuery>;
+function createPaginationQueryOverload(
+  msgOrOptions?: string | PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.PaginationQuery> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPaginationSchemas.PaginationQuery(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultPaginationSchemas.PaginationQuery();
+  }
+  return defaultPaginationSchemas.PaginationQuery(
+    msgOrOptions.msg,
+    msgOrOptions.msgType,
+    msgOrOptions.defaultLimit,
+    msgOrOptions.maxLimit,
+  );
+}
+
+function createCursorPaginationOverload(
+  msg: string,
+): ReturnType<typeof defaultPaginationSchemas.CursorPagination>;
+function createCursorPaginationOverload(
+  options?: PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.CursorPagination>;
+function createCursorPaginationOverload(
+  msgOrOptions?: string | PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.CursorPagination> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPaginationSchemas.CursorPagination(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultPaginationSchemas.CursorPagination();
+  }
+  return defaultPaginationSchemas.CursorPagination(
+    msgOrOptions.msg,
+    msgOrOptions.msgType,
+    msgOrOptions.defaultLimit,
+    msgOrOptions.maxLimit,
+  );
+}
+
+function createOffsetPaginationOverload(
+  msg: string,
+): ReturnType<typeof defaultPaginationSchemas.OffsetPagination>;
+function createOffsetPaginationOverload(
+  options?: PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.OffsetPagination>;
+function createOffsetPaginationOverload(
+  msgOrOptions?: string | PaginationOptions,
+): ReturnType<typeof defaultPaginationSchemas.OffsetPagination> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPaginationSchemas.OffsetPagination(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultPaginationSchemas.OffsetPagination();
+  }
+  return defaultPaginationSchemas.OffsetPagination(
+    msgOrOptions.msg,
+    msgOrOptions.msgType,
+    msgOrOptions.defaultLimit,
+    msgOrOptions.maxLimit,
+  );
+}
+
+type PaginationResponseOptions = {
+  msg?: string;
+  msgType?: MsgType;
+};
+
+function createPaginationResponseOverload(
+  msg: string,
+): ReturnType<typeof defaultPaginationSchemas.PaginationResponse>;
+function createPaginationResponseOverload(
+  options?: PaginationResponseOptions,
+): ReturnType<typeof defaultPaginationSchemas.PaginationResponse>;
+function createPaginationResponseOverload(
+  msgOrOptions?: string | PaginationResponseOptions,
+): ReturnType<typeof defaultPaginationSchemas.PaginationResponse> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPaginationSchemas.PaginationResponse(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultPaginationSchemas.PaginationResponse();
+  }
+  return defaultPaginationSchemas.PaginationResponse(
+    msgOrOptions.msg,
+    msgOrOptions.msgType,
+  );
+}
+
 // Export without z prefix for new naming convention
-export const Pagination = defaultPaginationSchemas.Pagination;
-export const PaginationQuery = defaultPaginationSchemas.PaginationQuery;
-export const CursorPagination = defaultPaginationSchemas.CursorPagination;
-export const OffsetPagination = defaultPaginationSchemas.OffsetPagination;
-export const PaginationResponse = defaultPaginationSchemas.PaginationResponse;
+export const Pagination = createPaginationOverload;
+export const PaginationQuery = createPaginationQueryOverload;
+export const CursorPagination = createCursorPaginationOverload;
+export const OffsetPagination = createOffsetPaginationOverload;
+export const PaginationResponse = createPaginationResponseOverload;
 export const PaginatedData = defaultPaginationSchemas.PaginatedData;
 
 /**

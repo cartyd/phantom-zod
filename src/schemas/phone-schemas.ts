@@ -104,7 +104,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
           // If normalization fails (returns null), keep the original value to trigger validation error
           return normalized === null ? trimmed : normalized;
         })
-        // Must be valid phone (catch-all, e.g. not just format)
+        // Must be valid phone format
         .refine(
           (val) =>
             val === undefined ||
@@ -117,74 +117,6 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
               group: "phone",
               messageKey: "mustBeValidPhone",
               params: { supportedFormats, ...exampleParams },
-              msg,
-              msgType,
-            }),
-          },
-        )
-        // Format-specific error
-        .refine(
-          (val) =>
-            val === undefined ||
-            val === "" ||
-            (format === PhoneFormat.E164
-              ? US_PHONE_E164_PATTERN.test(val)
-              : US_PHONE_NATIONAL_PATTERN.test(val)),
-          {
-            message: messageHandler.formatErrorMessage({
-              group: "phone",
-              messageKey:
-                format === PhoneFormat.E164
-                  ? "invalidE164Format"
-                  : "invalidNationalFormat",
-              params:
-                format === PhoneFormat.E164
-                  ? { receivedFormat: "not-e164", ...exampleParams }
-                  : {
-                      country: "US",
-                      expectedFormat: "1234567890",
-                      ...exampleParams,
-                    },
-              msg,
-              msgType,
-            }),
-          },
-        )
-        // Generic invalid
-        .refine(
-          (val) =>
-            val === undefined ||
-            val === "" ||
-            (typeof val === "string" &&
-              (US_PHONE_E164_PATTERN.test(val) ||
-                US_PHONE_NATIONAL_PATTERN.test(val))),
-          {
-            message: messageHandler.formatErrorMessage({
-              group: "phone",
-              messageKey: "invalid",
-              params: {},
-              msg,
-              msgType,
-            }),
-          },
-        )
-        // Invalid format (not matching any known pattern)
-        .refine(
-          (val) =>
-            val === undefined ||
-            val === "" ||
-            (typeof val === "string" &&
-              (US_PHONE_E164_PATTERN.test(val) ||
-                US_PHONE_NATIONAL_PATTERN.test(val))),
-          {
-            message: messageHandler.formatErrorMessage({
-              group: "phone",
-              messageKey: "invalidFormat",
-              params: {
-                receivedFormat: "unknown",
-                supportedFormats,
-                ...exampleParams,
-              },
               msg,
               msgType,
             }),
@@ -246,7 +178,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
           // If normalization fails (returns null), keep the original value to trigger validation error
           return normalized === null ? trimmed : normalized;
         })
-        // Must be valid phone (catch-all, e.g. not just format)
+        // Must be valid phone format
         .refine(
           (val) =>
             typeof val === "string" &&
@@ -257,69 +189,6 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
               group: "phone",
               messageKey: "mustBeValidPhone",
               params: { supportedFormats, ...exampleParams },
-              msg,
-              msgType,
-            }),
-          },
-        )
-        // Format-specific error
-        .refine(
-          (val) =>
-            typeof val === "string" &&
-            (format === PhoneFormat.E164
-              ? US_PHONE_E164_PATTERN.test(val)
-              : US_PHONE_NATIONAL_PATTERN.test(val)),
-          {
-            message: messageHandler.formatErrorMessage({
-              group: "phone",
-              messageKey:
-                format === PhoneFormat.E164
-                  ? "invalidE164Format"
-                  : "invalidNationalFormat",
-              params:
-                format === PhoneFormat.E164
-                  ? { receivedFormat: "not-e164", ...exampleParams }
-                  : {
-                      country: "US",
-                      expectedFormat: "1234567890",
-                      ...exampleParams,
-                    },
-              msg,
-              msgType,
-            }),
-          },
-        )
-        // Generic invalid
-        .refine(
-          (val) =>
-            typeof val === "string" &&
-            (US_PHONE_E164_PATTERN.test(val) ||
-              US_PHONE_NATIONAL_PATTERN.test(val)),
-          {
-            message: messageHandler.formatErrorMessage({
-              group: "phone",
-              messageKey: "invalid",
-              params: {},
-              msg,
-              msgType,
-            }),
-          },
-        )
-        // Invalid format (not matching any known pattern)
-        .refine(
-          (val) =>
-            typeof val === "string" &&
-            (US_PHONE_E164_PATTERN.test(val) ||
-              US_PHONE_NATIONAL_PATTERN.test(val)),
-          {
-            message: messageHandler.formatErrorMessage({
-              group: "phone",
-              messageKey: "invalidFormat",
-              params: {
-                receivedFormat: "unknown",
-                supportedFormats,
-                ...exampleParams,
-              },
               msg,
               msgType,
             }),
@@ -338,5 +207,36 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
 const testMessageHandler = createTestMessageHandler();
 const phoneSchemas = createPhoneSchemas(testMessageHandler);
 
-export const PhoneOptional = phoneSchemas.PhoneOptional;
-export const PhoneRequired = phoneSchemas.PhoneRequired;
+// Type aliases for clean overload signatures
+type PhoneOptionalSchema = ReturnType<typeof phoneSchemas.PhoneOptional>;
+type PhoneRequiredSchema = ReturnType<typeof phoneSchemas.PhoneRequired>;
+
+// Clean overload implementations
+function phoneOptionalOverload(msg: string): PhoneOptionalSchema;
+function phoneOptionalOverload(
+  options?: PhoneSchemaOptions,
+): PhoneOptionalSchema;
+function phoneOptionalOverload(
+  msgOrOptions?: string | PhoneSchemaOptions,
+): PhoneOptionalSchema {
+  if (typeof msgOrOptions === "string") {
+    return phoneSchemas.PhoneOptional({ msg: msgOrOptions });
+  }
+  return phoneSchemas.PhoneOptional(msgOrOptions);
+}
+
+function phoneRequiredOverload(msg: string): PhoneRequiredSchema;
+function phoneRequiredOverload(
+  options?: PhoneSchemaOptions,
+): PhoneRequiredSchema;
+function phoneRequiredOverload(
+  msgOrOptions?: string | PhoneSchemaOptions,
+): PhoneRequiredSchema {
+  if (typeof msgOrOptions === "string") {
+    return phoneSchemas.PhoneRequired({ msg: msgOrOptions });
+  }
+  return phoneSchemas.PhoneRequired(msgOrOptions);
+}
+
+export const PhoneOptional = phoneOptionalOverload;
+export const PhoneRequired = phoneRequiredOverload;

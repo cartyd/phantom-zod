@@ -9,6 +9,12 @@ import {
   removeEmptyStringFields,
 } from "../common/utils/zod-utils";
 
+// Define type for address schema options
+type AddressSchemaOptions = {
+  msg?: string;
+  msgType?: MsgType;
+};
+
 // --- US State Codes ---
 export const US_STATE_CODES = [
   "AL",
@@ -233,12 +239,98 @@ export const createAddressSchemas = (messageHandler: ErrorMessageFormatter) => {
 
 // Top-level exports for barrel usage
 const testMessageHandler = createTestMessageHandler();
-const addressSchemas = createAddressSchemas(testMessageHandler);
+const defaultAddressSchemas = createAddressSchemas(testMessageHandler);
 
-export const AddressOptional = addressSchemas.AddressOptional;
-export const AddressRequired = addressSchemas.AddressRequired;
-export const AddressSimple = addressSchemas.AddressSimple;
-export const AddressUS = addressSchemas.AddressUS;
+// Helper functions with overloads to support both string and options object
+function createAddressOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultAddressSchemas.AddressOptional>;
+function createAddressOptionalOverload(
+  options?: AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressOptional>;
+function createAddressOptionalOverload(
+  msgOrOptions?: string | AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultAddressSchemas.AddressOptional(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultAddressSchemas.AddressOptional();
+  }
+  return defaultAddressSchemas.AddressOptional(
+    msgOrOptions.msg || "Address",
+    msgOrOptions.msgType || MsgType.FieldName,
+  );
+}
+
+function createAddressRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultAddressSchemas.AddressRequired>;
+function createAddressRequiredOverload(
+  options?: AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressRequired>;
+function createAddressRequiredOverload(
+  msgOrOptions?: string | AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultAddressSchemas.AddressRequired(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultAddressSchemas.AddressRequired();
+  }
+  return defaultAddressSchemas.AddressRequired(
+    msgOrOptions.msg || "Address",
+    msgOrOptions.msgType || MsgType.FieldName,
+  );
+}
+
+function createAddressSimpleOverload(
+  msg: string,
+): ReturnType<typeof defaultAddressSchemas.AddressSimple>;
+function createAddressSimpleOverload(
+  options?: AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressSimple>;
+function createAddressSimpleOverload(
+  msgOrOptions?: string | AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressSimple> {
+  if (typeof msgOrOptions === "string") {
+    return defaultAddressSchemas.AddressSimple(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultAddressSchemas.AddressSimple();
+  }
+  return defaultAddressSchemas.AddressSimple(
+    msgOrOptions.msg || "Address",
+    msgOrOptions.msgType || MsgType.FieldName,
+  );
+}
+
+function createAddressUSOverload(
+  msg: string,
+): ReturnType<typeof defaultAddressSchemas.AddressUS>;
+function createAddressUSOverload(
+  options?: AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressUS>;
+function createAddressUSOverload(
+  msgOrOptions?: string | AddressSchemaOptions,
+): ReturnType<typeof defaultAddressSchemas.AddressUS> {
+  if (typeof msgOrOptions === "string") {
+    return defaultAddressSchemas.AddressUS(msgOrOptions);
+  }
+  if (!msgOrOptions) {
+    return defaultAddressSchemas.AddressUS();
+  }
+  return defaultAddressSchemas.AddressUS(
+    msgOrOptions.msg || "Address",
+    msgOrOptions.msgType || MsgType.FieldName,
+  );
+}
+
+// Export schemas with string parameter overloads
+export const AddressOptional = createAddressOptionalOverload;
+export const AddressRequired = createAddressRequiredOverload;
+export const AddressSimple = createAddressSimpleOverload;
+export const AddressUS = createAddressUSOverload;
 
 // --- Types ---
 type AddressSchemasFactory = ReturnType<typeof createAddressSchemas>;

@@ -176,7 +176,39 @@ export const createPostalCodeSchemas = (
 
 // Top-level exports for barrel usage
 const testMessageHandler = createTestMessageHandler();
-const postalCodeSchemas = createPostalCodeSchemas(testMessageHandler);
+const defaultPostalCodeSchemas = createPostalCodeSchemas(testMessageHandler);
 
-export const PostalCodeOptional = postalCodeSchemas.PostalCodeOptional;
-export const PostalCodeRequired = postalCodeSchemas.PostalCodeRequired;
+// Helper functions with overloads to support both string and options object
+function createPostalCodeOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultPostalCodeSchemas.PostalCodeOptional>;
+function createPostalCodeOptionalOverload(
+  options?: PostalCodeSchemaOptions,
+): ReturnType<typeof defaultPostalCodeSchemas.PostalCodeOptional>;
+function createPostalCodeOptionalOverload(
+  msgOrOptions?: string | PostalCodeSchemaOptions,
+): ReturnType<typeof defaultPostalCodeSchemas.PostalCodeOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPostalCodeSchemas.PostalCodeOptional({ msg: msgOrOptions });
+  }
+  return defaultPostalCodeSchemas.PostalCodeOptional(msgOrOptions);
+}
+
+function createPostalCodeRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultPostalCodeSchemas.PostalCodeRequired>;
+function createPostalCodeRequiredOverload(
+  options?: PostalCodeSchemaOptions,
+): ReturnType<typeof defaultPostalCodeSchemas.PostalCodeRequired>;
+function createPostalCodeRequiredOverload(
+  msgOrOptions?: string | PostalCodeSchemaOptions,
+): ReturnType<typeof defaultPostalCodeSchemas.PostalCodeRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultPostalCodeSchemas.PostalCodeRequired({ msg: msgOrOptions });
+  }
+  return defaultPostalCodeSchemas.PostalCodeRequired(msgOrOptions);
+}
+
+// Export schemas with string parameter overloads
+export const PostalCodeOptional = createPostalCodeOptionalOverload;
+export const PostalCodeRequired = createPostalCodeRequiredOverload;

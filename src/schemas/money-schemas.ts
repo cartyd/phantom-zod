@@ -493,12 +493,145 @@ import { createTestMessageHandler } from "../localization/types/message-handler.
 
 const defaultMoneySchemas = createMoneySchemas(createTestMessageHandler());
 
-// Direct schema exports with clean naming
-export const CurrencyCode = defaultMoneySchemas.CurrencyCode;
-export const MoneyAmount = defaultMoneySchemas.MoneyAmount;
-export const MoneyAmountFromString = defaultMoneySchemas.MoneyAmountFromString;
-export const MoneyOptional = defaultMoneySchemas.MoneyOptional;
-export const MoneyRequired = defaultMoneySchemas.MoneyRequired;
-export const MoneyFromString = defaultMoneySchemas.MoneyFromString;
-export const Price = defaultMoneySchemas.Price;
-export const PriceRange = defaultMoneySchemas.PriceRange;
+// Helper function with overloads to support both string and options object
+function createCurrencyCodeOverload(
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.CurrencyCode>;
+function createCurrencyCodeOverload(
+  options?: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.CurrencyCode>;
+function createCurrencyCodeOverload(
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.CurrencyCode> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.CurrencyCode({ msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.CurrencyCode(msgOrOptions);
+}
+
+function createMoneyAmountOverload(
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.MoneyAmount>;
+function createMoneyAmountOverload(
+  options?: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyAmount>;
+function createMoneyAmountOverload(
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyAmount> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.MoneyAmount({ msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.MoneyAmount(msgOrOptions);
+}
+
+function createMoneyAmountFromStringOverload(
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.MoneyAmountFromString>;
+function createMoneyAmountFromStringOverload(
+  options?: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyAmountFromString>;
+function createMoneyAmountFromStringOverload(
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyAmountFromString> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.MoneyAmountFromString({ msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.MoneyAmountFromString(msgOrOptions);
+}
+
+function createMoneyOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.MoneyOptional>;
+function createMoneyOptionalOverload(
+  options?: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyOptional>;
+function createMoneyOptionalOverload(
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.MoneyOptional({ msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.MoneyOptional(msgOrOptions);
+}
+
+function createMoneyRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.MoneyRequired>;
+function createMoneyRequiredOverload(
+  options?: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyRequired>;
+function createMoneyRequiredOverload(
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.MoneyRequired({ msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.MoneyRequired(msgOrOptions);
+}
+
+function createMoneyFromStringOverload(
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.MoneyFromString>;
+function createMoneyFromStringOverload(
+  options?: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyFromString>;
+function createMoneyFromStringOverload(
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.MoneyFromString> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.MoneyFromString({ msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.MoneyFromString(msgOrOptions);
+}
+
+function createPriceOverload(
+  currency: CurrencyCode,
+): ReturnType<typeof defaultMoneySchemas.Price>;
+function createPriceOverload(
+  currency: CurrencyCode,
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.Price>;
+function createPriceOverload(
+  currency: CurrencyCode,
+  options: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.Price>;
+function createPriceOverload(
+  currency: CurrencyCode,
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.Price> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.Price(currency, { msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.Price(currency, msgOrOptions);
+}
+
+function createPriceRangeOverload(
+  currency: CurrencyCode,
+): ReturnType<typeof defaultMoneySchemas.PriceRange>;
+function createPriceRangeOverload(
+  currency: CurrencyCode,
+  msg: string,
+): ReturnType<typeof defaultMoneySchemas.PriceRange>;
+function createPriceRangeOverload(
+  currency: CurrencyCode,
+  options: MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.PriceRange>;
+function createPriceRangeOverload(
+  currency: CurrencyCode,
+  msgOrOptions?: string | MoneySchemaOptions,
+): ReturnType<typeof defaultMoneySchemas.PriceRange> {
+  if (typeof msgOrOptions === "string") {
+    return defaultMoneySchemas.PriceRange(currency, { msg: msgOrOptions });
+  }
+  return defaultMoneySchemas.PriceRange(currency, msgOrOptions);
+}
+
+// Direct schema exports with overloads
+export const CurrencyCode = createCurrencyCodeOverload;
+export const MoneyAmount = createMoneyAmountOverload;
+export const MoneyAmountFromString = createMoneyAmountFromStringOverload;
+export const MoneyOptional = createMoneyOptionalOverload;
+export const MoneyRequired = createMoneyRequiredOverload;
+export const MoneyFromString = createMoneyFromStringOverload;
+export const Price = createPriceOverload;
+export const PriceRange = createPriceRangeOverload;

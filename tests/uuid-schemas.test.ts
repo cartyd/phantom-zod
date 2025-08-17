@@ -480,4 +480,160 @@ describe('UUID Schemas', () => {
       }
     });
   });
+
+  describe('Exported Schema Overloads', () => {
+    // Import the exported schemas
+    const {
+      UuidOptional,
+      UuidRequired,
+      UuidV4Optional,
+      UuidV4Required,
+      NanoidOptional,
+      NanoidRequired
+    } = require('../src/schemas/uuid-schemas');
+
+    describe('UuidOptional overloads', () => {
+      it('should work with no parameters', () => {
+        const schema = UuidOptional();
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/must be a valid UUID/);
+      });
+
+      it('should work with string parameter', () => {
+        const schema = UuidOptional('Entity ID');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/Entity ID must be a valid UUID/);
+      });
+
+      it('should work with options object', () => {
+        const schema = UuidOptional({ msg: 'User ID' });
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/User ID must be a valid UUID/);
+      });
+    });
+
+    describe('UuidRequired overloads', () => {
+      it('should work with no parameters', () => {
+        const schema = UuidRequired();
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/must be a valid UUID/);
+      });
+
+      it('should work with string parameter', () => {
+        const schema = UuidRequired('Entity ID');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/Entity ID must be a valid UUID/);
+      });
+
+      it('should work with options object', () => {
+        const schema = UuidRequired({ msg: 'User ID' });
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/User ID must be a valid UUID/);
+      });
+    });
+
+    describe('UuidV4Optional overloads', () => {
+      it('should work with no parameters', () => {
+        const schema = UuidV4Optional();
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/must be a valid UUIDv4/);
+        expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/must be a valid UUIDv4/); // v1 UUID
+      });
+
+      it('should work with string parameter', () => {
+        const schema = UuidV4Optional('Token');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/Token must be a valid UUIDv4/);
+        expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/Token must be a valid UUIDv4/); // v1 UUID
+      });
+
+      it('should work with options object', () => {
+        const schema = UuidV4Optional({ msg: 'Session ID' });
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/Session ID must be a valid UUIDv4/);
+        expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/Session ID must be a valid UUIDv4/); // v1 UUID
+      });
+    });
+
+    describe('UuidV4Required overloads', () => {
+      it('should work with no parameters', () => {
+        const schema = UuidV4Required();
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/must be a valid UUIDv4/);
+        expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/must be a valid UUIDv4/); // v1 UUID
+      });
+
+      it('should work with string parameter', () => {
+        const schema = UuidV4Required('Token');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/Token must be a valid UUIDv4/);
+        expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/Token must be a valid UUIDv4/); // v1 UUID
+      });
+
+      it('should work with options object', () => {
+        const schema = UuidV4Required({ msg: 'Session ID' });
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('123e4567-e89b-42d3-a456-426614174000')).toBe('123e4567-e89b-42d3-a456-426614174000');
+        expect(() => schema.parse('invalid')).toThrow(/Session ID must be a valid UUIDv4/);
+        expect(() => schema.parse('123e4567-e89b-12d3-a456-426614174000')).toThrow(/Session ID must be a valid UUIDv4/); // v1 UUID
+      });
+    });
+
+    describe('NanoidOptional overloads', () => {
+      it('should work with no parameters', () => {
+        const schema = NanoidOptional();
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('V1StGXR8_Z5jdHi6B-myT')).toBe('V1StGXR8_Z5jdHi6B-myT'); // Example nanoid
+        expect(() => schema.parse('invalid-nanoid!')).toThrow(/must be a valid nanoid/);
+      });
+
+      it('should work with string parameter', () => {
+        const schema = NanoidOptional('Item ID');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('V1StGXR8_Z5jdHi6B-myT')).toBe('V1StGXR8_Z5jdHi6B-myT');
+        expect(() => schema.parse('invalid-nanoid!')).toThrow(/Item ID must be a valid nanoid/);
+      });
+
+      it('should work with options object', () => {
+        const schema = NanoidOptional({ msg: 'Record ID' });
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse('V1StGXR8_Z5jdHi6B-myT')).toBe('V1StGXR8_Z5jdHi6B-myT');
+        expect(() => schema.parse('invalid-nanoid!')).toThrow(/Record ID must be a valid nanoid/);
+      });
+    });
+
+    describe('NanoidRequired overloads', () => {
+      it('should work with no parameters', () => {
+        const schema = NanoidRequired();
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('V1StGXR8_Z5jdHi6B-myT')).toBe('V1StGXR8_Z5jdHi6B-myT');
+        expect(() => schema.parse('invalid-nanoid!')).toThrow(/must be a valid nanoid/);
+      });
+
+      it('should work with string parameter', () => {
+        const schema = NanoidRequired('Item ID');
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('V1StGXR8_Z5jdHi6B-myT')).toBe('V1StGXR8_Z5jdHi6B-myT');
+        expect(() => schema.parse('invalid-nanoid!')).toThrow(/Item ID must be a valid nanoid/);
+      });
+
+      it('should work with options object', () => {
+        const schema = NanoidRequired({ msg: 'Record ID' });
+        expect(() => schema.parse(undefined)).toThrow();
+        expect(schema.parse('V1StGXR8_Z5jdHi6B-myT')).toBe('V1StGXR8_Z5jdHi6B-myT');
+        expect(() => schema.parse('invalid-nanoid!')).toThrow(/Record ID must be a valid nanoid/);
+      });
+    });
+  });
 });
