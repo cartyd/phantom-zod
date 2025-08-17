@@ -1,0 +1,168 @@
+name: Auto-merge Release PRs
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [labeled, ready_for_review]
+
+jobs:
+  auto-merge-release:
+    name: Auto-merge Release PR
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.draft == false &&
+      (
+        startsWith(github.event.pull_request.head.ref, 'release/') ||
+        startsWith(github.event.pull_request.title, '🚀 Release') ||
+        startsWith(github.event.pull_request.title, 'Release ')
+      )
+    
+    steps:
+    - name: Check PR approval status
+      id: check-approval
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: reviews } = await github.rest.pulls.listReviews({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number
+          });
+          
+          const approvals = reviews.filter(review => 
+            review.state === 'APPROVED' && 
+            review.user.login !== context.payload.pull_request.user.login
+          );
+          
+          console.log(`Found ${approvals.length} approvals`);
+          
+          // Check if PR author is trying to approve their own PR
+          const selfApprovals = reviews.filter(review => 
+            review.state === 'APPROVED' && 
+            review.user.login === context.payload.pull_request.user.login
+          );
+          
+          if (selfApprovals.length > 0) {
+            console.log('Warning: PR author cannot approve their own PR');
+          }
+          
+          core.setOutput('approved', approvals.length > 0 ? 'true' : 'false');
+          core.setOutput('approval_count', approvals.length);
+
+    - name: Check CI status
+      id: check-ci
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: checkRuns } = await github.rest.checks.listForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.payload.pull_request.head.sha
+          });
+          
+          const requiredChecks = ['Test & Build']; // Add other required check names here
+          let allPassed = true;
+          
+          for (const checkName of requiredChecks) {
+            const check = checkRuns.check_runs.find(run => run.name.includes(checkName));
+            if (!check || check.conclusion !== 'success') {
+              allPassed = false;
+              console.log(`Required check "${checkName}" not passed. Status: ${check?.conclusion || 'not found'}`);
+            }
+          }
+          
+          core.setOutput('ci_passed', allPassed ? 'true' : 'false');
+
+    - name: Auto-merge approved release PR
+      if: steps.check-approval.outputs.approved == 'true' && steps.check-ci.outputs.ci_passed == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          console.log('All conditions met. Auto-merging release PR...');
+          
+          try {
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              commit_title: `${context.payload.pull_request.title} (#${context.payload.pull_request.number})`,
+              merge_method: 'merge' // or 'squash' or 'rebase'
+            });
+            
+            console.log('✅ Release PR merged successfully!');
+            console.log('🚀 Release workflow will trigger automatically');
+            
+            // Add a comment to the PR
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `🤖 **Auto-merged release PR**\n\n✅ All requirements met:\n- PR approved by: ${steps.check-approval.outputs.approval_count} reviewer(s)\n- All CI checks passed\n- Release workflow will trigger automatically\n\n🚀 The release will be published shortly!`
+            });
+            
+          } catch (error) {
+            console.error('❌ Failed to merge PR:', error);
+            
+            // Add a comment about the failure
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `🤖 **Auto-merge failed**\n\n❌ Could not automatically merge this release PR.\n\nError: ${error.message}\n\nPlease merge manually or check the workflow logs.`
+            });
+            
+            throw error;
+          }
+
+    - name: Comment on PR if not ready
+      if: steps.check-approval.outputs.approved != 'true' || steps.check-ci.outputs.ci_passed != 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const approved = steps.check-approval.outputs.approved === 'true';
+          const ciPassed = steps.check-ci.outputs.ci_passed === 'true';
+          
+          let message = '🤖 **Release PR Status**\n\n';
+          
+          message += approved ? '✅ PR is approved\n' : '⏳ Waiting for PR approval\n';
+          message += ciPassed ? '✅ All CI checks passed\n' : '⏳ Waiting for CI checks to pass\n';
+          
+          if (!approved || !ciPassed) {
+            message += '\n🔄 This PR will be **automatically merged** once:\n';
+            if (!approved) message += '- At least 1 reviewer approves the PR\n';
+            if (!ciPassed) message += '- All required CI checks pass\n';
+            message += '\n🚀 After merge, the release will be published automatically!';
+          }
+          
+          // Check if we already commented
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.payload.pull_request.number
+          });
+          
+          const botComments = comments.filter(comment => 
+            comment.user.login === 'github-actions[bot]' && 
+            comment.body.includes('Release PR Status')
+          );
+          
+          if (botComments.length > 0) {
+            // Update the existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComments[0].id,
+              body: message
+            });
+          } else {
+            // Create a new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: message
+            });
+          }

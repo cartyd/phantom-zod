@@ -16,7 +16,8 @@ This interactive script will:
 3. 🧪 **Run all tests** to ensure quality
 4. 📝 **Update version** in package.json
 5. 📚 **Generate changelog** (optional, via GitHub workflow)
-6. 🚀 **Trigger automated release** when you push
+6. 🔄 **Create release PR** for review and approval
+7. 🤖 **Auto-merge** when approved (triggers release)
 
 ## 📋 Release Options
 
@@ -38,18 +39,39 @@ npm run release:minor    # 1.5.0 → 1.6.0
 npm run release:major    # 1.5.0 → 2.0.0
 ```
 
-## 🤖 What Happens Automatically
+## 🔄 Complete Release Workflow
 
-Once you push the version change, GitHub Actions will:
+The full automated release process works like this:
 
-1. **🔍 Detect version change** - Compares current vs previous package.json
-2. **✨ Format code** - Runs Prettier to ensure consistent formatting
-3. **🔍 Run linter** - ESLint checks for code quality
-4. **🧪 Run tests** - Full test suite across Node 18, 20, 22
-5. **🏗️ Build package** - TypeScript compilation + asset copying
-6. **📦 Publish to npm** - Automatic publishing with NPM_TOKEN
-7. **🏷️ Create git tag** - Tags the release (e.g., v1.5.1)
-8. **📋 Create GitHub release** - With notes from CHANGELOG.md
+### 📝 Step 1: Create Release PR
+1. **Release script** runs quality checks (format, lint, test)
+2. **Creates release branch** (`release/v1.5.1`)
+3. **Pushes branch** and creates PR to main
+4. **PR includes** version bump and formatting changes
+
+### ✅ Step 2: Review & Approval
+1. **Review the PR** - Check version, changelog, changes
+2. **Approve the PR** - At least 1 approval required
+3. **CI checks pass** - All tests and linting must pass
+
+### 🤖 Step 3: Auto-merge & Release
+Once approved and CI passes, GitHub Actions will:
+
+1. **🔀 Auto-merge PR** - Automatically merges to main
+2. **🔍 Detect version change** - Triggers release workflow
+3. **✨ Format code** - Runs Prettier to ensure consistency
+4. **🔍 Run linter** - ESLint checks for code quality
+5. **🧪 Run tests** - Full test suite across Node 18, 20, 22
+6. **🏗️ Build package** - TypeScript compilation + asset copying
+7. **📦 Publish to npm** - Automatic publishing with NPM_TOKEN
+8. **🏷️ Create git tag** - Tags the release (e.g., v1.5.1)
+9. **📋 Create GitHub release** - With notes from CHANGELOG.md
+
+### 🎉 Step 4: Release Complete!
+- **Package published** to npm registry
+- **GitHub release** created with changelog
+- **Git tag** created for the version
+- **All done automatically!** 🚀
 
 ## 📚 Changelog Management
 

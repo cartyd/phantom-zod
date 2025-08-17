@@ -148,6 +148,11 @@ if [[ $UPDATE_CHANGELOG != [nN] ]]; then
     fi
 fi
 
+# Create release branch
+RELEASE_BRANCH="release/v$NEW_VERSION"
+print_status "Creating release branch: $RELEASE_BRANCH"
+git checkout -b "$RELEASE_BRANCH"
+
 # Create release commit
 print_status "Creating release commit..."
 git add package.json
@@ -155,30 +160,84 @@ if [ -f "CHANGELOG.md" ]; then
     git add CHANGELOG.md
 fi
 
+# Add any formatting changes
+if [ -n "$(git status --porcelain)" ]; then
+    git add .
+fi
+
 COMMIT_MESSAGE="chore(release): bump version to v$NEW_VERSION"
 git commit -m "$COMMIT_MESSAGE"
 
-# Ask before pushing
+# Ask before creating PR
 echo ""
-print_status "Ready to push release commit. This will trigger the automated release process:"
-echo "  1. Build and test the package"
-echo "  2. Publish to npm"
-echo "  3. Create GitHub release and tag"
+print_status "Ready to create release PR. This will:"
+echo "  1. Push release branch to origin"
+echo "  2. Create PR for review and approval"
+echo "  3. Once approved and merged, automatic release will trigger"
 echo ""
-read -p "Push to origin and trigger release? (y/N): " PUSH_RELEASE
+read -p "Create release PR? (y/N): " CREATE_PR
 
-if [[ $PUSH_RELEASE == [yY] ]]; then
-    print_status "Pushing to origin..."
-    git push origin $CURRENT_BRANCH
+if [[ $CREATE_PR == [yY] ]]; then
+    print_status "Pushing release branch..."
+    git push origin "$RELEASE_BRANCH"
     
-    print_success "Release process initiated!"
-    print_status "You can monitor the progress at: https://github.com/cartyd/phantom-zod/actions"
-    print_status "The release should be available shortly at:"
-    print_status "  - npm: https://www.npmjs.com/package/phantom-zod"
-    print_status "  - GitHub: https://github.com/cartyd/phantom-zod/releases"
+    print_status "Creating pull request..."
+    if command -v gh &> /dev/null; then
+        gh pr create \
+            --title "🚀 Release v$NEW_VERSION" \
+            --body "## 🚀 Release v$NEW_VERSION
+
+This PR contains the version bump for releasing v$NEW_VERSION.
+
+### 📋 Changes
+- Updated version in package.json: $(git show HEAD~1:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).version") → $NEW_VERSION
+- Code formatting applied via Prettier
+- All tests passing ✅
+- All linting checks passed ✅
+
+### 🤖 What happens after merge:
+1. **Automatic release workflow** will trigger
+2. **Build and test** the package
+3. **Publish to npm** automatically
+4. **Create GitHub release** with changelog
+5. **Tag the release** (v$NEW_VERSION)
+
+### ✅ Pre-merge checklist:
+- [ ] Version bump is correct
+- [ ] CHANGELOG.md is updated (if applicable)
+- [ ] All CI checks pass
+- [ ] Ready for release
+
+**Once approved and merged, the release will be automatic!** 🚀" \
+            --base main \
+            --head "$RELEASE_BRANCH"
+        
+        PR_URL=$(gh pr view --json url -q .url 2>/dev/null || echo "")
+        
+        print_success "Release PR created successfully!"
+        if [ -n "$PR_URL" ]; then
+            print_status "PR URL: $PR_URL"
+        fi
+        print_status "Next steps:"
+        print_status "  1. Review the PR for accuracy"
+        print_status "  2. Approve and merge the PR"
+        print_status "  3. GitHub Actions will automatically:"
+        print_status "     • Build and test the package"
+        print_status "     • Publish to npm"
+        print_status "     • Create GitHub release and tag"
+        
+    else
+        print_error "GitHub CLI not found. Please install 'gh' CLI to create the PR automatically."
+        print_warning "Manual PR creation needed:"
+        print_warning "  1. Go to GitHub and create a PR from $RELEASE_BRANCH to main"
+        print_warning "  2. Use title: 🚀 Release v$NEW_VERSION"
+    fi
 else
-    print_warning "Release commit created but not pushed."
-    print_warning "To complete the release, run: git push origin $CURRENT_BRANCH"
+    print_warning "Release branch created but PR not created."
+    print_warning "To create the PR manually:"
+    print_warning "  1. Push branch: git push origin $RELEASE_BRANCH"
+    print_warning "  2. Create PR from $RELEASE_BRANCH to main"
+    print_warning "Or run: gh pr create --title '🚀 Release v$NEW_VERSION' --base main --head $RELEASE_BRANCH"
 fi
 
 print_success "Release preparation complete!"
