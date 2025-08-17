@@ -1,0 +1,135 @@
+name: Auto-Generate Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to generate changelog for (e.g., 1.5.1)'
+        required: true
+        type: string
+      from_tag:
+        description: 'Previous version tag to compare from (e.g., v1.5.0)'
+        required: false
+        type: string
+
+jobs:
+  generate-changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for changelog generation
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        
+    - name: Generate changelog entry
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        FROM_TAG="${{ github.event.inputs.from_tag }}"
+        
+        # If no from_tag specified, get the latest tag
+        if [ -z "$FROM_TAG" ]; then
+          FROM_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        fi
+        
+        echo "## [$VERSION] - $(date +%Y-%m-%d)" > new_changelog.md
+        echo "" >> new_changelog.md
+        
+        # Get commits since last tag
+        if [ -n "$FROM_TAG" ]; then
+          echo "### Changes since $FROM_TAG:" >> new_changelog.md
+          echo "" >> new_changelog.md
+          
+          # Get conventional commit types
+          git log "$FROM_TAG"..HEAD --pretty=format:"%s" --no-merges | while read commit; do
+            if [[ $commit =~ ^feat.*: ]]; then
+              echo "- ✨ **Added**: ${commit#feat*: }" >> new_changelog.md
+            elif [[ $commit =~ ^fix.*: ]]; then
+              echo "- 🐛 **Fixed**: ${commit#fix*: }" >> new_changelog.md
+            elif [[ $commit =~ ^docs.*: ]]; then
+              echo "- 📚 **Documentation**: ${commit#docs*: }" >> new_changelog.md
+            elif [[ $commit =~ ^test.*: ]]; then
+              echo "- 🧪 **Testing**: ${commit#test*: }" >> new_changelog.md
+            elif [[ $commit =~ ^refactor.*: ]]; then
+              echo "- ♻️ **Refactored**: ${commit#refactor*: }" >> new_changelog.md
+            elif [[ $commit =~ ^perf.*: ]]; then
+              echo "- ⚡ **Performance**: ${commit#perf*: }" >> new_changelog.md
+            elif [[ $commit =~ ^chore.*: ]]; then
+              echo "- 🔧 **Maintenance**: ${commit#chore*: }" >> new_changelog.md
+            else
+              echo "- 📝 **Changed**: $commit" >> new_changelog.md
+            fi
+          done
+        else
+          echo "- 🎉 **Initial release**" >> new_changelog.md
+        fi
+        
+        echo "" >> new_changelog.md
+        
+        # If CHANGELOG.md exists, prepend to it, otherwise create it
+        if [ -f "CHANGELOG.md" ]; then
+          # Read existing changelog (skip the first line if it's the title)
+          if head -1 CHANGELOG.md | grep -q "^# Changelog"; then
+            tail -n +2 CHANGELOG.md > existing_changelog.md
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "All notable changes to this project will be documented in this file." >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)," >> CHANGELOG.md
+            echo "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)." >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            cat new_changelog.md >> CHANGELOG.md
+            cat existing_changelog.md >> CHANGELOG.md
+          else
+            cat new_changelog.md CHANGELOG.md > temp_changelog.md
+            mv temp_changelog.md CHANGELOG.md
+          fi
+        else
+          # Create new CHANGELOG.md with header
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "All notable changes to this project will be documented in this file." >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)," >> CHANGELOG.md
+          echo "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)." >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          cat new_changelog.md >> CHANGELOG.md
+        fi
+        
+        # Clean up temporary files
+        rm -f new_changelog.md existing_changelog.md
+        
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "docs: Update CHANGELOG.md for v${{ github.event.inputs.version }}"
+        title: "📝 Update CHANGELOG.md for v${{ github.event.inputs.version }}"
+        body: |
+          ## 📝 Automatic Changelog Update
+          
+          This PR updates the CHANGELOG.md file with the changes for version **v${{ github.event.inputs.version }}**.
+          
+          ### What's included:
+          - Automatically generated changelog entries based on commit messages
+          - Proper semantic versioning format
+          - Conventional commit categorization
+          
+          ### Review needed:
+          - [ ] Verify changelog entries are accurate
+          - [ ] Add any missing important changes
+          - [ ] Update package.json version if not already done
+          
+          Once approved and merged, the release workflow will automatically:
+          1. Build and test the package
+          2. Publish to npm (if version changed)
+          3. Create GitHub release with changelog notes
+          4. Tag the release
+        branch: changelog/v${{ github.event.inputs.version }}
+        delete-branch: true

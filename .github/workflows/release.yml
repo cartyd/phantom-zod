@@ -59,6 +59,12 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Format code with Prettier
+      run: npm run format
+      
+    - name: Run linter
+      run: npm run lint
+      
     - name: Run tests
       run: npm run test
       
@@ -80,11 +86,25 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Create GitHub Release
-      uses: actions/create-release@v1
+      run: |
+        # Check if CHANGELOG.md exists
+        if [ -f "CHANGELOG.md" ]; then
+          # Extract current version's release notes from CHANGELOG.md
+          VERSION_WITHOUT_V="${needs.check-version.outputs.new-version#v}"
+          RELEASE_NOTES=$(awk -v version="## [${VERSION_WITHOUT_V}]" '/^## \[/ { if (p) { exit }; if ($0 ~ version) { p=1; next } } p' CHANGELOG.md)
+          
+          # Create temporary file for release notes
+          echo "$RELEASE_NOTES" > release_notes.md
+          
+          # Create GitHub release with notes from CHANGELOG.md
+          gh release create ${{ needs.check-version.outputs.new-version }} \
+            --title "Release ${{ needs.check-version.outputs.new-version }}" \
+            --notes-file release_notes.md
+        else
+          # Create GitHub release with auto-generated notes if no CHANGELOG.md exists
+          gh release create ${{ needs.check-version.outputs.new-version }} \
+            --title "Release ${{ needs.check-version.outputs.new-version }}" \
+            --generate-notes
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ needs.check-version.outputs.new-version }}
-        release_name: Release ${{ needs.check-version.outputs.new-version }}
-        draft: false
-        prerelease: false
