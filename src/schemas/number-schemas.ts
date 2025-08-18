@@ -30,13 +30,13 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   // Helper function to add min/max constraints using refine
-  const addMinMaxConstraints = (
-    schema: any,
+  const addMinMaxConstraints = <TSchema extends z.ZodTypeAny>(
+    schema: TSchema,
     min?: number,
     max?: number,
     msg: string = "Value",
     msgType: MsgType = MsgType.FieldName,
-  ) => {
+  ): TSchema => {
     let constrainedSchema = schema;
 
     if (min !== undefined) {
@@ -53,7 +53,7 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       );
     }
 
-    return constrainedSchema;
+    return constrainedSchema as TSchema;
   };
 
   // Helper function to extract and provide default options with improved typing
@@ -74,7 +74,7 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     options: NumberSchemaOptions,
     isRequired: boolean,
     asString: boolean = false,
-  ) => {
+  ): z.ZodTypeAny => {
     const { msg, msgType, min, max } = extractOptions(options);
 
     // Create strict number schema with custom validation

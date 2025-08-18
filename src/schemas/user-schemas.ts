@@ -568,7 +568,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   ) =>
     emailSchemas
       .EmailRequired({ msg, msgType })
-      .refine((email) => !existingEmails.includes(email.toLowerCase()), {
+      .refine((email) => !existingEmails.includes((email as string).toLowerCase()), {
         message: messageHandler.formatErrorMessage({
           group: "user",
           messageKey: "emailAlreadyExists",
