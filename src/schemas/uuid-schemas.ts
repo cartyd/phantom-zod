@@ -125,7 +125,9 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
    * Validates UUID format and returns a formatted error message using invalidFormat.
    * This utility function demonstrates usage of the invalidFormat message key.
    */
-  const getUuidFormatErrorMessage = (options: BaseSchemaOptions = {}) => {
+  const getUuidFormatErrorMessage = (
+    options: BaseSchemaOptions = {},
+  ): string => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
     return messageHandler.formatErrorMessage({
       group: "uuid",
@@ -139,7 +141,9 @@ export const createUuidSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Creates a strict UUID validator that uses invalidFormat message for format errors.
    */
-  const UuidWithFormatError = (options: BaseSchemaOptions = {}) => {
+  const UuidWithFormatError = (
+    options: BaseSchemaOptions = {},
+  ): z.ZodTypeAny => {
     const { msg = "ID", msgType = MsgType.FieldName } = options;
     return z.uuid({
       message: messageHandler.formatErrorMessage({

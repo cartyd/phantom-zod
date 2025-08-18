@@ -42,7 +42,7 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse(false);     // false
    * schema.parse(undefined); // undefined
    */
-  const BooleanOptional = (options: BaseSchemaOptions = {}) => {
+  const BooleanOptional = (options: BaseSchemaOptions = {}): z.ZodTypeAny => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
     return z
       .unknown()
@@ -72,7 +72,7 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse(false); // false
    * schema.parse(null);  // throws ZodError
    */
-  const BooleanRequired = (options: BaseSchemaOptions = {}) => {
+  const BooleanRequired = (options: BaseSchemaOptions = {}): z.ZodTypeAny => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
     return z
       .unknown()
@@ -104,7 +104,9 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("false");  // "false"
    * schema.parse("yes");    // throws ZodError
    */
-  const BooleanStringRequired = (options: BaseSchemaOptions = {}) => {
+  const BooleanStringRequired = (
+    options: BaseSchemaOptions = {},
+  ): z.ZodTypeAny => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
     return baseBooleanStringSchema
       .refine(
@@ -145,7 +147,9 @@ export const createBooleanSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("false");   // "false"
    * schema.parse(undefined); // undefined
    */
-  const BooleanStringOptional = (options: BaseSchemaOptions = {}) => {
+  const BooleanStringOptional = (
+    options: BaseSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return BooleanStringRequired(options).optional();
   };
 

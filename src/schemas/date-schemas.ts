@@ -55,7 +55,7 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse(undefined);      // ✓ Valid (returns undefined)
    * ```
    */
-  const zDateOptional = (options: DateSchemaOptions = {}) => {
+  const zDateOptional = (options: DateSchemaOptions = {}): z.ZodTypeAny => {
     const { min, max } = options;
     let baseSchema = z.union([
       z.date({
@@ -97,7 +97,7 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse(undefined);      // ✗ Throws error
    * ```
    */
-  const zDateRequired = (options: DateSchemaOptions = {}) => {
+  const zDateRequired = (options: DateSchemaOptions = {}): z.ZodTypeAny => {
     const { min, max } = options;
     let schema = z.union([
       z.date({
@@ -143,7 +143,9 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("invalid-date");          // ✗ Throws error
    * ```
    */
-  const zDateTimeStringOptional = (options: DateSchemaOptions = {}) => {
+  const zDateTimeStringOptional = (
+    options: DateSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return makeOptionalSimple(
       z.union([
         z.string().datetime({
@@ -179,7 +181,9 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("invalid-date");          // ✗ Throws error
    * ```
    */
-  const zDateTimeStringRequired = (options: DateSchemaOptions = {}) => {
+  const zDateTimeStringRequired = (
+    options: DateSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return z.union([
       z.string().datetime({
         message: createErrorMessage("mustBeValidDateTime", options),

@@ -286,7 +286,7 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
    * Optional user profile schema.
    */
-  const UserOptional = (options: BaseSchemaOptions = {}) => {
+  const UserOptional = (options: BaseSchemaOptions = {}): z.ZodTypeAny => {
     const { msg = "User", msgType = MsgType.FieldName } = options;
     return z
       .object({
@@ -568,15 +568,18 @@ export const createUserSchemas = (messageHandler: ErrorMessageFormatter) => {
   ) =>
     emailSchemas
       .EmailRequired({ msg, msgType })
-      .refine((email) => !existingEmails.includes(email.toLowerCase()), {
-        message: messageHandler.formatErrorMessage({
-          group: "user",
-          messageKey: "emailAlreadyExists",
-          msg,
-          msgType,
-          params: { email: "example@domain.com" }, // Will be replaced with actual email
-        }),
-      });
+      .refine(
+        (email) => !existingEmails.includes((email as string).toLowerCase()),
+        {
+          message: messageHandler.formatErrorMessage({
+            group: "user",
+            messageKey: "emailAlreadyExists",
+            msg,
+            msgType,
+            params: { email: "example@domain.com" }, // Will be replaced with actual email
+          }),
+        },
+      );
 
   /**
    * Username uniqueness validation schema.

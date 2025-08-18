@@ -56,6 +56,10 @@ const result = email.parse("user@example.com"); // ✅ 'user@example.com'
 // Or use the simplified string parameter overload
 const emailSimple = pz.EmailRequired("Email");
 const resultSimple = emailSimple.parse("user@example.com"); // ✅ 'user@example.com'
+
+// ✨ NEW: Chainable .default() support!
+const emailWithDefault = pz.EmailRequired("Email").default("user@example.com");
+const defaultResult = emailWithDefault.parse(undefined); // ✅ 'user@example.com'
 ```
 
 ## String Parameter Overloads
@@ -136,6 +140,87 @@ const phoneNational = pz.PhoneRequired({
 ### Backwards Compatibility
 
 The string parameter overloads are fully backwards compatible. All existing code using options objects will continue to work exactly as before. The string overloads are additional convenience methods that complement the existing API.
+
+## ✨ Chainable .default() Support
+
+Phantom Zod v1.5.1+ fully supports Zod's `.default()` chaining on all schema types! This was a critical TypeScript fix that enables the fluent API experience users expect.
+
+### Basic .default() Usage
+
+```typescript
+import { pz } from "phantom-zod";
+
+// All schemas now support .default() chaining:
+const userSchema = z.object({
+  name: pz.StringRequired("Full Name").default("Anonymous"),
+  email: pz.EmailRequired("Email").default("user@example.com"),
+  phone: pz.PhoneOptional("Phone").default("+1234567890"),
+  website: pz.UrlOptional("Website").default("https://example.com"),
+  isActive: pz.BooleanRequired("Active").default(true),
+  age: pz.NumberOptional("Age").default(25),
+  id: pz.UuidV4Required("User ID").default(crypto.randomUUID()),
+  role: pz.EnumRequired(["user", "admin"], "Role").default("user"),
+});
+
+// Parse with missing fields - defaults will be applied
+const result = userSchema.parse({
+  email: "john@example.com",
+  // All other fields will use their default values
+});
+
+console.log(result);
+// ✅ Output:
+// {
+//   name: "Anonymous",
+//   email: "john@example.com", 
+//   phone: "+1234567890",
+//   website: "https://example.com",
+//   isActive: true,
+//   age: 25,
+//   id: "550e8400-e29b-41d4-a716-446655440000",
+//   role: "user"
+// }
+```
+
+### Complex Chaining
+
+```typescript
+// Combine .default() with other Zod methods:
+const complexSchema = z.object({
+  title: pz.StringRequired("Title")
+    .default("Untitled")
+    .min(3)
+    .max(100),
+    
+  price: pz.NumberRequired("Price")
+    .default(0)
+    .min(0)
+    .max(10000),
+    
+  tags: pz.StringArrayOptional("Tags")
+    .default([])
+    .max(10),
+    
+  metadata: z.object({
+    createdAt: pz.DateStringRequired("Created Date").default(new Date().toISOString()),
+    updatedAt: pz.DateStringOptional("Updated Date"), // Optional - no default needed
+  }),
+});
+```
+
+### Why This Matters
+
+Before this fix, TypeScript compilation would fail when trying to chain `.default()` due to return type inference issues. Now you get the full power of Zod's fluent API with all Phantom Zod schemas!
+
+```typescript
+// ❌ Before v1.5.1 - TypeScript errors:
+// const schema = pz.EmailRequired("Email").default("test@example.com");
+//                                         ^^^^^^^ 
+// Error: Property 'default' does not exist on type...
+
+// ✅ Now works perfectly:
+const schema = pz.EmailRequired("Email").default("test@example.com");
+```
 
 ## Using the `pz` Namespace
 
