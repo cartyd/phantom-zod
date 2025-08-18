@@ -143,7 +143,9 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("invalid-date");          // ✗ Throws error
    * ```
    */
-  const zDateTimeStringOptional = (options: DateSchemaOptions = {}): z.ZodTypeAny => {
+  const zDateTimeStringOptional = (
+    options: DateSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return makeOptionalSimple(
       z.union([
         z.string().datetime({
@@ -179,7 +181,9 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("invalid-date");          // ✗ Throws error
    * ```
    */
-  const zDateTimeStringRequired = (options: DateSchemaOptions = {}): z.ZodTypeAny => {
+  const zDateTimeStringRequired = (
+    options: DateSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return z.union([
       z.string().datetime({
         message: createErrorMessage("mustBeValidDateTime", options),

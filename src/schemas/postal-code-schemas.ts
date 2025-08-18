@@ -54,7 +54,10 @@ export const createPostalCodeSchemas = (
    * @param msgType - The type of message formatting to use
    * @returns Base Zod string schema with error message
    */
-  const createBasePostalCodeSchema = (msg: string, msgType: MsgType) => {
+  const createBasePostalCodeSchema = (
+    msg: string,
+    msgType: MsgType,
+  ): z.ZodTypeAny => {
     return z.string({
       message: messageHandler.formatErrorMessage({
         group: "postalCode",
@@ -88,10 +91,12 @@ export const createPostalCodeSchemas = (
    * schema.parse(undefined);   // undefined
    * schema.parse("00000");     // throws ZodError
    */
-  const PostalCodeOptional = (options: PostalCodeSchemaOptions = {}) => {
+  const PostalCodeOptional = (
+    options: PostalCodeSchemaOptions = {},
+  ): z.ZodTypeAny => {
     const { msg = "Postal Code", msgType = MsgType.FieldName } = options;
 
-    return createBasePostalCodeSchema(msg, msgType)
+    return (createBasePostalCodeSchema(msg, msgType) as z.ZodString)
       .regex(US_ZIP_CODE_PATTERN, {
         message: messageHandler.formatErrorMessage({
           group: "postalCode",
@@ -135,11 +140,13 @@ export const createPostalCodeSchemas = (
    * schema.parse("");         // throws ZodError
    * schema.parse("00000");     // throws ZodError
    */
-  const PostalCodeRequired = (options: PostalCodeSchemaOptions = {}) => {
+  const PostalCodeRequired = (
+    options: PostalCodeSchemaOptions = {},
+  ): z.ZodTypeAny => {
     const { msg = "Postal Code", msgType = MsgType.FieldName } = options;
 
-    return createBasePostalCodeSchema(msg, msgType)
-      .refine((val) => val.trim().length > 0, {
+    return (createBasePostalCodeSchema(msg, msgType) as z.ZodString)
+      .refine((val) => (val as string).trim().length > 0, {
         message: messageHandler.formatErrorMessage({
           group: "postalCode",
           messageKey: "required",
