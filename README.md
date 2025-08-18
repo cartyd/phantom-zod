@@ -203,7 +203,7 @@ const complexSchema = z.object({
     
   metadata: z.object({
     createdAt: pz.DateStringRequired("Created Date").default(new Date().toISOString()),
-    updatedAt: pz.DateStringOptional("Updated Date").default(undefined),
+    updatedAt: pz.DateStringOptional("Updated Date"), // Optional - no default needed
   }),
 });
 ```
