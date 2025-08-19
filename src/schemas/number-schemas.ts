@@ -645,9 +645,40 @@ function createSafeIntegerOptionalOverload(
   return defaultNumberSchemas.SafeIntegerOptional(msgOrOptions);
 }
 
+// Create overloads for NumberOptional and NumberRequired
+function createNumberOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NumberOptional>;
+function createNumberOptionalOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NumberOptional>;
+function createNumberOptionalOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NumberOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NumberOptional({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NumberOptional(msgOrOptions);
+}
+
+function createNumberRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultNumberSchemas.NumberRequired>;
+function createNumberRequiredOverload(
+  options?: NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NumberRequired>;
+function createNumberRequiredOverload(
+  msgOrOptions?: string | NumberSchemaOptions,
+): ReturnType<typeof defaultNumberSchemas.NumberRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultNumberSchemas.NumberRequired({ msg: msgOrOptions });
+  }
+  return defaultNumberSchemas.NumberRequired(msgOrOptions);
+}
+
 // Export schemas with string parameter overloads
-export const NumberOptional = defaultNumberSchemas.NumberOptional;
-export const NumberRequired = defaultNumberSchemas.NumberRequired;
+export const NumberOptional = createNumberOptionalOverload;
+export const NumberRequired = createNumberRequiredOverload;
 export const NumberStringOptional = defaultNumberSchemas.NumberStringOptional;
 export const NumberStringRequired = defaultNumberSchemas.NumberStringRequired;
 export const IntegerRequired = createIntegerRequiredOverload;

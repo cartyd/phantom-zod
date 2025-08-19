@@ -390,7 +390,82 @@ describe("Number Schemas", () => {
     });
   });
 
-  // Tests for specialized number schema string parameter overloads
+  // Tests for basic and specialized number schema string parameter overloads
+  describe("Number Schema String Parameter Overloads", () => {
+    describe("NumberOptional overloads", () => {
+      it("should work with string parameter (new simple syntax)", () => {
+        const schema = NumberOptional('Score');
+        
+        // Should work with valid values
+        expect(schema.parse(123)).toBe(123);
+        expect(schema.parse(123.45)).toBe(123.45);
+        expect(schema.parse('456')).toBe(456);
+        expect(schema.parse(undefined)).toBeUndefined();
+        
+        // Should use the string as field name in error messages
+        expect(() => schema.parse('invalid')).toThrow('Score must be a number');
+      });
+
+      it("should still work with options object (backward compatibility)", () => {
+        const schema = NumberOptional({ msg: 'Player Score', min: 0, max: 100 });
+        
+        expect(schema.parse(50)).toBe(50);
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse(150)).toThrow('Player Score');
+      });
+
+      it("should work with no parameters (default usage)", () => {
+        const schema = NumberOptional();
+        
+        expect(schema.parse(123)).toBe(123);
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(() => schema.parse('invalid')).toThrow('Value must be a number');
+      });
+
+      it("should work with constraints via options object", () => {
+        const schema = NumberOptional({ msg: 'Limit', min: 1, max: 100 }).default(50);
+        
+        expect(schema.parse(25)).toBe(25);
+        expect(schema.parse(undefined)).toBe(50);
+        expect(() => schema.parse(150)).toThrow('Limit must be at most 100');
+      });
+    });
+
+    describe("NumberRequired overloads", () => {
+      it("should work with string parameter (new simple syntax)", () => {
+        const schema = NumberRequired('Score');
+        
+        // Should work with valid values
+        expect(schema.parse(123)).toBe(123);
+        expect(schema.parse(123.45)).toBe(123.45);
+        expect(schema.parse('456')).toBe(456);
+        
+        // Should use the string as field name in error messages
+        expect(() => schema.parse('invalid')).toThrow('Score must be a number');
+      });
+
+      it("should still work with options object (backward compatibility)", () => {
+        const schema = NumberRequired({ msg: 'Player Score', min: 0, max: 100 });
+        
+        expect(schema.parse(50)).toBe(50);
+        expect(() => schema.parse(150)).toThrow('Player Score');
+      });
+
+      it("should work with no parameters (default usage)", () => {
+        const schema = NumberRequired();
+        
+        expect(schema.parse(123)).toBe(123);
+        expect(() => schema.parse('invalid')).toThrow('Value must be a number');
+      });
+
+      it("should work with constraints via options object", () => {
+        const schema = NumberRequired({ msg: 'Limit', min: 1, max: 100 });
+        
+        expect(schema.parse(25)).toBe(25);
+        expect(() => schema.parse(150)).toThrow('Limit must be at most 100');
+      });
+    });
+
   describe("Specialized Number Schema String Parameter Overloads", () => {
     describe("IntegerRequired overloads", () => {
       it("should work with string parameter (new simple syntax)", () => {
@@ -614,6 +689,7 @@ describe("Number Schemas", () => {
         expect(positiveSchema2.parse(100)).toBe(100);
       });
     });
+  });
   });
 });
 
