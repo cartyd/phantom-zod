@@ -377,6 +377,104 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   /**
+   * Creates an optional strict timezone-aware datetime schema
+   * 
+   * Only accepts datetime strings with explicit timezone information.
+   * Rejects naive datetime strings and Date objects to ensure timezone awareness.
+   *
+   * @param options - Configuration options for timezone datetime validation
+   * @returns Zod schema that accepts only timezone-aware datetime strings or undefined
+   *
+   * @example
+   * ```typescript
+   * const schema = zTimezoneDateTimeOptional();
+   * schema.parse("2023-01-01T10:30:00Z");      // ✓ Valid (UTC)
+   * schema.parse("2023-01-01T10:30:00+05:00"); // ✓ Valid (with offset)
+   * schema.parse("2023-01-01T10:30:00-08:00"); // ✓ Valid (with offset)
+   * schema.parse(undefined);                    // ✓ Valid (optional)
+   * schema.parse("2023-01-01T10:30:00");       // ✗ Rejects (no timezone)
+   * schema.parse(new Date());                   // ✗ Rejects (Date object)
+   * ```
+   */
+  const zTimezoneDateTimeOptional = (
+    options: DateSchemaOptions = {},
+  ): z.ZodTypeAny => {
+    return makeOptionalSimple(
+      z
+        .string()
+        .refine(
+          (val) => {
+            // Check if string matches ISO 8601 with timezone
+            // Must have T separator and timezone info (Z or ±HH:MM)
+            const timezoneRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/;
+            return timezoneRegex.test(val);
+          },
+          {
+            message: createErrorMessage("mustIncludeTimezone", options),
+          },
+        )
+        .refine(
+          (val) => {
+            // Validate that it's actually a valid datetime
+            const date = new Date(val);
+            return !isNaN(date.getTime());
+          },
+          {
+            message: createErrorMessage("mustBeValidDateTime", options),
+          },
+        ),
+    );
+  };
+
+  /**
+   * Creates a required strict timezone-aware datetime schema
+   * 
+   * Only accepts datetime strings with explicit timezone information.
+   * Rejects naive datetime strings and Date objects to ensure timezone awareness.
+   *
+   * @param options - Configuration options for timezone datetime validation
+   * @returns Zod schema that accepts only timezone-aware datetime strings
+   *
+   * @example
+   * ```typescript
+   * const schema = zTimezoneDateTimeRequired();
+   * schema.parse("2023-01-01T10:30:00Z");      // ✓ Valid (UTC)
+   * schema.parse("2023-01-01T10:30:00+05:00"); // ✓ Valid (with offset)
+   * schema.parse("2023-01-01T10:30:00-08:00"); // ✓ Valid (with offset)
+   * schema.parse(undefined);                    // ✗ Rejects (required)
+   * schema.parse("2023-01-01T10:30:00");       // ✗ Rejects (no timezone)
+   * schema.parse(new Date());                   // ✗ Rejects (Date object)
+   * ```
+   */
+  const zTimezoneDateTimeRequired = (
+    options: DateSchemaOptions = {},
+  ): z.ZodTypeAny => {
+    return z
+      .string()
+      .refine(
+        (val) => {
+          // Check if string matches ISO 8601 with timezone
+          // Must have T separator and timezone info (Z or ±HH:MM)
+          const timezoneRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/;
+          return timezoneRegex.test(val);
+        },
+        {
+          message: createErrorMessage("mustIncludeTimezone", options),
+        },
+      )
+      .refine(
+        (val) => {
+          // Validate that it's actually a valid datetime
+          const date = new Date(val);
+          return !isNaN(date.getTime());
+        },
+        {
+          message: createErrorMessage("mustBeValidDateTime", options),
+        },
+      );
+  };
+
+  /**
    * Returns example date and time formats for user guidance
    *
    * @returns Object containing example formats for each supported type
@@ -384,15 +482,17 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @example
    * ```typescript
    * const examples = getDateExamples();
-   * console.log(examples.date);     // "2023-01-01"
-   * console.log(examples.dateTime); // "2023-01-01T10:30:00Z"
-   * console.log(examples.time);     // "10:30:00"
+   * console.log(examples.date);            // "2023-01-01"
+   * console.log(examples.dateTime);        // "2023-01-01T10:30:00Z"
+   * console.log(examples.timezoneDateTime); // "2023-01-01T10:30:00Z"
+   * console.log(examples.time);            // "10:30:00"
    * ```
    */
   const getDateExamples = () => {
     return {
       date: "2023-01-01",
       dateTime: "2023-01-01T10:30:00Z",
+      timezoneDateTime: "2023-01-01T10:30:00Z",
       time: "10:30:00",
     };
   };
@@ -408,6 +508,8 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     DateTimeStringRequired: zDateTimeStringRequired,
     TimeStringOptional: zTimeStringOptional,
     TimeStringRequired: zTimeStringRequired,
+    TimezoneDateTimeOptional: zTimezoneDateTimeOptional,
+    TimezoneDateTimeRequired: zTimezoneDateTimeRequired,
     getDateExamples,
   };
 };
@@ -591,6 +693,36 @@ function createTimeStringRequiredOverload(
   return defaultDateSchemas.TimeStringRequired(msgOrOptions);
 }
 
+function createTimezoneDateTimeOptionalOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.TimezoneDateTimeOptional>;
+function createTimezoneDateTimeOptionalOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimezoneDateTimeOptional>;
+function createTimezoneDateTimeOptionalOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimezoneDateTimeOptional> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.TimezoneDateTimeOptional({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.TimezoneDateTimeOptional(msgOrOptions);
+}
+
+function createTimezoneDateTimeRequiredOverload(
+  msg: string,
+): ReturnType<typeof defaultDateSchemas.TimezoneDateTimeRequired>;
+function createTimezoneDateTimeRequiredOverload(
+  options?: DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimezoneDateTimeRequired>;
+function createTimezoneDateTimeRequiredOverload(
+  msgOrOptions?: string | DateSchemaOptions,
+): ReturnType<typeof defaultDateSchemas.TimezoneDateTimeRequired> {
+  if (typeof msgOrOptions === "string") {
+    return defaultDateSchemas.TimezoneDateTimeRequired({ msg: msgOrOptions });
+  }
+  return defaultDateSchemas.TimezoneDateTimeRequired(msgOrOptions);
+}
+
 // Export schemas with string parameter overloads
 export const DateOptional = createDateOptionalOverload;
 export const DateRequired = createDateRequiredOverload;
@@ -602,6 +734,8 @@ export const DateTimeStringOptional = createDateTimeStringOptionalOverload;
 export const DateTimeStringRequired = createDateTimeStringRequiredOverload;
 export const TimeStringOptional = createTimeStringOptionalOverload;
 export const TimeStringRequired = createTimeStringRequiredOverload;
+export const TimezoneDateTimeOptional = createTimezoneDateTimeOptionalOverload;
+export const TimezoneDateTimeRequired = createTimezoneDateTimeRequiredOverload;
 
 /**
  * Returns example date and time formats for user guidance

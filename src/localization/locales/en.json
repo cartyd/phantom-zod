@@ -116,6 +116,7 @@
     "mustBeValidDateTime": "must be a valid date and time",
     "invalidFormat": "has invalid format (expected: {format})",
     "invalidDateString": "is not a valid date string",
+    "mustIncludeTimezone": "must include timezone information (Z or ±HH:MM)",
     "examples": {
       "date": "YYYY-MM-DD",
       "dateTime": "YYYY-MM-DDTHH:mm:ssZ"

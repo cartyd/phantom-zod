@@ -373,6 +373,7 @@ export type EnumMessageParams = {
  * @property mustBeValidDateTime - Parameters for a message indicating the value must be a valid datetime (no additional data).
  * @property invalidFormat - Parameters for a message indicating the date format is invalid (no additional data).
  * @property invalidDateString - Parameters for a message indicating the date string is invalid (no additional data).
+ * @property mustIncludeTimezone - Parameters for a message indicating the datetime must include timezone information (no additional data).
  * @property examples - Example date formats to help users understand expected format.
  *   - `date`: Example date string format.
  *   - `dateTime`: Example datetime string format.
@@ -384,6 +385,7 @@ export type DateMessageParams = {
   mustBeValidDateTime: {};
   invalidFormat: {};
   invalidDateString: {};
+  mustIncludeTimezone: {};
   examples: { date: string; dateTime: string };
 };
 
