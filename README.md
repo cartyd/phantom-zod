@@ -130,10 +130,21 @@ const timestamp = pz.DateTimeStringOptional("Timestamp");      // Simple
 const address = pz.AddressOptional("Home Address");            // Simple
 const phone = pz.PhoneRequired("Phone Number");               // Simple (uses default E.164 format)
 
+// Record schemas
+const settings = pz.RecordOptional(z.string(), "User Settings");     // Simple
+const counters = pz.RecordRequired(z.number(), "Counters");          // Simple
+
 // When you need format options, use the options object
 const phoneNational = pz.PhoneRequired({ 
   msg: "Phone Number", 
   format: PhoneFormat.National 
+});
+
+// When you need record constraints, use the options object
+const restrictedConfig = pz.RecordRequired(z.string(), {
+  msg: "Configuration",
+  allowedKeys: ["host", "port", "timeout"],
+  requiredKeys: ["host", "port"],
 });
 ```
 
@@ -591,6 +602,13 @@ Phantom Zod provides a comprehensive set of validation schemas accessible throug
 - `pz.MongoIdRequired({ msg })` - MongoDB ObjectId validation
 
 📚 [View detailed ID List schemas documentation →](docs/schemas/id-list-schemas.md)
+
+### 📊 Record Schemas
+
+- `pz.RecordRequired(valueSchema, { msg, minEntries, maxEntries, allowedKeys, requiredKeys, keyPattern })` - Required key-value record validation
+- `pz.RecordOptional(valueSchema, { msg, minEntries, maxEntries, allowedKeys, requiredKeys, keyPattern })` - Optional key-value record validation
+
+📚 [View detailed Record schemas documentation →](docs/schemas/record-schemas.md)
 
 ## Error Message Customization
 

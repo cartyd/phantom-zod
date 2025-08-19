@@ -23,6 +23,7 @@
  * @property address - Address validation message parameters.
  * @property network - Network address validation message parameters.
  * @property user - User account validation message parameters.
+ * @property record - Record (key-value object) validation message parameters.
  */
 export type MessageGroupMap = {
   string: StringMessageParams;
@@ -42,6 +43,7 @@ export type MessageGroupMap = {
   address: AddressMessageParams;
   network: NetworkMessageParams;
   user: UserMessageParams;
+  record: RecordMessageParams;
 };
 
 /**
@@ -654,4 +656,44 @@ export type UserMessageParams = {
     requiredFields?: string[];
     invalidFields?: string[];
   };
+};
+
+/**
+ * Represents the parameter types for record (key-value object) validation messages.
+ *
+ * Each property corresponds to a specific record validation scenario and defines
+ * the expected shape of parameters that can be passed to message templates.
+ *
+ * @property required - Parameters for a required record field message (no additional data).
+ * @property invalid - Parameters for a generic invalid record message.
+ *   - `reason`: Optional reason why the record is invalid.
+ * @property mustBeRecord - Parameters for a message indicating the value must be a valid record object.
+ *   - `receivedType`: The type of the value that was received instead of an object.
+ * @property tooFewEntries - Parameters for a message indicating the record has too few entries.
+ *   - `min`: The minimum number of entries required.
+ * @property tooManyEntries - Parameters for a message indicating the record has too many entries.
+ *   - `max`: The maximum number of entries allowed.
+ * @property invalidKeys - Parameters for a message indicating the record contains invalid keys.
+ *   - `allowedKeys`: Array of keys that are allowed in the record.
+ *   - `invalidKeys`: Array of keys that are not allowed and were found in the record.
+ * @property invalidKeyPattern - Parameters for a message indicating record keys don't match the required pattern.
+ *   - `pattern`: The regex pattern that keys must match.
+ *   - `invalidKeys`: Array of keys that don't match the pattern.
+ * @property missingRequiredKeys - Parameters for a message indicating the record is missing required keys.
+ *   - `requiredKeys`: Array of keys that are required in the record.
+ *   - `missingKeys`: Array of required keys that are missing from the record.
+ * @property examples - Example record formats to help users understand expected structure.
+ *   - `keyValue`: Example simple key-value record structure.
+ *   - `stringRecord`: Example record with string values.
+ */
+export type RecordMessageParams = {
+  required: {};
+  invalid: { reason?: string };
+  mustBeRecord: { receivedType?: string };
+  tooFewEntries: { min: number };
+  tooManyEntries: { max: number };
+  invalidKeys: { allowedKeys?: string[]; invalidKeys?: string[] };
+  invalidKeyPattern: { pattern?: string; invalidKeys?: string[] };
+  missingRequiredKeys: { requiredKeys?: string[]; missingKeys?: string[] };
+  examples: { keyValue: string; stringRecord: string };
 };

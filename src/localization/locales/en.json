@@ -211,5 +211,19 @@
     "invalidRole": "has invalid role",
     "invalidAccountType": "has invalid account type",
     "termsNotAccepted": "terms and conditions must be accepted"
+  },
+  "record": {
+    "required": "is required",
+    "invalid": "is invalid",
+    "mustBeRecord": "must be a valid record (key-value object)",
+    "tooFewEntries": "must have at least {min} entries",
+    "tooManyEntries": "must have at most {max} entries",
+    "invalidKeys": "contains invalid keys (allowed: {allowedKeys})",
+    "invalidKeyPattern": "contains keys that don't match the required pattern {pattern}",
+    "missingRequiredKeys": "is missing required keys: {requiredKeys}",
+    "examples": {
+      "keyValue": "{ \"key\": \"value\" }",
+      "stringRecord": "{ \"setting1\": \"value1\", \"setting2\": \"value2\" }"
+    }
   }
 }

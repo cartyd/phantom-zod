@@ -13,6 +13,7 @@ import * as numberSchemas from "./schemas/number-schemas";
 import * as paginationSchemas from "./schemas/pagination-schemas";
 import * as phoneSchemas from "./schemas/phone-schemas";
 import * as postalCodeSchemas from "./schemas/postal-code-schemas";
+import * as recordSchemas from "./schemas/record-schemas";
 import * as stringSchemas from "./schemas/string-schemas";
 import * as urlSchemas from "./schemas/url-schemas";
 import * as userSchemas from "./schemas/user-schemas";
@@ -33,6 +34,7 @@ export const pz = {
   ...paginationSchemas,
   ...phoneSchemas,
   ...postalCodeSchemas,
+  ...recordSchemas,
   ...stringSchemas,
   ...urlSchemas,
   ...userSchemas,
