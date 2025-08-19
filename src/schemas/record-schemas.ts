@@ -101,7 +101,7 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
       (val) => {
         if (val === null || val === undefined) return false;
         if (typeof val !== "object" || Array.isArray(val)) return false;
-        
+
         // Validate each value against the provided schema
         for (const [key, value] of Object.entries(val)) {
           const result = valueSchema.safeParse(value);
@@ -181,7 +181,10 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
           message: messageHandler.formatErrorMessage({
             group: "record",
             messageKey: "invalidKeyPattern",
-            params: { pattern: options.keyPattern!.toString(), invalidKeys: [] },
+            params: {
+              pattern: options.keyPattern!.toString(),
+              invalidKeys: [],
+            },
             msg,
             msgType,
           }),
@@ -278,12 +281,12 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
    *
    * @example
    * const { RecordOptional } = createRecordSchemas(messageHandler);
-   * 
+   *
    * // Basic usage with pz schemas (consistent with README patterns)
    * const userSettings = RecordOptional(pz.StringOptional(), { msg: "User Settings" });
    * userSettings.parse({ theme: "dark", lang: "en" }); // { theme: "dark", lang: "en" }
    * userSettings.parse(undefined); // undefined
-   * 
+   *
    * // With specific allowed keys (like literal union types)
    * const courseInfoSchema = z.object({
    *   professor: pz.StringRequired("Professor"),
@@ -293,11 +296,11 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
    *   msg: "Courses",
    *   allowedKeys: ["Computer Science", "Mathematics", "Literature"]
    * });
-   * 
+   *
    * // With constraints
-   * const metadata = RecordOptional(pz.StringOptional(), { 
-   *   msg: "Metadata", 
-   *   minEntries: 1, 
+   * const metadata = RecordOptional(pz.StringOptional(), {
+   *   msg: "Metadata",
+   *   minEntries: 1,
    *   maxEntries: 10,
    *   keyPattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/
    * });
@@ -318,19 +321,13 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
 
     let schema = createBaseRecordSchema(valueSchema, msg, msgType).optional();
 
-    schema = addRecordConstraints(
-      schema,
-      messageHandler,
-      msg,
-      msgType,
-      {
-        minEntries,
-        maxEntries,
-        keyPattern,
-        allowedKeys,
-        requiredKeys,
-      },
-    );
+    schema = addRecordConstraints(schema, messageHandler, msg, msgType, {
+      minEntries,
+      maxEntries,
+      keyPattern,
+      allowedKeys,
+      requiredKeys,
+    });
 
     return schema;
   };
@@ -357,36 +354,36 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
    *
    * @example
    * const { RecordRequired } = createRecordSchemas(messageHandler);
-   * 
+   *
    * // Basic usage with pz schemas (consistent with README patterns)
    * const appConfig = RecordRequired(pz.StringRequired(), "Application Config");
    * appConfig.parse({ apiUrl: "https://api.example.com", timeout: "30" }); // Valid
-   * 
+   *
    * // Your use case: Courses with specific allowed keys
    * const courseInfoSchema = z.object({
    *   professor: pz.StringRequired("Professor"),
    *   cfu: pz.NumberRequired("CFU")
    * });
-   * 
+   *
    * const coursesSchema = RecordRequired(courseInfoSchema, {
    *   msg: "Courses",
    *   allowedKeys: ["Computer Science", "Mathematics", "Literature"],
    *   requiredKeys: ["Computer Science", "Mathematics", "Literature"]
    * });
-   * 
+   *
    * coursesSchema.parse({
    *   "Computer Science": { professor: "Mary Jane", cfu: 12 },
    *   "Mathematics": { professor: "John Doe", cfu: 12 },
    *   "Literature": { professor: "Frank Purple", cfu: 12 }
    * }); // ✅ Valid
-   * 
+   *
    * // With boolean values
    * const featureFlags = RecordRequired(pz.BooleanRequired(), "Feature Flags");
    * featureFlags.parse({ darkMode: true, notifications: false }); // Valid
-   * 
+   *
    * // With constraints and required keys
-   * const serverConfig = RecordRequired(pz.StringRequired(), { 
-   *   msg: "Server Configuration", 
+   * const serverConfig = RecordRequired(pz.StringRequired(), {
+   *   msg: "Server Configuration",
    *   minEntries: 1,
    *   requiredKeys: ["host", "port"]
    * });
@@ -420,19 +417,13 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
         }),
       });
 
-    schema = addRecordConstraints(
-      schema,
-      messageHandler,
-      msg,
-      msgType,
-      {
-        minEntries,
-        maxEntries,
-        keyPattern,
-        allowedKeys,
-        requiredKeys,
-      },
-    );
+    schema = addRecordConstraints(schema, messageHandler, msg, msgType, {
+      minEntries,
+      maxEntries,
+      keyPattern,
+      allowedKeys,
+      requiredKeys,
+    });
 
     return schema;
   };
@@ -452,8 +443,10 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
 export const createRecordSchemasWithOverloads = (
   messageHandler: ErrorMessageFormatter,
 ) => {
-  const { RecordOptional: BaseRecordOptional, RecordRequired: BaseRecordRequired } =
-    createRecordSchemas(messageHandler);
+  const {
+    RecordOptional: BaseRecordOptional,
+    RecordRequired: BaseRecordRequired,
+  } = createRecordSchemas(messageHandler);
 
   // RecordOptional with overloads
   function RecordOptional<TValue>(
