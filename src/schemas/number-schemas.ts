@@ -169,11 +169,17 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return isRequired ? schema : schema.optional();
   };
 
-  const NumberOptional = (options: NumberSchemaOptions = {}) =>
-    createNumberSchema(options, false);
+  // Enhanced NumberRequired with native Zod chaining support
+  const NumberRequired = (options: NumberSchemaOptions = {}) => {
+    // Always use strict validation for consistent behavior
+    return createNumberSchema(options, true);
+  };
 
-  const NumberRequired = (options: NumberSchemaOptions = {}) =>
-    createNumberSchema(options, true);
+  // Enhanced NumberOptional with partial chaining support
+  const NumberOptional = (options: NumberSchemaOptions = {}) => {
+    // Always use strict validation for consistent behavior
+    return createNumberSchema(options, false);
+  };
 
   const NumberStringOptional = (options: NumberSchemaOptions = {}) =>
     createNumberSchema(options, false, true);

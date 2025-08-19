@@ -6,6 +6,42 @@ The file upload schemas module provides comprehensive validation for file upload
 
 This module offers robust file upload validation including MIME type checking, file size constraints, filename format validation, and specialized validators for different file categories. It supports both single and multiple file uploads with configurable limits and security features.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, file upload schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const fileTraditional = pz.FileUploadRequired({ msg: "Profile Picture" });
+
+// Simplified string parameter (equivalent)
+const fileSimple = pz.FileUploadRequired("Profile Picture");
+
+// Both produce the same validation behavior
+const fileInput = { filename: "photo.jpg", mimetype: "image/jpeg", size: 1024000 };
+fileTraditional.parse(fileInput); // ✅ Valid file object
+fileSimple.parse(fileInput);      // ✅ Valid file object
+
+// Error messages are identical
+fileTraditional.parse({ size: 999999999 }); // ❌ "Profile Picture exceeds maximum file size"
+fileSimple.parse({ size: 999999999 });      // ❌ "Profile Picture exceeds maximum file size"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default file size and MIME type restrictions are sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom file size limits needed (`maxSize`)
+- MIME type restrictions required (`allowedTypes`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
+**Note:** Specialized schemas like `ImageUpload` and `DocumentUpload` have specific parameters and may not support string overloads in the same way as basic file upload schemas.
+
 ## Available Schemas
 
 ### Core File Schemas

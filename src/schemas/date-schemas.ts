@@ -378,7 +378,7 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
 
   /**
    * Creates an optional strict timezone-aware datetime schema
-   * 
+   *
    * Only accepts datetime strings with explicit timezone information.
    * Rejects naive datetime strings and Date objects to ensure timezone awareness.
    *
@@ -400,35 +400,16 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
     options: DateSchemaOptions = {},
   ): z.ZodTypeAny => {
     return makeOptionalSimple(
-      z
-        .string()
-        .refine(
-          (val) => {
-            // Check if string matches ISO 8601 with timezone
-            // Must have T separator and timezone info (Z or ±HH:MM)
-            const timezoneRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/;
-            return timezoneRegex.test(val);
-          },
-          {
-            message: createErrorMessage("mustIncludeTimezone", options),
-          },
-        )
-        .refine(
-          (val) => {
-            // Validate that it's actually a valid datetime
-            const date = new Date(val);
-            return !isNaN(date.getTime());
-          },
-          {
-            message: createErrorMessage("mustBeValidDateTime", options),
-          },
-        ),
+      z.string().datetime({
+        offset: true,
+        message: createErrorMessage("mustIncludeTimezone", options),
+      }),
     );
   };
 
   /**
    * Creates a required strict timezone-aware datetime schema
-   * 
+   *
    * Only accepts datetime strings with explicit timezone information.
    * Rejects naive datetime strings and Date objects to ensure timezone awareness.
    *
@@ -449,29 +430,10 @@ export const createDateSchemas = (messageHandler: ErrorMessageFormatter) => {
   const zTimezoneDateTimeRequired = (
     options: DateSchemaOptions = {},
   ): z.ZodTypeAny => {
-    return z
-      .string()
-      .refine(
-        (val) => {
-          // Check if string matches ISO 8601 with timezone
-          // Must have T separator and timezone info (Z or ±HH:MM)
-          const timezoneRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/;
-          return timezoneRegex.test(val);
-        },
-        {
-          message: createErrorMessage("mustIncludeTimezone", options),
-        },
-      )
-      .refine(
-        (val) => {
-          // Validate that it's actually a valid datetime
-          const date = new Date(val);
-          return !isNaN(date.getTime());
-        },
-        {
-          message: createErrorMessage("mustBeValidDateTime", options),
-        },
-      );
+    return z.string().datetime({
+      offset: true,
+      message: createErrorMessage("mustIncludeTimezone", options),
+    });
   };
 
   /**
@@ -534,6 +496,8 @@ const dateMessageHandler = createTestMessageHandler((options) => {
       return `${options.msg} has invalid format`;
     case "invalidDateString":
       return `${options.msg} has invalid date string`;
+    case "mustIncludeTimezone":
+      return `${options.msg} must include timezone information (Z or ±HH:MM)`;
     default:
       return `${options.msg} is invalid`;
   }
@@ -751,6 +715,12 @@ export const TimezoneDateTimeRequired = createTimezoneDateTimeRequiredOverload;
  * ```
  */
 export const getDateExamples = defaultDateSchemas.getDateExamples;
+
+// Export the factory functions for creating the timezone schemas
+export const zTimezoneDateTimeOptional =
+  defaultDateSchemas.TimezoneDateTimeOptional;
+export const zTimezoneDateTimeRequired =
+  defaultDateSchemas.TimezoneDateTimeRequired;
 
 // Export the options interface for external use
 export type { DateSchemaOptions };

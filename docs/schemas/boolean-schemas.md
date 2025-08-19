@@ -13,6 +13,37 @@ All boolean schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Type safety** with TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all boolean schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const isActiveTraditional = pz.BooleanRequired({ msg: "Active Status" });
+
+// Simplified string parameter (equivalent)
+const isActiveSimple = pz.BooleanRequired("Active Status");
+
+// Both produce the same validation behavior
+isActiveTraditional.parse(true);  // ✅ true
+isActiveSimple.parse(true);       // ✅ true
+
+// Error messages are identical
+isActiveTraditional.parse("yes"); // ❌ "Active Status must be a boolean"
+isActiveSimple.parse("yes");      // ❌ "Active Status must be a boolean"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### Core Boolean Schemas

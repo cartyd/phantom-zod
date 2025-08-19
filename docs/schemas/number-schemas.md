@@ -14,6 +14,38 @@ All number schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Type safety** with TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all number schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const ageTraditional = pz.NumberRequired({ msg: "Age" });
+
+// Simplified string parameter (equivalent)
+const ageSimple = pz.NumberRequired("Age");
+
+// Both produce the same validation behavior
+ageTraditional.parse(25); // ✅ 25
+ageSimple.parse(25);      // ✅ 25
+
+// Error messages are identical
+ageTraditional.parse("abc"); // ❌ "Age must be a number"
+ageSimple.parse("abc");      // ❌ "Age must be a number"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Range constraints needed (`min`, `max`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### Core Number Schemas

@@ -6,6 +6,38 @@ The network schemas module provides comprehensive validation for network address
 
 This module offers robust network address validation using Zod's built-in IP validation combined with custom regex patterns for MAC addresses. It supports both individual addresses and network ranges (CIDR blocks), making it suitable for network configuration, device management, and infrastructure applications.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all network schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const serverIpTraditional = pz.IPv4Required({ msg: "Server IP" });
+
+// Simplified string parameter (equivalent)
+const serverIpSimple = pz.IPv4Required("Server IP");
+
+// Both produce the same validation behavior
+serverIpTraditional.parse("192.168.1.100"); // ✅ "192.168.1.100"
+serverIpSimple.parse("192.168.1.100");      // ✅ "192.168.1.100"
+
+// Error messages are identical
+serverIpTraditional.parse("invalid"); // ❌ "Server IP must be a valid IPv4 address"
+serverIpSimple.parse("invalid");      // ❌ "Server IP must be a valid IPv4 address"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- IP version constraints needed (`version` parameter)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### IP Address Schemas

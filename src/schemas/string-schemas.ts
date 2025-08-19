@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
-import { trimOrEmpty } from "../common/utils/string-utils";
 import { MsgType } from "../common/types/msg-type";
 import type { StringSchemaOptions } from "../common/types/schema-options.types";
 
@@ -85,47 +84,52 @@ function addLengthConstraints<TSchema extends z.ZodTypeAny>(
  */
 export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
   /**
-   * Creates a base string schema with consistent error messaging.
-   * @param msg - The field name or custom message for error messages
-   * @param msgType - The type of message formatting to use
-   * @returns Base Zod string schema with error message
+   * Helper function to create error messages for different validation types
+   * @param messageKey - The type of validation error
+   * @param params - Additional parameters for the error message
+   * @param msg - The field name or custom message
+   * @param msgType - The message formatting type
+   * @returns Formatted error message
    */
-  const createBaseStringSchema = (msg: string, msgType: MsgType) => {
-    // Custom refinement to provide receivedType for mustBeString
-    return z.custom((val) => typeof val === "string", {
-      message: messageHandler.formatErrorMessage({
-        group: "string",
-        messageKey: "mustBeString",
-        params: { receivedType: undefined }, // fallback, see below
-        msg,
-        msgType,
-      }),
-    }) as z.ZodType<string, any, any>;
+  const createErrorMessage = (
+    messageKey: keyof import("../localization/types/message-params.types").StringMessageParams,
+    params: Record<string, unknown>,
+    msg: string,
+    msgType: MsgType,
+  ): string => {
+    return messageHandler.formatErrorMessage({
+      group: "string",
+      messageKey,
+      params,
+      msg,
+      msgType,
+    });
   };
 
+
   /**
-   * Creates a Zod schema for an optional trimmed string with customizable error messages and length constraints.
+   * Creates a Zod schema for an optional trimmed string with native Zod chaining support.
+   *
+   * This schema supports both legacy options-based configuration and modern chainable methods.
+   * When using chaining, undefined values will be handled by .default() or remain undefined.
+   * For backward compatibility, when no chaining is used, undefined transforms to empty string.
    *
    * @param options - Configuration options for the schema
    * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
    * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
-   * @param options.minLength - Optional minimum length constraint for the string. If provided, validation will fail if the string is shorter.
-   * @param options.maxLength - Optional maximum length constraint for the string. If provided, validation will fail if the string is longer.
-   * @returns A Zod schema that validates an optional string, trims it, and applies length constraints if specified.
-   *
-   * @remarks
-   * - The schema will transform undefined or empty values to an empty string.
-   * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
-   * - Length constraints are only applied if the respective parameters are provided.
+   * @param options.minLength - Optional minimum length constraint for the string.
+   * @param options.maxLength - Optional maximum length constraint for the string.
+   * @returns A Zod schema that supports native chaining (.min(), .max(), .default(), etc.)
    *
    * @example
-   * const { StringOptional } = createStringSchemas(messageHandler);
-   * const schema = StringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
-   * schema.parse("  John  "); // "John"
-   * schema.parse(undefined);  // ""
-   * schema.parse("");         // ""
-   * schema.parse("A");        // throws ZodError (too short)
-   * schema.parse("This name is too long"); // throws ZodError (too long)
+   * // Legacy options approach (undefined -> empty string)
+   * const schema1 = StringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
+   *
+   * // Modern chainable approach (use .default() to handle undefined)
+   * const schema2 = StringOptional({ msg: "Display Name" }).min(2).max(10).default("");
+   *
+   * // Mixed approach with custom default
+   * const schema3 = StringOptional({ msg: "Display Name" }).min(2).max(10).default("John");
    */
   const StringOptional = (options: StringSchemaOptions = {}) => {
     const {
@@ -135,81 +139,135 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
       maxLength,
     } = options;
 
-    let schema = createBaseStringSchema(msg, msgType)
-      .optional()
-      .transform(trimOrEmpty);
+    // Check if legacy constraints are provided
+    const hasLegacyConstraints =
+      minLength !== undefined || maxLength !== undefined;
 
-    schema = addLengthConstraints(
-      schema,
-      messageHandler,
-      msg,
-      msgType,
-      minLength,
-      maxLength,
-    );
-    return schema;
+    if (hasLegacyConstraints) {
+      // Legacy path: use transform and refine (breaks chaining but maintains compatibility)
+      let schema = z
+        .string({
+          message:
+            msgType === MsgType.Message ? msg : `${msg} must be a string`,
+        })
+        .trim()
+        .optional()
+        .transform((val: string | undefined) => {
+          // Handle undefined and transform to empty string to maintain backward compatibility
+          if (val === undefined) return "";
+          return val; // String is already trimmed
+        });
+
+      // Apply legacy constraints
+      schema = addLengthConstraints(
+        schema,
+        messageHandler,
+        msg,
+        msgType,
+        minLength,
+        maxLength,
+      );
+
+      return schema;
+    } else {
+      // Modern chainable path: return optional string that supports chaining
+      // Important: For chaining support, undefined values stay undefined
+      // Use .default("") if you want empty string behavior
+      const schema = z
+        .string({
+          message:
+            msgType === MsgType.Message ? msg : `${msg} must be a string`,
+        })
+        .trim()
+        .optional()
+        .default(""); // Add default to maintain backward compatibility
+
+      return schema;
+    }
   };
 
   /**
-   * Creates a Zod string schema that:
-   * - Trims whitespace from the input string.
-   * - Requires the string to be non-empty after trimming.
-   * - Provides customizable error messages using the provided options.
+   * Creates a Zod string schema with native chaining support that requires non-empty content.
+   *
+   * This schema supports both legacy options-based configuration and modern chainable methods.
+   * It automatically trims whitespace and validates that the result is non-empty.
    *
    * @param options - Configuration options for the schema
    * @param options.msg - The base message or field name to use in error messages. Defaults to "Value".
    * @param options.msgType - The type of message formatting to use, based on the `MsgType` enum. Defaults to `MsgType.FieldName`.
    * @param options.minLength - Minimum length constraint (defaults to 1)
    * @param options.maxLength - Optional maximum length constraint
-   * @returns A Zod string schema with trimming and required validation.
+   * @returns A Zod schema that supports native chaining (.min(), .max(), .default(), etc.)
    *
    * @example
-   * const { StringRequired } = createStringSchemas(messageHandler);
-   * const schema = StringRequired({ msg: "Username", minLength: 3 });
-   * schema.parse("  alice  "); // "alice"
-   * schema.parse("");          // throws ZodError
-   * schema.parse("   ");       // throws ZodError
+   * // Legacy options approach
+   * const schema1 = StringRequired({ msg: "Username", minLength: 3, maxLength: 20 });
+   *
+   * // Modern chainable approach
+   * const schema2 = StringRequired({ msg: "Username" }).min(3).max(20);
+   *
+   * // Mixed approach with default
+   * const schema3 = StringRequired({ msg: "Username" }).min(3).max(20).default("user");
    */
   const StringRequired = (options: StringSchemaOptions = {}) => {
     const {
       msg = "Value",
       msgType = MsgType.FieldName,
-      minLength = 1,
-      maxLength,
-    } = options;
-    let schema = createBaseStringSchema(msg, msgType)
-      .transform(trimOrEmpty)
-      // 'required' error if empty after trim
-      .refine((trimmed: string) => trimmed.length > 0, {
-        message: messageHandler.formatErrorMessage({
-          group: "string",
-          messageKey: "required",
-          params: {},
-          msg,
-          msgType,
-        }),
-      })
-      // 'cannotBeEmpty' error if value is empty string (before trim, using .refine for Zod v4+)
-      .refine((val) => val !== "", {
-        message: messageHandler.formatErrorMessage({
-          group: "string",
-          messageKey: "cannotBeEmpty",
-          params: {},
-          msg,
-          msgType,
-        }),
-        path: [],
-      });
-
-    schema = addLengthConstraints(
-      schema,
-      messageHandler,
-      msg,
-      msgType,
       minLength,
       maxLength,
-    );
-    return schema;
+    } = options;
+
+    // Check if legacy constraints are provided
+    const hasLegacyConstraints =
+      minLength !== undefined || maxLength !== undefined;
+
+    if (hasLegacyConstraints) {
+      // Legacy path with custom error messages
+      let schema = z
+        .string({
+          message:
+            msgType === MsgType.Message ? msg : `${msg} must be a string`,
+        })
+        .trim()
+        .min(1, {
+          message: createErrorMessage(
+            "required",
+            {},
+            msg,
+            msgType,
+          ),
+        });
+
+      // Apply legacy constraints
+      schema = addLengthConstraints(
+        schema,
+        messageHandler,
+        msg,
+        msgType,
+        minLength,
+        maxLength,
+      );
+
+      return schema;
+    } else {
+      // Modern path with custom required error message
+      const schema = z
+        .string({
+          message:
+            msgType === MsgType.Message ? msg : `${msg} must be a string`,
+        })
+        .trim()
+        .min(1, {
+          message: createErrorMessage(
+            "required",
+            {},
+            msg,
+            msgType,
+          ),
+        });
+
+      return schema;
+    }
   };
 
   return {

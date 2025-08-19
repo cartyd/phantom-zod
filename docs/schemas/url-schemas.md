@@ -6,6 +6,40 @@ The URL schemas module provides comprehensive validation for URL strings with su
 
 This module offers flexible URL validation that can be configured to restrict protocols (HTTP, HTTPS, FTP, etc.) and validate hostnames/domains. It includes convenience functions for common use cases like HTTPS-only URLs and general web URLs.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all URL schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const websiteTraditional = pz.UrlRequired({ msg: "Website URL" });
+
+// Simplified string parameter (equivalent)
+const websiteSimple = pz.UrlRequired("Website URL");
+
+// Both produce the same validation behavior
+const urlInput = "https://example.com";
+websiteTraditional.parse(urlInput); // ✅ "https://example.com"
+websiteSimple.parse(urlInput);      // ✅ "https://example.com"
+
+// Error messages are identical
+websiteTraditional.parse("invalid"); // ❌ "Website URL must be a valid URL"
+websiteSimple.parse("invalid");      // ❌ "Website URL must be a valid URL"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default URL validation is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Protocol restrictions needed (`protocol` regex)
+- Hostname validation required (`hostname` regex)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### Basic URL Schemas
