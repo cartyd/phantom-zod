@@ -46,7 +46,7 @@ export default [
         {
           selector: "variable",
           filter: {
-            regex: "^(String|Email|Phone|Number|Boolean|Date|Uuid|Array|Url|Address|Money|Network|User|File|Pagination|Enum|PostalCode|Id|Nanoid|IPv4|IPv6|MacAddress|CIDR|Html5Email|Rfc5322Email|UnicodeEmail|HttpsUrl|HttpUrl|WebUrl|Time|Mime|Image|Document|Multiple|Unique|Paginated|Batch|Custom|Mongo|Flexible|Currency|Price|IP|Integer|Positive|Negative|NonNegative|NonPositive|Finite|SafeInteger|Offset|Cursor|Password|Display|Role|Account|Admin|Username|Login|Update|Reset|Management|Weakness|Generic|Validation)(?!.*_)[A-Za-z0-9]*$",
+            regex: "^(String|Email|Phone|Number|Boolean|Date|Uuid|Array|Url|Address|Money|Network|User|File|Pagination|Enum|PostalCode|Id|Nanoid|IPv4|IPv6|MacAddress|CIDR|Html5Email|Rfc5322Email|UnicodeEmail|HttpsUrl|HttpUrl|WebUrl|Time|Mime|Image|Document|Multiple|Unique|Paginated|Batch|Custom|Mongo|Flexible|Currency|Price|IP|Integer|Positive|Negative|NonNegative|NonPositive|Finite|SafeInteger|Offset|Cursor|Password|Display|Role|Account|Admin|Username|Login|Update|Reset|Management|Weakness|Generic|Validation|Record)(?!.*_)[A-Za-z0-9]*$",
             match: true,
           },
           format: ["PascalCase"],

@@ -23,14 +23,13 @@ export interface RecordSchemaOptions extends BaseSchemaOptions {
   requiredKeys?: string[];
 }
 
-// --- Type Definitions ---
-
+// --- Types ---
 // Note: These types reference the factory functions, so they need to be created from the factory
 type RecordSchemasFactory = ReturnType<typeof createRecordSchemas>;
-export type RecordOptional<TValue> = z.infer<
+export type RecordOptional<TValue = unknown> = z.infer<
   ReturnType<RecordSchemasFactory["RecordOptional"]>
 >;
-export type RecordRequired<TValue> = z.infer<
+export type RecordRequired<TValue = unknown> = z.infer<
   ReturnType<RecordSchemasFactory["RecordRequired"]>
 >;
 
@@ -103,7 +102,7 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
         if (typeof val !== "object" || Array.isArray(val)) return false;
 
         // Validate each value against the provided schema
-        for (const [key, value] of Object.entries(val)) {
+        for (const [_key, value] of Object.entries(val)) {
           const result = valueSchema.safeParse(value);
           if (!result.success) {
             return false;
@@ -444,52 +443,60 @@ export const createRecordSchemasWithOverloads = (
   messageHandler: ErrorMessageFormatter,
 ) => {
   const {
-    RecordOptional: BaseRecordOptional,
-    RecordRequired: BaseRecordRequired,
+    RecordOptional: baseRecordOptional,
+    RecordRequired: baseRecordRequired,
   } = createRecordSchemas(messageHandler);
 
   // RecordOptional with overloads
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
-  ): ReturnType<typeof BaseRecordOptional>;
+  ): ReturnType<typeof baseRecordOptional>;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
     msg: string,
-  ): ReturnType<typeof BaseRecordOptional>;
+  ): ReturnType<typeof baseRecordOptional>;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
     options: RecordSchemaOptions,
-  ): ReturnType<typeof BaseRecordOptional>;
+  ): ReturnType<typeof baseRecordOptional>;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
     msgOrOptions?: string | RecordSchemaOptions,
   ) {
     if (typeof msgOrOptions === "string") {
-      return BaseRecordOptional(valueSchema, { msg: msgOrOptions });
+      return baseRecordOptional(valueSchema, { msg: msgOrOptions });
     }
-    return BaseRecordOptional(valueSchema, msgOrOptions);
+    return baseRecordOptional(valueSchema, msgOrOptions);
   }
 
   // RecordRequired with overloads
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
-  ): ReturnType<typeof BaseRecordRequired>;
+  ): ReturnType<typeof baseRecordRequired>;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
     msg: string,
-  ): ReturnType<typeof BaseRecordRequired>;
+  ): ReturnType<typeof baseRecordRequired>;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
     options: RecordSchemaOptions,
-  ): ReturnType<typeof BaseRecordRequired>;
+  ): ReturnType<typeof baseRecordRequired>;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
     msgOrOptions?: string | RecordSchemaOptions,
   ) {
     if (typeof msgOrOptions === "string") {
-      return BaseRecordRequired(valueSchema, { msg: msgOrOptions });
+      return baseRecordRequired(valueSchema, { msg: msgOrOptions });
     }
-    return BaseRecordRequired(valueSchema, msgOrOptions);
+    return baseRecordRequired(valueSchema, msgOrOptions);
   }
 
   return {
