@@ -26,9 +26,11 @@ export interface RecordSchemaOptions extends BaseSchemaOptions {
 // --- Types ---
 // Note: These types reference the factory functions, so they need to be created from the factory
 type RecordSchemasFactory = ReturnType<typeof createRecordSchemas>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type RecordOptional<TValue = unknown> = z.infer<
   ReturnType<RecordSchemasFactory["RecordOptional"]>
 >;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type RecordRequired<TValue = unknown> = z.infer<
   ReturnType<RecordSchemasFactory["RecordRequired"]>
 >;
@@ -96,13 +98,15 @@ export const createRecordSchemas = (messageHandler: ErrorMessageFormatter) => {
     msg: string,
     msgType: MsgType,
   ) => {
+    // Use z.custom to have full control over validation and error messages
     return z.custom<Record<string, TValue>>(
       (val) => {
+        // First check if it's a valid object type
         if (val === null || val === undefined) return false;
         if (typeof val !== "object" || Array.isArray(val)) return false;
 
-        // Validate each value against the provided schema
-        for (const [_key, value] of Object.entries(val)) {
+        // Then validate each value against the provided schema
+        for (const [, value] of Object.entries(val)) {
           const result = valueSchema.safeParse(value);
           if (!result.success) {
             return false;
