@@ -106,7 +106,6 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
     });
   };
 
-
   /**
    * Creates a Zod schema for an optional trimmed string with native Zod chaining support.
    *
@@ -230,12 +229,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
         })
         .trim()
         .min(1, {
-          message: createErrorMessage(
-            "required",
-            {},
-            msg,
-            msgType,
-          ),
+          message: createErrorMessage("required", {}, msg, msgType),
         });
 
       // Apply legacy constraints
@@ -258,12 +252,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
         })
         .trim()
         .min(1, {
-          message: createErrorMessage(
-            "required",
-            {},
-            msg,
-            msgType,
-          ),
+          message: createErrorMessage("required", {}, msg, msgType),
         });
 
       return schema;
