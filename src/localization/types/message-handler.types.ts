@@ -203,6 +203,21 @@ export function createTestMessageHandler(
         return `${options.msg} has invalid role: ${options.params?.role || "unknown"}`;
       case "invalidAccountType":
         return `${options.msg} has invalid account type: ${options.params?.type || "unknown"}`;
+      // Record-specific error messages
+      case "mustBeRecord":
+        return `${options.msg} must be a valid record (key-value object)`;
+      case "tooFewEntries":
+        return `${options.msg} must have at least ${options.params?.min} entries`;
+      case "tooManyEntries":
+        return `${options.msg} must have at most ${options.params?.max} entries`;
+      case "invalidKeys":
+        const allowedKeys = options.params?.allowedKeys || [];
+        return `${options.msg} contains invalid keys (allowed: ${allowedKeys.join(", ")})`;
+      case "invalidKeyPattern":
+        return `${options.msg} contains keys that don't match the required pattern ${options.params?.pattern || ""}`;
+      case "missingRequiredKeys":
+        const requiredKeys = options.params?.requiredKeys || [];
+        return `${options.msg} is missing required keys: ${requiredKeys.join(", ")}`;
       default:
         return `${options.msg} is invalid`;
     }
