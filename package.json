@@ -14,12 +14,12 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
-    "validate": "npm run lint && npm run test && npm run build",
+    "validate": "npm run format && npm run lint && npm run test && npm run build",
     "prepare": "husky install",
     "release": "./scripts/prepare-release.sh",
-    "release:patch": "npm version patch --no-git-tag-version && git add package.json && git commit -m 'chore(release): bump patch version' && git push origin main",
-    "release:minor": "npm version minor --no-git-tag-version && git add package.json && git commit -m 'chore(release): bump minor version' && git push origin main",
-    "release:major": "npm version major --no-git-tag-version && git add package.json && git commit -m 'chore(release): bump major version' && git push origin main"
+    "release:patch": "./scripts/release-patch.sh",
+    "release:minor": "./scripts/release-minor.sh",
+    "release:major": "./scripts/release-major.sh"
   },
   "keywords": [
     "schema",
