@@ -418,6 +418,7 @@ describe('Date Schemas', () => {
       expect(examples).toEqual({
         date: "2023-01-01",
         dateTime: "2023-01-01T10:30:00Z",
+        timezoneDateTime: "2023-01-01T10:30:00Z",
         time: "10:30:00"
       });
     });

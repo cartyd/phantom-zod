@@ -15,6 +15,42 @@ All array schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Type safety** with full TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, specialized array schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const tagsTraditional = pz.StringArrayRequired({ msg: "Tags" });
+
+// Simplified string parameter (equivalent)
+const tagsSimple = pz.StringArrayRequired("Tags");
+
+// Both produce the same validation behavior
+const arrayInput = ["javascript", "typescript", "react"];
+tagsTraditional.parse(arrayInput); // ✅ ["javascript", "typescript", "react"]
+tagsSimple.parse(arrayInput);      // ✅ ["javascript", "typescript", "react"]
+
+// Error messages are identical
+tagsTraditional.parse([]); // ❌ "Tags must not be empty"
+tagsSimple.parse([]);      // ❌ "Tags must not be empty"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default constraints are sufficient (no special minItems, maxItems)
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Length constraints needed (`minItems`, `maxItems`)
+- Duplicate control required (`allowDuplicates`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
+**Note:** Generic array schemas (`ArrayRequired`, `ArrayOptional`) require element schemas as their first parameter and may not support string overloads in the same way as specialized arrays.
+
 ## Available Schemas
 
 ### Generic Array Schemas

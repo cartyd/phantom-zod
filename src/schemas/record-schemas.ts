@@ -26,12 +26,10 @@ export interface RecordSchemaOptions extends BaseSchemaOptions {
 // --- Types ---
 // Note: These types reference the factory functions, so they need to be created from the factory
 type RecordSchemasFactory = ReturnType<typeof createRecordSchemas>;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type RecordOptional<TValue = unknown> = z.infer<
+export type RecordOptional = z.infer<
   ReturnType<RecordSchemasFactory["RecordOptional"]>
 >;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type RecordRequired<TValue = unknown> = z.infer<
+export type RecordRequired = z.infer<
   ReturnType<RecordSchemasFactory["RecordRequired"]>
 >;
 

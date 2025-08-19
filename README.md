@@ -152,85 +152,153 @@ const restrictedConfig = pz.RecordRequired(z.string(), {
 
 The string parameter overloads are fully backwards compatible. All existing code using options objects will continue to work exactly as before. The string overloads are additional convenience methods that complement the existing API.
 
-## ✨ Chainable .default() Support
+## 🔗 Native Zod Chaining Support
 
-Phantom Zod v1.5.1+ fully supports Zod's `.default()` chaining on all schema types! This was a critical TypeScript fix that enables the fluent API experience users expect.
+Phantom Zod v1.6+ provides **dual-mode validation** combining the best of both worlds:
+1. **Options-based API** - Our stable, proven approach with unified options across all schemas
+2. **Native Zod Chaining** - Direct access to Zod's chainable methods for enhanced flexibility
 
-### Basic .default() Usage
+### Two Ways to Build Schemas
+
+#### 1. Options-Based Approach (Recommended)
 
 ```typescript
 import { pz } from "phantom-zod";
 
-// All schemas now support .default() chaining:
+// ✅ Consistent, reliable API across all schema types
 const userSchema = z.object({
-  name: pz.StringRequired("Full Name").default("Anonymous"),
-  email: pz.EmailRequired("Email").default("user@example.com"),
-  phone: pz.PhoneOptional("Phone").default("+1234567890"),
-  website: pz.UrlOptional("Website").default("https://example.com"),
-  isActive: pz.BooleanRequired("Active").default(true),
-  age: pz.NumberOptional("Age").default(25),
-  id: pz.UuidV4Required("User ID").default(crypto.randomUUID()),
-  role: pz.EnumRequired(["user", "admin"], "Role").default("user"),
-});
-
-// Parse with missing fields - defaults will be applied
-const result = userSchema.parse({
-  email: "john@example.com",
-  // All other fields will use their default values
-});
-
-console.log(result);
-// ✅ Output:
-// {
-//   name: "Anonymous",
-//   email: "john@example.com", 
-//   phone: "+1234567890",
-//   website: "https://example.com",
-//   isActive: true,
-//   age: 25,
-//   id: "550e8400-e29b-41d4-a716-446655440000",
-//   role: "user"
-// }
-```
-
-### Complex Chaining
-
-```typescript
-// Combine .default() with other Zod methods:
-const complexSchema = z.object({
-  title: pz.StringRequired("Title")
-    .default("Untitled")
-    .min(3)
-    .max(100),
-    
-  price: pz.NumberRequired("Price")
-    .default(0)
-    .min(0)
-    .max(10000),
-    
-  tags: pz.StringArrayOptional("Tags")
-    .default([])
-    .max(10),
-    
-  metadata: z.object({
-    createdAt: pz.DateStringRequired("Created Date").default(new Date().toISOString()),
-    updatedAt: pz.DateStringOptional("Updated Date"), // Optional - no default needed
-  }),
+  name: pz.StringRequired({ msg: "Full Name", minLength: 2, maxLength: 50 }),
+  email: pz.EmailRequired("Email Address"),
+  age: pz.NumberRequired({ msg: "Age", min: 0, max: 120 }),
+  website: pz.UrlOptional("Website"),
+  phone: pz.PhoneOptional({ msg: "Phone", format: PhoneFormat.National }),
+  isActive: pz.BooleanRequired("Active Status"),
 });
 ```
 
-### Why This Matters
-
-Before this fix, TypeScript compilation would fail when trying to chain `.default()` due to return type inference issues. Now you get the full power of Zod's fluent API with all Phantom Zod schemas!
+#### 2. Native Zod Chaining (Power Users)
 
 ```typescript
-// ❌ Before v1.5.1 - TypeScript errors:
-// const schema = pz.EmailRequired("Email").default("test@example.com");
-//                                         ^^^^^^^ 
-// Error: Property 'default' does not exist on type...
+import { pz } from "phantom-zod";
 
-// ✅ Now works perfectly:
-const schema = pz.EmailRequired("Email").default("test@example.com");
+// ✨ NEW: Direct Zod chaining support for String and Number schemas
+const userSchema = z.object({
+  name: pz.StringRequired().min(2).max(50).default("Anonymous"),
+  age: pz.NumberRequired().min(0).max(120).default(18),
+  score: pz.IntegerRequired().min(0).max(100),
+  balance: pz.PositiveRequired().max(1000000),
+  description: pz.StringOptional().default(""),
+});
+```
+
+### Native Chaining Features
+
+#### String Schema Chaining
+```typescript
+// StringRequired supports full chaining
+const name = pz.StringRequired()
+  .min(2)                    // Minimum length
+  .max(50)                   // Maximum length  
+  .trim()                    // Automatic trimming
+  .default("Anonymous");     // Default value
+
+// StringOptional supports .default() only
+const bio = pz.StringOptional().default("");
+```
+
+#### Number Schema Chaining
+```typescript
+// NumberRequired supports full chaining
+const age = pz.NumberRequired()
+  .min(0)                    // Minimum value
+  .max(120)                  // Maximum value
+  .default(18);              // Default value
+
+// Specialized schemas with native methods
+const score = pz.IntegerRequired().min(0).max(100);       // .int() applied
+const price = pz.PositiveRequired().max(1000000);         // .positive() applied
+const temp = pz.NonNegativeRequired().max(100);          // .nonnegative() applied
+
+// NumberOptional supports .default() only
+const rating = pz.NumberOptional().default(0);
+```
+
+### ⚠️ Zod Chaining Limitations & Solutions
+
+#### Problem: Optional Schemas Break Zod Chaining
+
+```typescript
+// ❌ This doesn't work - Zod's .optional() removes chaining methods
+const schema = pz.StringOptional();
+schema.min(5);  // ❌ TypeScript Error: Property 'min' does not exist
+
+const numSchema = pz.NumberOptional();
+numSchema.max(100);  // ❌ TypeScript Error: Property 'max' does not exist
+```
+
+**Root Cause**: Zod's `.optional()` method fundamentally changes the schema type, removing all type-specific methods like `.min()`, `.max()`, `.trim()`, etc.
+
+#### ✅ Solution: Use Our Options-Based API
+
+```typescript
+// ✅ Our options API overcomes Zod's limitation
+const optionalString = pz.StringOptional({ 
+  msg: "Bio", 
+  minLength: 5, 
+  maxLength: 500 
+});  // Works perfectly!
+
+const optionalNumber = pz.NumberOptional({ 
+  msg: "Score", 
+  min: 0, 
+  max: 100 
+});  // Works perfectly!
+
+// ✅ Alternative: Use .default() for optional behavior
+const stringWithDefault = pz.StringRequired().min(5).max(500).default("");
+const numberWithDefault = pz.NumberRequired().min(0).max(100).default(0);
+```
+
+### When to Use Each Approach
+
+| Use Options-Based When: | Use Native Chaining When: |
+|------------------------|----------------------------|
+| ✅ Building optional schemas with constraints | ✅ Building required schemas only |
+| ✅ Need consistent API across all schema types | ✅ Want direct Zod ecosystem integration |
+| ✅ Complex schemas (Email, URL, Phone) | ✅ Simple string/number validation |
+| ✅ Custom error messages | ✅ Leveraging existing Zod knowledge |
+| ✅ Team consistency and maintainability | ✅ Maximum performance |
+
+### Hybrid Approach (Best Practice)
+
+```typescript
+import { z } from "zod";
+import { pz } from "phantom-zod";
+
+const userSchema = z.object({
+  // Use chaining for simple required fields
+  name: pz.StringRequired().min(2).max(50),
+  age: pz.NumberRequired().min(0).max(120),
+  
+  // Use options for optional fields with constraints
+  bio: pz.StringOptional({ msg: "Bio", maxLength: 500 }),
+  score: pz.NumberOptional({ msg: "Score", min: 0, max: 100 }),
+  
+  // Use options for complex schemas
+  email: pz.EmailRequired("Email Address"),
+  phone: pz.PhoneOptional({ msg: "Phone", format: PhoneFormat.National }),
+  website: pz.UrlOptional("Website"),
+});
+```
+
+### Backward Compatibility
+
+All existing code continues to work unchanged. The native chaining is an **additive enhancement** that doesn't break any existing functionality.
+
+```typescript
+// ✅ All existing code still works
+const legacySchema = pz.StringRequired({ msg: "Name", minLength: 2 });
+const modernSchema = pz.StringRequired().min(2);  // New option
 ```
 
 ## Using the `pz` Namespace
@@ -241,46 +309,42 @@ Phantom Zod provides all schemas through a unified `pz` namespace, making it eas
 import { pz } from "phantom-zod";
 
 // String validation with trimming
-const name = pz.StringRequired({ msg: "Full Name" });
+const name = pz.StringRequired("Full Name");
 name.parse("  John Doe  "); // ✅ 'John Doe'
 
 // Email validation
-const email = pz.EmailRequired({ msg: "Email Address" });
+const email = pz.EmailRequired("Email Address");
 email.parse("user@example.com"); // ✅ 'user@example.com'
 
-// Phone validation with format options
-const phone = pz.PhoneOptional({ msg: "Phone Number" });
+// Phone validation (E.164 format default)
+const phone = pz.PhoneOptional("Phone Number");
 phone.parse("(555) 123-4567"); // ✅ '+15551234567' (E.164 format)
 
 // UUID validation (supports v4, v6, v7)
-const id = pz.UuidV7Required({ msg: "User ID" });
+const id = pz.UuidV7Required("User ID");
 id.parse("018f6d6e-f14d-7c2a-b732-c6d5730303e0"); // ✅ Valid UUIDv7
 
 // Number validation with constraints
 const age = pz.NumberRequired({ msg: "Age", min: 0, max: 120 });
 age.parse(25); // ✅ 25
 
-// URL validation with protocol restrictions
-const website = pz.UrlOptional({ msg: "Website" });
+// URL validation
+const website = pz.UrlOptional("Website");
 website.parse("https://example.com"); // ✅ 'https://example.com'
 
 // Date validation
-const birthDate = pz.DateStringOptional({ msg: "Birth Date" });
+const birthDate = pz.DateStringOptional("Birth Date");
 birthDate.parse("1990-01-15"); // ✅ '1990-01-15'
 
 // Boolean validation
-const isActive = pz.BooleanRequired({ msg: "Active Status" });
+const isActive = pz.BooleanRequired("Active Status");
 isActive.parse(true); // ✅ true
 
-// Array validation with pz.StringOptional for consistency
-const tags = pz.ArrayOptional(pz.StringOptional(), { msg: "Tags" });
+// Array validation
+const tags = pz.StringArrayOptional("Tags");
 tags.parse(["javascript", "typescript", "react"]); // ✅ ['javascript', 'typescript', 'react']
 
-// Or use the convenience function (equivalent)
-const tagsSimple = pz.StringArrayOptional({ msg: "Tags" });
-tags.parse(["javascript", "typescript", "react"]); // ✅ ['javascript', 'typescript', 'react']
-
-// Money validation
+// Money validation with currency (requires options object)
 const price = pz.MoneyRequired({ msg: "Price", currency: "USD" });
 price.parse({ amount: 99.99, currency: "USD" }); // ✅ Valid money object
 ```
@@ -296,46 +360,44 @@ import { pz } from "phantom-zod";
 // User profile schema
 const userProfileSchema = z.object({
   // Personal information
-  id: pz.UuidV7Required({ msg: "User ID" }),
-  email: pz.EmailRequired({ msg: "Email Address" }),
-  firstName: pz.StringRequired({ msg: "First Name" }),
-  lastName: pz.StringRequired({ msg: "Last Name" }),
-  displayName: pz.StringOptional({ msg: "Display Name" }),
+  id: pz.UuidV7Required("User ID"),
+  email: pz.EmailRequired("Email Address"),
+  firstName: pz.StringRequired("First Name"),
+  lastName: pz.StringRequired("Last Name"),
+  displayName: pz.StringOptional("Display Name"),
 
   // Contact information
-  phone: pz.PhoneOptional({ msg: "Phone Number" }),
-  website: pz.UrlOptional({ msg: "Personal Website" }),
+  phone: pz.PhoneOptional("Phone Number"),
+  website: pz.UrlOptional("Personal Website"),
 
   // Profile details
   age: pz.NumberOptional({ msg: "Age", min: 13, max: 120 }),
-  isActive: pz.BooleanRequired({ msg: "Account Status" }),
-  role: pz.EnumRequired(["admin", "user", "moderator"], { msg: "User Role" }),
-  tags: pz.StringArrayOptional({ msg: "Profile Tags" }),
+  isActive: pz.BooleanRequired("Account Status"),
+  role: pz.EnumRequired(["admin", "user", "moderator"], "User Role"),
+  tags: pz.StringArrayOptional("Profile Tags"),
 
   // Address
-  address: pz.AddressOptional({ msg: "Home Address" }),
+  address: pz.AddressOptional("Home Address"),
 
   // Timestamps
-  createdAt: pz.DateStringRequired({ msg: "Created Date" }),
-  lastLoginAt: pz.DateTimeStringOptional({ msg: "Last Login" }),
+  createdAt: pz.DateStringRequired("Created Date"),
+  lastLoginAt: pz.DateTimeStringOptional("Last Login"),
 });
 
 // Product schema with money handling
 const productSchema = z.object({
-  id: pz.UuidRequired({ msg: "Product ID" }),
+  id: pz.UuidRequired("Product ID"),
   name: pz.StringRequired({
     msg: "Product Name",
     minLength: 2,
     maxLength: 100,
   }),
   description: pz.StringOptional({ msg: "Description", maxLength: 500 }),
-  price: pz.MoneyRequired({ msg: "Price" }),
-  category: pz.EnumRequired(["electronics", "clothing", "books"], {
-    msg: "Category",
-  }),
+  price: pz.MoneyRequired("Price"),
+  category: pz.EnumRequired(["electronics", "clothing", "books"], "Category"),
   tags: pz.StringArrayOptional({ msg: "Product Tags", maxItems: 10 }),
-  isAvailable: pz.BooleanRequired({ msg: "Availability" }),
-  website: pz.UrlOptional({ msg: "Product URL" }),
+  isAvailable: pz.BooleanRequired("Availability"),
+  website: pz.UrlOptional("Product URL"),
 });
 ```
 
@@ -515,6 +577,8 @@ Phantom Zod provides a comprehensive set of validation schemas accessible throug
 - `pz.DateStringOptional({ msg })` - Optional ISO date string
 - `pz.DateTimeStringRequired({ msg })` - ISO datetime string
 - `pz.TimeStringRequired({ msg })` - ISO time string (HH:MM:SS)
+- `pz.TimezoneDateTimeRequired({ msg })` - **NEW** Strict timezone-aware datetime
+- `pz.TimezoneDateTimeOptional({ msg })` - **NEW** Optional timezone-aware datetime
 
 📚 [View detailed Date schemas documentation →](docs/schemas/date-schemas.md)
 
@@ -783,13 +847,21 @@ ISC License - see LICENSE file for details.
   - Extended beyond basic schemas to include complex types (Address, Money, Network, etc.)
   - Backwards compatible with existing options object approach
   - Cleaner, more concise schema definitions for rapid development
+- **🌍 NEW: Strict Timezone-Aware DateTime Schemas**: Enhanced datetime validation with timezone enforcement
+  - `pz.TimezoneDateTimeRequired()` - Enforces timezone presence in ISO 8601 datetime strings
+  - `pz.TimezoneDateTimeOptional()` - Optional timezone-aware datetime validation
+  - Rejects naive datetime strings and Date objects, accepts only timezone-aware ISO strings
+  - Perfect for multi-timezone applications, audit trails, API contracts, and compliance requirements
+  - Uses Zod's built-in `datetime({ offset: true })` with custom localized error messages
+  - Supports both UTC 'Z' notation and offset formats (±HH:MM)
 - **📋 Enhanced Schema Coverage**: String overloads added to:
   - Address, Array, Boolean, Date, Email schemas
   - Enum, File Upload, ID List, Money schemas  
   - Network, Number, Phone, Postal Code schemas
   - String, URL, User, UUID schemas
-- **🧪 Expanded Test Suite**: Comprehensive test coverage for all string parameter overloads
-- **📚 Updated Documentation**: Examples and usage patterns updated throughout
+  - **NEW**: Timezone-aware datetime schemas with string parameter support
+- **🧪 Expanded Test Suite**: Comprehensive test coverage for all string parameter overloads and timezone schemas
+- **📚 Updated Documentation**: Examples and usage patterns updated throughout, including timezone schema guides
 
 ### Version 1.4.0
 

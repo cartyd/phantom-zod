@@ -12,6 +12,39 @@ All phone schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Type safety** with TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all phone schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const phoneTraditional = pz.PhoneRequired({ msg: "Phone Number" });
+
+// Simplified string parameter (equivalent)
+const phoneSimple = pz.PhoneRequired("Phone Number");
+
+// Both produce the same validation behavior
+const phoneInput = "(555) 123-4567";
+phoneTraditional.parse(phoneInput); // ✅ "+15551234567"
+phoneSimple.parse(phoneInput);      // ✅ "+15551234567"
+
+// Error messages are identical
+phoneTraditional.parse("invalid"); // ❌ "Phone Number must be a valid phone number"
+phoneSimple.parse("invalid");      // ❌ "Phone Number must be a valid phone number"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default E.164 format is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Need National format (`PhoneFormat.National`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### PhoneRequired

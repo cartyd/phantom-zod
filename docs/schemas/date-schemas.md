@@ -13,6 +13,39 @@ All date schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Type safety** with TypeScript inference
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all date schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const birthdateTraditional = pz.DateStringRequired({ msg: "Birth Date" });
+
+// Simplified string parameter (equivalent)
+const birthdateSimple = pz.DateStringRequired("Birth Date");
+
+// Both produce the same validation behavior
+const dateInput = "1990-05-15";
+birthdateTraditional.parse(dateInput); // ✅ "1990-05-15"
+birthdateSimple.parse(dateInput);      // ✅ "1990-05-15"
+
+// Error messages are identical
+birthdateTraditional.parse("invalid"); // ❌ "Birth Date must be a valid date"
+birthdateSimple.parse("invalid");      // ❌ "Birth Date must be a valid date"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Date range constraints needed (`min`, `max`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### Date Object Schemas
@@ -238,6 +271,71 @@ schema.parse("15:45:00");              // ✅ "15:45:00"
 schema.parse(undefined);               // ✅ undefined
 ```
 
+### 🌍 Timezone-Aware DateTime Schemas
+
+New in Phantom Zod 1.5+, these schemas enforce **strict timezone presence** in ISO 8601 datetime strings. They only accept datetime strings that include timezone information (UTC 'Z' or offset like ±HH:MM) and reject naive datetime strings.
+
+#### TimezoneDateTimeRequired
+
+Creates a required schema that accepts **only timezone-aware ISO 8601 datetime strings**.
+
+```typescript
+pz.TimezoneDateTimeRequired(options?: DateSchemaOptions)
+// or using string parameter overload:
+pz.TimezoneDateTimeRequired("Field Name")
+```
+
+**Examples:**
+
+```typescript
+// Using string parameter overload (recommended for simplicity)
+const schema = pz.TimezoneDateTimeRequired("Event Start Time");
+
+// ✅ Valid inputs - with timezone information
+schema.parse("2023-12-25T10:30:00Z");              // UTC timezone
+schema.parse("2023-12-25T10:30:00.123Z");          // UTC with milliseconds
+schema.parse("2023-12-25T10:30:00+05:00");         // Positive offset
+schema.parse("2023-12-25T10:30:00-08:00");         // Negative offset
+schema.parse("2023-12-25T10:30:00+00:00");         // UTC equivalent offset
+
+// ❌ Invalid inputs - missing timezone information
+schema.parse("2023-12-25T10:30:00");               // ❌ Error: Event Start Time must include timezone information
+schema.parse("2023-12-25 10:30:00");               // ❌ Error: Event Start Time must include timezone information
+schema.parse(new Date());                           // ❌ Error: Event Start Time must include timezone information
+schema.parse(undefined);                            // ❌ Error: Event Start Time is required
+```
+
+#### TimezoneDateTimeOptional
+
+Creates an optional schema that accepts timezone-aware ISO 8601 datetime strings or undefined.
+
+```typescript
+pz.TimezoneDateTimeOptional("Field Name")
+```
+
+**Examples:**
+
+```typescript
+const schema = pz.TimezoneDateTimeOptional("Last Login");
+
+// ✅ Valid inputs
+schema.parse("2023-12-25T10:30:00Z");              // Valid timezone-aware datetime
+schema.parse("2023-12-25T10:30:00+02:00");         // Valid with offset
+schema.parse(undefined);                            // Valid - optional field
+
+// ❌ Invalid inputs - missing timezone
+schema.parse("2023-12-25T10:30:00");               // ❌ Error: Last Login must include timezone information
+schema.parse(new Date());                           // ❌ Error: Last Login must include timezone information
+```
+
+**When to Use Timezone Schemas:**
+
+- 🌍 **Multi-timezone applications** - Global events, appointments, logs
+- 🔒 **Audit trails** - Precise timestamp tracking with timezone context
+- 📊 **API contracts** - Strict datetime format standards
+- ⚖️ **Compliance** - Regulatory requirements for timestamp precision
+- 🤝 **Data exchange** - Integration with external timezone-aware systems
+
 ## Type Definitions
 
 ```typescript
@@ -254,6 +352,8 @@ type DateOptional = Date | undefined;        // Date object or undefined
 type DateStringRequired = string;            // ISO date string (YYYY-MM-DD)
 type DateTimeStringRequired = string;        // ISO datetime string
 type TimeStringRequired = string;            // ISO time string (HH:MM:SS)
+type TimezoneDateTimeRequired = string;      // ISO datetime string with timezone
+type TimezoneDateTimeOptional = string | undefined; // Optional timezone-aware datetime
 ```
 
 ## Format Support
@@ -267,6 +367,8 @@ type TimeStringRequired = string;            // ISO time string (HH:MM:SS)
 | `DateTimeRequired` | `new Date()`, `"2023-01-01T10:30:00Z"` | `Date` object |
 | `DateTimeStringRequired` | `new Date()`, `"2023-01-01T10:30:00Z"` | ISO datetime string |
 | `TimeStringRequired` | `"10:30:00"`, `"10:30:00.123"` | ISO time string |
+| `TimezoneDateTimeRequired` | `"2023-01-01T10:30:00Z"`, `"2023-01-01T10:30:00+05:00"` | Timezone-aware datetime string |
+| `TimezoneDateTimeOptional` | Same as above + `undefined` | Timezone-aware datetime string or `undefined` |
 
 ### ISO 8601 Format Examples
 

@@ -206,6 +206,7 @@ export interface DateMessages
   mustBeValidDateTime: string;
   invalidFormat: string;
   invalidDateString: string;
+  mustIncludeTimezone: string;
   examples: {
     date: string;
     dateTime: string;
