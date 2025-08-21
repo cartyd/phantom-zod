@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { createEnumSchemas } from '../src/schemas/enum-schemas';
 import { MsgType } from '../src/common/types/msg-type';
 import { createTestMessageHandler } from '../src/localization/types/message-handler.types';
@@ -418,3 +419,246 @@ describe('Enum Schemas', () => {
     });
   });
 });
+
+  describe('Type Safety and Literal Type Preservation', () => {
+    // Import the exported overloaded schemas for this test section  
+    const { EnumOptional: ExportedEnumOptional, EnumRequired: ExportedEnumRequired } = require('../src/schemas/enum-schemas');
+    
+    const statusValues = ['active', 'inactive', 'pending'] as const;
+    const logLevels = ['INFO', 'WARNING', 'ERROR'] as const;
+    const priorities = ['low', 'medium', 'high'] as const;
+
+    describe('EnumOptional type inference', () => {
+      it('should maintain literal types for parsed values', () => {
+        const schema = ExportedEnumOptional(statusValues, 'Status');
+        
+        // Test that parsed values maintain their literal types
+        const activeResult = schema.parse('active');
+        const inactiveResult = schema.parse('inactive');
+        const undefinedResult = schema.parse(undefined);
+        
+        // These should work without casting if types are precise
+        const testActive: 'active' | 'inactive' | 'pending' | undefined = activeResult;
+        const testInactive: 'active' | 'inactive' | 'pending' | undefined = inactiveResult;
+        const testUndefined: 'active' | 'inactive' | 'pending' | undefined = undefinedResult;
+        
+        expect(activeResult).toBe('active');
+        expect(inactiveResult).toBe('inactive');
+        expect(undefinedResult).toBeUndefined();
+        
+        // Verify we can assign to specific literal types
+        expect(testActive).toBe('active');
+        expect(testInactive).toBe('inactive');
+        expect(testUndefined).toBeUndefined();
+      });
+
+      it('should work with default values and maintain types', () => {
+        const schema = ExportedEnumOptional(logLevels, 'Log Level').default('INFO');
+        
+        const infoResult = schema.parse(undefined); // Should get 'INFO' from default
+        const warningResult = schema.parse('WARNING');
+        
+        // These should work without casting if types are precise
+        const testInfo: 'INFO' | 'WARNING' | 'ERROR' = infoResult;
+        const testWarning: 'INFO' | 'WARNING' | 'ERROR' = warningResult;
+        
+        expect(infoResult).toBe('INFO');
+        expect(warningResult).toBe('WARNING');
+        expect(testInfo).toBe('INFO');
+        expect(testWarning).toBe('WARNING');
+      });
+
+      it('should work with functions expecting literal union types', () => {
+        const schema = ExportedEnumOptional(priorities, 'Priority');
+        
+        // Function that expects precise literal types
+        function handlePriority(priority: 'low' | 'medium' | 'high' | undefined) {
+          return priority ? `Priority: ${priority}` : 'No priority set';
+        }
+        
+        const lowResult = schema.parse('low');
+        const undefinedResult = schema.parse(undefined);
+        
+        // These should work without casting if types are preserved
+        expect(handlePriority(lowResult)).toBe('Priority: low');
+        expect(handlePriority(undefinedResult)).toBe('No priority set');
+      });
+
+      it('should support exhaustive switch statements', () => {
+        const schema = ExportedEnumOptional(statusValues, 'Status');
+        const result = schema.parse('active');
+        
+        function categorizeStatus(status: typeof result): string {
+          if (status === undefined) return 'No status';
+          
+          // Exhaustive switch should work with literal types
+          switch (status) {
+            case 'active':
+              return 'Currently active';
+            case 'inactive':
+              return 'Currently inactive';
+            case 'pending':
+              return 'Awaiting activation';
+            default:
+              // This should never be reached if types are preserved correctly
+              throw new Error(`Unexpected status: ${status}`);
+          }
+        }
+        
+        expect(categorizeStatus(result)).toBe('Currently active');
+        expect(categorizeStatus(undefined)).toBe('No status');
+      });
+    });
+
+    describe('EnumRequired type inference', () => {
+      it('should maintain literal types for parsed values', () => {
+        const schema = ExportedEnumRequired(statusValues, 'Status');
+        
+        const activeResult = schema.parse('active');
+        const pendingResult = schema.parse('pending');
+        
+        // These should work without casting if types are precise
+        const testActive: 'active' | 'inactive' | 'pending' = activeResult;
+        const testPending: 'active' | 'inactive' | 'pending' = pendingResult;
+        
+        expect(activeResult).toBe('active');
+        expect(pendingResult).toBe('pending');
+        expect(testActive).toBe('active');
+        expect(testPending).toBe('pending');
+      });
+
+      it('should work with default values and maintain types', () => {
+        const schema = ExportedEnumRequired(logLevels, 'Log Level').default('WARNING');
+        
+        const warningResult = schema.parse(undefined); // Should get 'WARNING' from default
+        const errorResult = schema.parse('ERROR');
+        
+        // These should work without casting if types are precise
+        const testWarning: 'INFO' | 'WARNING' | 'ERROR' = warningResult;
+        const testError: 'INFO' | 'WARNING' | 'ERROR' = errorResult;
+        
+        expect(warningResult).toBe('WARNING');
+        expect(errorResult).toBe('ERROR');
+        expect(testWarning).toBe('WARNING');
+        expect(testError).toBe('ERROR');
+      });
+
+      it('should work with functions expecting literal union types', () => {
+        const schema = ExportedEnumRequired(priorities, 'Priority');
+        
+        // Function that expects precise literal types (no undefined)
+        function formatPriority(priority: 'low' | 'medium' | 'high'): string {
+          return `Priority level: ${priority.toUpperCase()}`;
+        }
+        
+        const mediumResult = schema.parse('medium');
+        const highResult = schema.parse('high');
+        
+        // These should work without casting if types are preserved
+        expect(formatPriority(mediumResult)).toBe('Priority level: MEDIUM');
+        expect(formatPriority(highResult)).toBe('Priority level: HIGH');
+      });
+
+      it('should support exhaustive switch statements', () => {
+        const schema = ExportedEnumRequired(logLevels, 'Log Level');
+        const result = schema.parse('ERROR');
+        
+        function getLogColor(level: typeof result): string {
+          // Exhaustive switch should work with literal types
+          switch (level) {
+            case 'INFO':
+              return 'blue';
+            case 'WARNING':
+              return 'yellow';
+            case 'ERROR':
+              return 'red';
+            default:
+              // This should never be reached if types are preserved correctly
+              throw new Error(`Unexpected log level: ${level}`);
+          }
+        }
+        
+        expect(getLogColor(result)).toBe('red');
+        expect(getLogColor(schema.parse('INFO'))).toBe('blue');
+        expect(getLogColor(schema.parse('WARNING'))).toBe('yellow');
+      });
+    });
+
+    describe('Comparison with native Zod enum behavior', () => {
+      it('should behave identically to native Zod enum for required schemas', () => {
+        // Native Zod enum
+        const nativeSchema = z.enum(['red', 'green', 'blue'] as const);
+        
+        // Phantom-zod enum
+        const phantomSchema = ExportedEnumRequired(['red', 'green', 'blue'] as const, 'Color');
+        
+        const nativeResult = nativeSchema.parse('red');
+        const phantomResult = phantomSchema.parse('red');
+        
+        // Both should work with literal type assignments
+        const nativeColor: 'red' | 'green' | 'blue' = nativeResult;
+        const phantomColor: 'red' | 'green' | 'blue' = phantomResult;
+        
+        expect(nativeResult).toBe('red');
+        expect(phantomResult).toBe('red');
+        expect(nativeColor).toBe('red');
+        expect(phantomColor).toBe('red');
+      });
+
+      it('should behave identically to native Zod enum for optional schemas', () => {
+        // Native Zod enum with optional
+        const nativeSchema = z.enum(['xs', 's', 'm', 'l', 'xl'] as const).optional();
+        
+        // Phantom-zod enum
+        const phantomSchema = ExportedEnumOptional(['xs', 's', 'm', 'l', 'xl'] as const, 'Size');
+        
+        const nativeResult = nativeSchema.parse('m');
+        const phantomResult = phantomSchema.parse('m');
+        const nativeUndefined = nativeSchema.parse(undefined);
+        const phantomUndefined = phantomSchema.parse(undefined);
+        
+        // Both should work with literal type assignments
+        const nativeSize: 'xs' | 's' | 'm' | 'l' | 'xl' | undefined = nativeResult;
+        const phantomSize: 'xs' | 's' | 'm' | 'l' | 'xl' | undefined = phantomResult;
+        const nativeUndefSize: 'xs' | 's' | 'm' | 'l' | 'xl' | undefined = nativeUndefined;
+        const phantomUndefSize: 'xs' | 's' | 'm' | 'l' | 'xl' | undefined = phantomUndefined;
+        
+        expect(nativeResult).toBe('m');
+        expect(phantomResult).toBe('m');
+        expect(nativeUndefined).toBeUndefined();
+        expect(phantomUndefined).toBeUndefined();
+        expect(nativeSize).toBe('m');
+        expect(phantomSize).toBe('m');
+        expect(nativeUndefSize).toBeUndefined();
+        expect(phantomUndefSize).toBeUndefined();
+      });
+
+      it('should behave identically to native Zod enum with defaults', () => {
+        // Native Zod enum with default
+        const nativeSchema = z.enum(['draft', 'published', 'archived'] as const).optional().default('draft');
+        
+        // Phantom-zod enum with default
+        const phantomSchema = ExportedEnumOptional(['draft', 'published', 'archived'] as const, 'Status').default('draft');
+        
+        const nativeResult = nativeSchema.parse(undefined);
+        const phantomResult = phantomSchema.parse(undefined);
+        const nativePublished = nativeSchema.parse('published');
+        const phantomPublished = phantomSchema.parse('published');
+        
+        // Both should work with literal type assignments
+        const nativeStatus: 'draft' | 'published' | 'archived' = nativeResult;
+        const phantomStatus: 'draft' | 'published' | 'archived' = phantomResult;
+        const nativePub: 'draft' | 'published' | 'archived' = nativePublished;
+        const phantomPub: 'draft' | 'published' | 'archived' = phantomPublished;
+        
+        expect(nativeResult).toBe('draft');
+        expect(phantomResult).toBe('draft');
+        expect(nativePublished).toBe('published');
+        expect(phantomPublished).toBe('published');
+        expect(nativeStatus).toBe('draft');
+        expect(phantomStatus).toBe('draft');
+        expect(nativePub).toBe('published');
+        expect(phantomPub).toBe('published');
+      });
+    });
+  });
