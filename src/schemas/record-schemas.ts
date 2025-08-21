@@ -450,21 +450,17 @@ export const createRecordSchemasWithOverloads = (
   } = createRecordSchemas(messageHandler);
 
   // RecordOptional with overloads
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
   ): ReturnType<typeof baseRecordOptional>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
     msg: string,
   ): ReturnType<typeof baseRecordOptional>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
     options: RecordSchemaOptions,
   ): ReturnType<typeof baseRecordOptional>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordOptional<TValue>(
     valueSchema: z.ZodType<TValue>,
     msgOrOptions?: string | RecordSchemaOptions,
@@ -476,21 +472,17 @@ export const createRecordSchemasWithOverloads = (
   }
 
   // RecordRequired with overloads
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
   ): ReturnType<typeof baseRecordRequired>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
     msg: string,
   ): ReturnType<typeof baseRecordRequired>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
     options: RecordSchemaOptions,
   ): ReturnType<typeof baseRecordRequired>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   function RecordRequired<TValue>(
     valueSchema: z.ZodType<TValue>,
     msgOrOptions?: string | RecordSchemaOptions,
