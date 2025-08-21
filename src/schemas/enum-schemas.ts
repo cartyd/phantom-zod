@@ -43,7 +43,7 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
 
     return z
-      .enum(values as unknown as [string, ...string[]], {
+      .enum(values, {
         message: messageHandler.formatErrorMessage({
           group: "enum",
           messageKey: "mustBeOneOf",
@@ -78,7 +78,7 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
   ) => {
     const { msg = "Value", msgType = MsgType.FieldName } = options;
 
-    return z.enum(values as unknown as [string, ...string[]], {
+    return z.enum(values, {
       message: messageHandler.formatErrorMessage({
         group: "enum",
         messageKey: "mustBeOneOf",
