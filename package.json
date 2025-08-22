@@ -1,6 +1,6 @@
 {
   "name": "phantom-zod",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "type": "module",
   "description": "TypeScript-first schema validation library built on Zod",
   "main": "dist/index.js",
