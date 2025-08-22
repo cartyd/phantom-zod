@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
-import { trimOrEmpty, trimOrUndefined } from "../common/utils/string-utils";
 import { MsgType } from "../common/types/msg-type";
 import type { StringSchemaOptions } from "../common/types/schema-options.types";
 
