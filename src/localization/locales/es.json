@@ -94,6 +94,7 @@
     "mustBeValidDateTime": "debe ser una fecha y hora válidas",
     "invalidFormat": "tiene formato inválido (esperado: {format})",
     "invalidDateString": "no es una cadena de fecha válida",
+    "mustIncludeTimezone": "debe incluir información de zona horaria (Z o ±HH:MM)",
     "examples": {
       "date": "YYYY-MM-DD",
       "dateTime": "YYYY-MM-DDTHH:mm:ssZ"

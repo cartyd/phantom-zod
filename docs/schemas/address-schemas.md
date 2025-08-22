@@ -6,6 +6,44 @@ The address schemas module provides comprehensive validation for physical addres
 
 This module offers flexible address validation with multiple schema types for different use cases, from simple addresses with minimal fields to full US address validation with state code validation and ZIP code formatting. All schemas automatically remove empty string fields from optional address components.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, all address schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const addressTraditional = pz.AddressRequired({ msg: "Home Address" });
+
+// Simplified string parameter (equivalent)
+const addressSimple = pz.AddressRequired("Home Address");
+
+// Both produce the same validation behavior
+const addressInput = {
+  street: "123 Main St",
+  city: "Springfield",
+  state: "IL",
+  postalCode: "62704",
+  country: "US"
+};
+addressTraditional.parse(addressInput); // ✅ Valid address object
+addressSimple.parse(addressInput);      // ✅ Valid address object
+
+// Error messages are identical
+addressTraditional.parse({ street: "" }); // ❌ "Home Address street is required"
+addressSimple.parse({ street: "" });      // ❌ "Home Address street is required"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 ### General Address Schemas

@@ -158,7 +158,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * Currency code schema that validates against ISO 4217 currency codes.
    * @param options - Options to configure field name and message type
    */
-  const zCurrencyCode = (options: MoneySchemaOptions = {}) => {
+  const zCurrencyCode = (options: MoneySchemaOptions = {}): z.ZodTypeAny => {
     const { msg = "Currency", msgType = MsgType.FieldName } = options;
     return z
       .string({
@@ -185,7 +185,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * Money amount schema that validates positive decimal values.
    * @param options - Options to configure field name, message type, and max decimals
    */
-  const zMoneyAmount = (options: MoneySchemaOptions = {}) => {
+  const zMoneyAmount = (options: MoneySchemaOptions = {}): z.ZodTypeAny => {
     const {
       msg = "Amount",
       msgType = MsgType.FieldName,
@@ -240,7 +240,9 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * Money amount schema that accepts string input and converts to number.
    * @param options - Options to configure field name, message type, and max decimals
    */
-  const zMoneyAmountFromString = (options: MoneySchemaOptions = {}) => {
+  const zMoneyAmountFromString = (
+    options: MoneySchemaOptions = {},
+  ): z.ZodTypeAny => {
     const {
       msg = "Amount",
       msgType = MsgType.FieldName,
@@ -296,7 +298,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * Optional money schema with currency and amount validation.
    * @param options - Options to configure field name, message type, and max decimals
    */
-  const zMoneyOptional = (options: MoneySchemaOptions = {}) => {
+  const zMoneyOptional = (options: MoneySchemaOptions = {}): z.ZodTypeAny => {
     const {
       msg = "Money",
       msgType = MsgType.FieldName,
@@ -334,7 +336,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * Required money schema with currency and amount validation.
    * @param options - Options to configure field name, message type, and max decimals
    */
-  const zMoneyRequired = (options: MoneySchemaOptions = {}) => {
+  const zMoneyRequired = (options: MoneySchemaOptions = {}): z.ZodTypeAny => {
     const {
       msg = "Money",
       msgType = MsgType.FieldName,
@@ -369,7 +371,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * Money schema with string amount input (useful for form data).
    * @param options - Options to configure field name, message type, and max decimals
    */
-  const zMoneyFromString = (options: MoneySchemaOptions = {}) => {
+  const zMoneyFromString = (options: MoneySchemaOptions = {}): z.ZodTypeAny => {
     const {
       msg = "Money",
       msgType = MsgType.FieldName,
@@ -410,7 +412,10 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
    * const priceSchema = zPrice("USD", { msg: "Price" });
    * const result = priceSchema.parse(99.99);
    */
-  const zPrice = (currency: CurrencyCode, options: MoneySchemaOptions = {}) => {
+  const zPrice = (
+    currency: CurrencyCode,
+    options: MoneySchemaOptions = {},
+  ): z.ZodTypeAny => {
     const {
       msg = "Price",
       msgType = MsgType.FieldName,
@@ -435,7 +440,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
   const zPriceRange = (
     currency: CurrencyCode,
     options: MoneySchemaOptions = {},
-  ) => {
+  ): z.ZodTypeAny => {
     const {
       msg = "Price Range",
       msgType = MsgType.FieldName,
@@ -460,7 +465,7 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
           maxDecimals,
         }),
       })
-      .refine((data) => data.min <= data.max, {
+      .refine((data) => (data as any).min <= (data as any).max, {
         message: messageHandler.formatErrorMessage({
           group: "money",
           messageKey: "invalid",
@@ -471,8 +476,8 @@ export const createMoneySchemas = (messageHandler: ErrorMessageFormatter) => {
         path: ["min"],
       })
       .transform((data) => ({
-        min: { amount: data.min, currency },
-        max: { amount: data.max, currency },
+        min: { amount: (data as any).min, currency },
+        max: { amount: (data as any).max, currency },
       }));
   };
 

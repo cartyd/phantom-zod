@@ -54,7 +54,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ip');   // ✗ Throws error
    * ```
    */
-  const IPv4Optional = (options: NetworkSchemaOptions = {}) => {
+  const IPv4Optional = (options: NetworkSchemaOptions = {}): z.ZodTypeAny => {
     return makeOptional(
       z.ipv4({ message: createErrorMessage("mustBeValidIPv4", options) }),
     );
@@ -74,7 +74,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ip');   // ✗ Throws error
    * ```
    */
-  const IPv4Required = (options: NetworkSchemaOptions = {}) => {
+  const IPv4Required = (options: NetworkSchemaOptions = {}): z.ZodTypeAny => {
     return z.ipv4({ message: createErrorMessage("mustBeValidIPv4", options) });
   };
 
@@ -92,7 +92,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ipv6');    // ✗ Throws error
    * ```
    */
-  const IPv6Optional = (options: NetworkSchemaOptions = {}) => {
+  const IPv6Optional = (options: NetworkSchemaOptions = {}): z.ZodTypeAny => {
     return makeOptional(
       z.ipv6({ message: createErrorMessage("mustBeValidIPv6", options) }),
     );
@@ -112,7 +112,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-ipv6');    // ✗ Throws error
    * ```
    */
-  const IPv6Required = (options: NetworkSchemaOptions = {}) => {
+  const IPv6Required = (options: NetworkSchemaOptions = {}): z.ZodTypeAny => {
     return z.ipv6({ message: createErrorMessage("mustBeValidIPv6", options) });
   };
 
@@ -131,7 +131,9 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-mac');       // ✗ Throws error
    * ```
    */
-  const MacAddressOptional = (options: NetworkSchemaOptions = {}) => {
+  const MacAddressOptional = (
+    options: NetworkSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return makeOptional(
       z.string().refine((val) => MAC_ADDRESS_PATTERN.test(val), {
         message: createErrorMessage("mustBeValidMacAddress", options),
@@ -154,7 +156,9 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-mac');       // ✗ Throws error
    * ```
    */
-  const MacAddressRequired = (options: NetworkSchemaOptions = {}) => {
+  const MacAddressRequired = (
+    options: NetworkSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return z.string().refine((val) => MAC_ADDRESS_PATTERN.test(val), {
       message: createErrorMessage("mustBeValidMacAddress", options),
     });
@@ -176,7 +180,9 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse('invalid-address');   // ✗ Throws error
    * ```
    */
-  const NetworkAddressGeneric = (options: NetworkSchemaOptions = {}) => {
+  const NetworkAddressGeneric = (
+    options: NetworkSchemaOptions = {},
+  ): z.ZodTypeAny => {
     return z.string().refine(
       (val) => {
         // Try IPv4 validation using Zod

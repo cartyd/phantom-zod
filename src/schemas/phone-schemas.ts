@@ -51,7 +51,10 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @param msgType - The type of message formatting to use
    * @returns Base Zod string schema with error message
    */
-  const createBasePhoneSchema = (msg: string, msgType: MsgType) => {
+  const createBasePhoneSchema = (
+    msg: string,
+    msgType: MsgType,
+  ): z.ZodTypeAny => {
     return z.string({
       message: messageHandler.formatErrorMessage({
         group: "string",
@@ -83,7 +86,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse(undefined);       // undefined
    * schema.parse("");              // undefined
    */
-  const PhoneOptional = (options: PhoneSchemaOptions = {}) => {
+  const PhoneOptional = (options: PhoneSchemaOptions = {}): z.ZodTypeAny => {
     const {
       msg = "Phone",
       msgType = MsgType.FieldName,
@@ -97,7 +100,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
       createBasePhoneSchema(msg, msgType)
         .optional()
         .transform((val) => {
-          const trimmed = trimOrEmpty(val);
+          const trimmed = trimOrEmpty(val as string);
           if (!trimmed) return undefined; // Return undefined if empty
           if (trimmed === "") return undefined;
           const normalized = normalizePhone(trimmed, format);
@@ -145,7 +148,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
    * schema.parse("123-456-7890"); // "1234567890"
    * schema.parse("");              // throws ZodError
    */
-  const PhoneRequired = (options: PhoneSchemaOptions = {}) => {
+  const PhoneRequired = (options: PhoneSchemaOptions = {}): z.ZodTypeAny => {
     const {
       msg = "Phone",
       msgType = MsgType.FieldName,
@@ -159,7 +162,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
       createBasePhoneSchema(msg, msgType)
         .refine(
           (val) => {
-            const trimmed = trimOrEmpty(val);
+            const trimmed = trimOrEmpty(val as string);
             return trimmed.length > 0;
           },
           {
@@ -172,7 +175,7 @@ export const createPhoneSchemas = (messageHandler: ErrorMessageFormatter) => {
           },
         )
         .transform((val) => {
-          const trimmed = trimOrUndefined(val);
+          const trimmed = trimOrUndefined(val as string);
           if (!trimmed) return "";
           const normalized = normalizePhone(trimmed, format);
           // If normalization fails (returns null), keep the original value to trigger validation error

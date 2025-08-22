@@ -14,6 +14,39 @@ All enum schemas in Phantom Zod provide:
 - **Consistent error handling** through localization
 - **Compile-time safety** preventing invalid enum values
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, enum schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const statusTraditional = pz.EnumRequired(["active", "inactive", "pending"], { msg: "Status" });
+
+// Simplified string parameter (equivalent)
+const statusSimple = pz.EnumRequired(["active", "inactive", "pending"], "Status");
+
+// Both produce the same validation behavior
+statusTraditional.parse("active"); // ✅ "active"
+statusSimple.parse("active");      // ✅ "active"
+
+// Error messages are identical
+statusTraditional.parse("invalid"); // ❌ "Status must be one of: active, inactive, pending"
+statusSimple.parse("invalid");      // ❌ "Status must be one of: active, inactive, pending"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
+**Note:** Enum schemas always require the enum values array as the first parameter, with the field name/options as the second parameter.
+
 ## Available Schemas
 
 ### EnumRequired

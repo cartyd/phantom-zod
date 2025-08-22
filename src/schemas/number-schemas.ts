@@ -30,13 +30,13 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   // Helper function to add min/max constraints using refine
-  const addMinMaxConstraints = (
-    schema: any,
+  const addMinMaxConstraints = <TSchema extends z.ZodTypeAny>(
+    schema: TSchema,
     min?: number,
     max?: number,
     msg: string = "Value",
     msgType: MsgType = MsgType.FieldName,
-  ) => {
+  ): TSchema => {
     let constrainedSchema = schema;
 
     if (min !== undefined) {
@@ -53,7 +53,7 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
       );
     }
 
-    return constrainedSchema;
+    return constrainedSchema as TSchema;
   };
 
   // Helper function to extract and provide default options with improved typing
@@ -74,7 +74,7 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     options: NumberSchemaOptions,
     isRequired: boolean,
     asString: boolean = false,
-  ) => {
+  ): z.ZodTypeAny => {
     const { msg, msgType, min, max } = extractOptions(options);
 
     // Create strict number schema with custom validation
@@ -169,11 +169,85 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     return isRequired ? schema : schema.optional();
   };
 
-  const NumberOptional = (options: NumberSchemaOptions = {}) =>
-    createNumberSchema(options, false);
+  // Enhanced NumberRequired with overloads
+  function NumberRequired(): z.ZodNumber;
+  function NumberRequired(msg: string): z.ZodNumber;
+  function NumberRequired(options: NumberSchemaOptions): z.ZodTypeAny;
+  function NumberRequired(
+    msgOrOptions?: string | NumberSchemaOptions,
+  ): z.ZodNumber | z.ZodTypeAny {
+    if (typeof msgOrOptions === "string") {
+      const { msg, msgType } = extractOptions({ msg: msgOrOptions });
+      return z.coerce.number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      });
+    }
 
-  const NumberRequired = (options: NumberSchemaOptions = {}) =>
-    createNumberSchema(options, true);
+    const options = msgOrOptions || {};
+    const { msg, msgType } = extractOptions(options);
+
+    // For simple usage without constraints, return native Zod schema for chaining
+    if (!options.min && !options.max) {
+      return z.coerce.number({
+        message: createErrorMessage(
+          "mustBeNumber",
+          { receivedType: "string" },
+          msg,
+          msgType,
+        ),
+      });
+    }
+
+    // For constraints, use the strict validation approach
+    return createNumberSchema(options, true);
+  }
+
+  // Enhanced NumberOptional with overloads
+  function NumberOptional(): z.ZodOptional<z.ZodNumber>;
+  function NumberOptional(msg: string): z.ZodOptional<z.ZodNumber>;
+  function NumberOptional(options: NumberSchemaOptions): z.ZodTypeAny;
+  function NumberOptional(
+    msgOrOptions?: string | NumberSchemaOptions,
+  ): z.ZodOptional<z.ZodNumber> | z.ZodTypeAny {
+    if (typeof msgOrOptions === "string") {
+      const { msg, msgType } = extractOptions({ msg: msgOrOptions });
+      return z.coerce
+        .number({
+          message: createErrorMessage(
+            "mustBeNumber",
+            { receivedType: "string" },
+            msg,
+            msgType,
+          ),
+        })
+        .optional();
+    }
+
+    const options = msgOrOptions || {};
+    const { msg, msgType } = extractOptions(options);
+
+    // For simple usage without constraints, return native Zod schema for chaining
+    if (!options.min && !options.max) {
+      return z.coerce
+        .number({
+          message: createErrorMessage(
+            "mustBeNumber",
+            { receivedType: "string" },
+            msg,
+            msgType,
+          ),
+        })
+        .optional();
+    }
+
+    // For constraints, use the strict validation approach
+    return createNumberSchema(options, false);
+  }
 
   const NumberStringOptional = (options: NumberSchemaOptions = {}) =>
     createNumberSchema(options, false, true);
@@ -639,9 +713,8 @@ function createSafeIntegerOptionalOverload(
   return defaultNumberSchemas.SafeIntegerOptional(msgOrOptions);
 }
 
-// Export schemas with string parameter overloads
-export const NumberOptional = defaultNumberSchemas.NumberOptional;
-export const NumberRequired = defaultNumberSchemas.NumberRequired;
+// Export the overloaded functions directly from the schema factory
+export const { NumberOptional, NumberRequired } = defaultNumberSchemas;
 export const NumberStringOptional = defaultNumberSchemas.NumberStringOptional;
 export const NumberStringRequired = defaultNumberSchemas.NumberStringRequired;
 export const IntegerRequired = createIntegerRequiredOverload;

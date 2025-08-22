@@ -6,6 +6,37 @@ The postal code schemas module provides comprehensive validation for US postal c
 
 This module offers robust US ZIP code validation with support for both 5-digit and ZIP+4 extended formats. It includes business rule validation to reject reserved codes, incomplete formats, and known non-US postal codes that might match the US format pattern.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, postal code schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const zipTraditional = pz.PostalCodeRequired({ msg: "ZIP Code" });
+
+// Simplified string parameter (equivalent)
+const zipSimple = pz.PostalCodeRequired("ZIP Code");
+
+// Both produce the same validation behavior
+zipTraditional.parse("12345"); // ✅ "12345"
+zipSimple.parse("12345");      // ✅ "12345"
+
+// Error messages are identical
+zipTraditional.parse("invalid"); // ❌ "ZIP Code must be a valid ZIP code"
+zipSimple.parse("invalid");      // ❌ "ZIP Code must be a valid ZIP code"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
 ## Available Schemas
 
 - **`PostalCodeRequired(options?)`** - Validates required US postal codes (ZIP codes)

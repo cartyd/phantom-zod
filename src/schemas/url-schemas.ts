@@ -140,7 +140,7 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
    * });
    * ```
    */
-  const UrlOptional = (options: UrlSchemaOptions = {}) => {
+  const UrlOptional = (options: UrlSchemaOptions = {}): z.ZodTypeAny => {
     const { protocol, hostname } = options;
 
     const urlConfig: any = {
@@ -187,7 +187,7 @@ export const createUrlSchemas = (messageHandler: ErrorMessageFormatter) => {
    * });
    * ```
    */
-  const UrlRequired = (options: UrlSchemaOptions = {}) => {
+  const UrlRequired = (options: UrlSchemaOptions = {}): z.ZodTypeAny => {
     const { protocol, hostname } = options;
 
     const urlConfig: any = {

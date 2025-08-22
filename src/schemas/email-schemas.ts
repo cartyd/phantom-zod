@@ -104,7 +104,7 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
    * });
    * ```
    */
-  const EmailOptional = (options: EmailSchemaOptions = {}) => {
+  const EmailOptional = (options: EmailSchemaOptions = {}): z.ZodTypeAny => {
     const { pattern } = options;
 
     const emailConfig: any = {
@@ -148,7 +148,7 @@ export const createEmailSchemas = (messageHandler: ErrorMessageFormatter) => {
    * });
    * ```
    */
-  const EmailRequired = (options: EmailSchemaOptions = {}) => {
+  const EmailRequired = (options: EmailSchemaOptions = {}): z.ZodTypeAny => {
     const { pattern } = options;
 
     const emailConfig: any = {

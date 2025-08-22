@@ -6,6 +6,41 @@ The money schemas module provides comprehensive validation for monetary values, 
 
 This module offers robust financial data validation including currency code validation against ISO 4217 standards, monetary amount validation with configurable decimal precision, and specialized schemas for prices, price ranges, and money objects. It supports both numeric and string input formats for form compatibility.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, most money schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const priceTraditional = pz.MoneyRequired({ msg: "Product Price" });
+
+// Simplified string parameter (equivalent)
+const priceSimple = pz.MoneyRequired("Product Price");
+
+// Both produce the same validation behavior
+const moneyInput = { amount: 99.99, currency: "USD" };
+priceTraditional.parse(moneyInput); // ✅ { amount: 99.99, currency: "USD" }
+priceSimple.parse(moneyInput);      // ✅ { amount: 99.99, currency: "USD" }
+
+// Error messages are identical
+priceTraditional.parse({ amount: -10, currency: "USD" }); // ❌ "Product Price amount must be positive"
+priceSimple.parse({ amount: -10, currency: "USD" });      // ❌ "Product Price amount must be positive"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default decimal precision (2) is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Custom decimal precision needed (`maxDecimals`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
+**Note:** Some money schemas like `CurrencyCode` and `MoneyAmount` have specialized parameters and may not support string overloads in the same way.
+
 ## Available Schemas
 
 ### Core Money Schemas

@@ -6,6 +6,41 @@ The user schemas module provides comprehensive validation for user-related data 
 
 This module offers robust user validation with support for secure password policies, username format validation, email verification, user profiles with display names and avatars, role assignments, account type management, and administrative user operations. It's designed for applications requiring sophisticated user management systems with security-first validation.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, user schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const userTraditional = pz.UserOptional({ msg: "User Profile" });
+
+// Simplified string parameter (equivalent)
+const userSimple = pz.UserOptional("User Profile");
+
+// Both produce the same validation behavior
+const userInput = { id: "123", email: "test@example.com", username: "testuser" };
+userTraditional.parse(userInput); // ✅ Valid user object
+userSimple.parse(userInput);      // ✅ Valid user object
+
+// Error messages are identical
+userTraditional.parse({ email: "invalid" }); // ❌ "User Profile email must be a valid email"
+userSimple.parse({ email: "invalid" });      // ❌ "User Profile email must be a valid email"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default validation behavior is sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Complex password requirements needed
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
+**Note:** Some specialized user schemas have complex parameters and may not support string overloads in the same way as basic schemas.
+
 ## Available Schemas
 
 ### Core User Schemas

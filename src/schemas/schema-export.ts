@@ -24,4 +24,5 @@ export {
   createUserSchemas,
   createIdListSchemas,
   createNetworkSchemas,
+  createRecordSchemas,
 } from "./index";

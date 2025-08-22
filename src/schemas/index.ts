@@ -17,5 +17,6 @@ export * from "./file-upload-schemas";
 export * from "./user-schemas";
 export * from "./id-list-schemas";
 export * from "./network-schemas";
+export * from "./record-schemas";
 // Common regex patterns
 export * from "../common/regex-patterns";

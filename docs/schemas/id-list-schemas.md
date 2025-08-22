@@ -6,6 +6,41 @@ The ID list schemas module provides comprehensive validation for collections of 
 
 This module offers robust ID collection validation including UUID arrays, MongoDB ObjectId collections, unique ID lists, paginated ID processing, and batch operation response handling. It's designed for APIs that need to process multiple records, perform batch operations, or handle ID-based queries.
 
+## Usage Patterns
+
+### String Parameter Overloads (v1.5+)
+
+Starting in v1.5, ID list schemas support simplified string parameter usage for basic field name specification:
+
+```typescript
+// Traditional options object
+const userIdsTraditional = pz.IdListRequired({ msg: "User IDs" });
+
+// Simplified string parameter (equivalent)
+const userIdsSimple = pz.IdListRequired("User IDs");
+
+// Both produce the same validation behavior
+const idsInput = ["550e8400-e29b-41d4-a716-446655440000", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"];
+userIdsTraditional.parse(idsInput); // ✅ Array of valid UUIDs
+userIdsSimple.parse(idsInput);      // ✅ Array of valid UUIDs
+
+// Error messages are identical
+userIdsTraditional.parse([]); // ❌ "User IDs must not be empty"
+userIdsSimple.parse([]);      // ❌ "User IDs must not be empty"
+```
+
+**When to use string parameters:**
+- Basic field name specification only
+- Default array size constraints are sufficient
+- Cleaner, more concise code
+
+**When to use options objects:**
+- Array size constraints needed (`minItems`, `maxItems`)
+- Custom message types (`MsgType.Message`)
+- Advanced localization configurations
+
+**Note:** Specialized schemas like `PaginatedIdList` and `BatchOperationResponse` have complex parameters and may not support string overloads in the same way as basic ID list schemas.
+
 ## Available Schemas
 
 ### Core ID List Schemas
