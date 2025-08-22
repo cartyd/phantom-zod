@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
+import { trimOrEmpty, trimOrUndefined } from "../common/utils/string-utils";
 import { MsgType } from "../common/types/msg-type";
 import type { StringSchemaOptions } from "../common/types/schema-options.types";
 
@@ -111,18 +112,30 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    *
    * This schema supports both legacy options-based configuration and modern chainable methods.
    * When using chaining, undefined values will be handled by .default() or remain undefined.
-   * For backward compatibility, when no chaining is used, undefined transforms to empty string.
+   * For backward compatibility, when no chaining is used, undefined is preserved as undefined.
    *
    * @param options - Configuration options for the schema
    * @param options.msg - The field name or custom message to use in error messages. Defaults to "Value".
    * @param options.msgType - The type of message formatting to use, based on `MsgType`. Defaults to `MsgType.FieldName`.
-   * @param options.minLength - Optional minimum length constraint for the string.
-   * @param options.maxLength - Optional maximum length constraint for the string.
-   * @returns A Zod schema that supports native chaining (.min(), .max(), .default(), etc.)
+   * @param options.minLength - Optional minimum length constraint for the string. If provided, validation will fail if the string is shorter.
+   * @param options.maxLength - Optional maximum length constraint for the string. If provided, validation will fail if the string is longer.
+   * @returns A Zod schema that validates an optional string, trims it, and applies length constraints if specified.
+   *
+   * @remarks
+   * - The schema will transform undefined to undefined, and trim whitespace from strings.
+   * - Empty strings remain as empty strings, whitespace-only strings become empty strings.
+   * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
+   * - Length constraints are only applied if the respective parameters are provided.
    *
    * @example
-   * // Legacy options approach (undefined -> empty string)
-   * const schema1 = StringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
+   * const { StringOptional } = createStringSchemas(messageHandler);
+   * const schema = StringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
+   * schema.parse("  John  "); // "John"
+   * schema.parse(undefined);  // undefined
+   * schema.parse("");         // ""
+   * schema.parse("   ");      // ""
+   * schema.parse("A");        // throws ZodError (too short)
+   * schema.parse("This name is too long"); // throws ZodError (too long)
    *
    * // Modern chainable approach (use .default() to handle undefined)
    * const schema2 = StringOptional({ msg: "Display Name" }).min(2).max(10).default("");
@@ -152,8 +165,8 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
         .trim()
         .optional()
         .transform((val: string | undefined) => {
-          // Handle undefined and transform to empty string to maintain backward compatibility
-          if (val === undefined) return "";
+          // FIX: Preserve undefined instead of converting to empty string
+          if (val === undefined) return undefined;
           return val; // String is already trimmed
         });
 
@@ -178,8 +191,7 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
             msgType === MsgType.Message ? msg : `${msg} must be a string`,
         })
         .trim()
-        .optional()
-        .default(""); // Add default to maintain backward compatibility
+        .optional(); // Remove .default("") to preserve undefined
 
       return schema;
     }
