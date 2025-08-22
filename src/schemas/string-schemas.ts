@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { ErrorMessageFormatter } from "../localization/types/message-handler.types";
 import { createTestMessageHandler } from "../localization/types/message-handler.types";
-import { trimOrEmpty } from "../common/utils/string-utils";
+import { trimOrEmpty, trimOrUndefined } from "../common/utils/string-utils";
 import { MsgType } from "../common/types/msg-type";
 import type { StringSchemaOptions } from "../common/types/schema-options.types";
 
@@ -114,7 +114,8 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * @returns A Zod schema that validates an optional string, trims it, and applies length constraints if specified.
    *
    * @remarks
-   * - The schema will transform undefined or empty values to an empty string.
+   * - The schema will transform undefined to undefined, and trim whitespace from strings.
+   * - Empty strings remain as empty strings, whitespace-only strings become empty strings.
    * - Custom error messages are generated using `messageHandler.formatErrorMessage`.
    * - Length constraints are only applied if the respective parameters are provided.
    *
@@ -122,8 +123,9 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
    * const { StringOptional } = createStringSchemas(messageHandler);
    * const schema = StringOptional({ msg: "Display Name", minLength: 2, maxLength: 10 });
    * schema.parse("  John  "); // "John"
-   * schema.parse(undefined);  // ""
+   * schema.parse(undefined);  // undefined
    * schema.parse("");         // ""
+   * schema.parse("   ");      // ""
    * schema.parse("A");        // throws ZodError (too short)
    * schema.parse("This name is too long"); // throws ZodError (too long)
    */
@@ -137,7 +139,12 @@ export const createStringSchemas = (messageHandler: ErrorMessageFormatter) => {
 
     let schema = createBaseStringSchema(msg, msgType)
       .optional()
-      .transform(trimOrEmpty);
+      .transform((val) => {
+        // If value is undefined, preserve it (standard Zod optional behavior)
+        if (val === undefined) return undefined;
+        // Otherwise, trim the string (trimOrEmpty behavior for non-undefined values)
+        return trimOrEmpty(val);
+      });
 
     schema = addLengthConstraints(
       schema,

@@ -236,7 +236,7 @@ describe('User Schemas', () => {
       {
         description: 'should accept undefined display name',
         input: undefined,
-        expected: ''
+        expected: undefined
       },
       {
         description: 'should reject display name too long',

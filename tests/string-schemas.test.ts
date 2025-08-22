@@ -11,8 +11,8 @@ describe('Type enforcement (mustBeString)', () => {
   nonStringValues.forEach((value) => {
     it(`StringOptional should throw mustBeString for value: ${String(value)}`, () => {
       if (value === undefined) {
-        // StringOptional allows undefined, returns ""
-        expect(StringOptional().parse(undefined)).toBe("");
+        // StringOptional allows undefined, returns undefined
+        expect(StringOptional().parse(undefined)).toBeUndefined();
       } else {
         expect(() => StringOptional().parse(value)).toThrow(/must be a string|is invalid/);
       }
@@ -53,7 +53,7 @@ describe('String Schemas', () => {
       {
         description: 'should handle undefined',
         input: undefined,
-        expected: ''
+        expected: undefined
       },
       {
         description: 'should accept string with special characters',
@@ -129,8 +129,8 @@ describe('String Schemas', () => {
         expect(stringParamSchema.parse('123')).toBe('123');
         expect(optionsSchema.parse('123')).toBe('123');
         
-        expect(stringParamSchema.parse(undefined)).toBe('');
-        expect(optionsSchema.parse(undefined)).toBe('');
+        expect(stringParamSchema.parse(undefined)).toBeUndefined();
+        expect(optionsSchema.parse(undefined)).toBeUndefined();
         
         expect(stringParamSchema.parse('  test  ')).toBe('test');
         expect(optionsSchema.parse('  test  ')).toBe('test');
