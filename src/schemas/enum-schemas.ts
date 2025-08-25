@@ -6,7 +6,6 @@ import { MsgType } from "../common/types/msg-type";
 import type { BaseSchemaOptions } from "../common/types/schema-options.types";
 
 // --- Types ---
-// Note: These types are simplified since they rely on the factory functions
 export type EnumOptional<TEnum extends readonly [string, ...string[]]> =
   | TEnum[number]
   | undefined;
@@ -99,47 +98,54 @@ export const createEnumSchemas = (messageHandler: ErrorMessageFormatter) => {
 const testMessageHandler = createTestMessageHandler();
 const enumSchemas = createEnumSchemas(testMessageHandler);
 
-// Type aliases for clean overload signatures
-type EnumOptionalSchema<TEnum extends readonly [string, ...string[]]> =
-  ReturnType<typeof enumSchemas.EnumOptional<TEnum>>;
-type EnumRequiredSchema<TEnum extends readonly [string, ...string[]]> =
-  ReturnType<typeof enumSchemas.EnumRequired<TEnum>>;
+// Type helper to convert tuple to record type (as Zod does internally)
+type TupleToRecord<T extends readonly [string, ...string[]]> = {
+  readonly [K in T[number]]: K;
+};
 
-// Clean overload implementations
+// Clean overload implementations with proper type safety
 function enumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg: string,
-): EnumOptionalSchema<TEnum>;
+): z.ZodOptional<z.ZodEnum<TupleToRecord<TEnum>>>;
 function enumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   options?: BaseSchemaOptions,
-): EnumOptionalSchema<TEnum>;
+): z.ZodOptional<z.ZodEnum<TupleToRecord<TEnum>>>;
 function enumOptionalOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msgOrOptions?: string | BaseSchemaOptions,
-): EnumOptionalSchema<TEnum> {
+): z.ZodOptional<z.ZodEnum<TupleToRecord<TEnum>>> {
   if (typeof msgOrOptions === "string") {
-    return enumSchemas.EnumOptional(values, { msg: msgOrOptions });
+    return enumSchemas.EnumOptional(values, {
+      msg: msgOrOptions,
+    }) as z.ZodOptional<z.ZodEnum<TupleToRecord<TEnum>>>;
   }
-  return enumSchemas.EnumOptional(values, msgOrOptions);
+  return enumSchemas.EnumOptional(values, msgOrOptions) as z.ZodOptional<
+    z.ZodEnum<TupleToRecord<TEnum>>
+  >;
 }
 
 function enumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msg: string,
-): EnumRequiredSchema<TEnum>;
+): z.ZodEnum<TupleToRecord<TEnum>>;
 function enumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   options?: BaseSchemaOptions,
-): EnumRequiredSchema<TEnum>;
+): z.ZodEnum<TupleToRecord<TEnum>>;
 function enumRequiredOverload<TEnum extends readonly [string, ...string[]]>(
   values: TEnum,
   msgOrOptions?: string | BaseSchemaOptions,
-): EnumRequiredSchema<TEnum> {
+): z.ZodEnum<TupleToRecord<TEnum>> {
   if (typeof msgOrOptions === "string") {
-    return enumSchemas.EnumRequired(values, { msg: msgOrOptions });
+    return enumSchemas.EnumRequired(values, { msg: msgOrOptions }) as z.ZodEnum<
+      TupleToRecord<TEnum>
+    >;
   }
-  return enumSchemas.EnumRequired(values, msgOrOptions);
+  return enumSchemas.EnumRequired(values, msgOrOptions) as z.ZodEnum<
+    TupleToRecord<TEnum>
+  >;
 }
 
 export const EnumOptional = enumOptionalOverload;

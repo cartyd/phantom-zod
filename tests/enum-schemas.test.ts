@@ -326,6 +326,101 @@ describe('Enum Schemas', () => {
         expect(() => schema.parse('test')).toThrow(/Environment must be one of: development, staging, production/);
       });
     });
+
+    describe('Entity mapping type inference fix', () => {
+      it('should resolve the original user issue: EnumRequired to entity type mapping', () => {
+        // This tests the exact scenario the user reported
+        type Entity = {
+          outcome: "SUCCESS" | "FAILURE";
+        };
+        
+        const schema = ExportedEnumRequired(['SUCCESS', 'FAILURE'] as const, 'Outcome');
+        const parsed = schema.parse('SUCCESS');
+        
+        // This should now work without TypeScript errors
+        // Previously this would fail with: Type 'string' is not assignable to type '"SUCCESS" | "FAILURE"'
+        const entity: Entity = { outcome: parsed };
+        
+        expect(entity.outcome).toBe('SUCCESS');
+        expect(['SUCCESS', 'FAILURE']).toContain(entity.outcome);
+        
+        // Test both enum values
+        const successEntity: Entity = { outcome: schema.parse('SUCCESS') };
+        const failureEntity: Entity = { outcome: schema.parse('FAILURE') };
+        
+        expect(successEntity.outcome).toBe('SUCCESS');
+        expect(failureEntity.outcome).toBe('FAILURE');
+      });
+      
+      it('should work with z.enum comparison for the same scenario', () => {
+        // Compare with native z.enum to ensure identical behavior
+        type Entity = {
+          outcome: "SUCCESS" | "FAILURE";
+        };
+        
+        const nativeSchema = z.enum(['SUCCESS', 'FAILURE'] as const);
+        const phantomSchema = ExportedEnumRequired(['SUCCESS', 'FAILURE'] as const, 'Outcome');
+        
+        const nativeParsed = nativeSchema.parse('SUCCESS');
+        const phantomParsed = phantomSchema.parse('SUCCESS');
+        
+        // Both should work identically for entity mapping
+        const nativeEntity: Entity = { outcome: nativeParsed };
+        const phantomEntity: Entity = { outcome: phantomParsed };
+        
+        expect(nativeEntity.outcome).toBe('SUCCESS');
+        expect(phantomEntity.outcome).toBe('SUCCESS');
+        expect(nativeEntity.outcome).toBe(phantomEntity.outcome);
+      });
+      
+      it('should maintain type safety while allowing entity mapping', () => {
+        // Test that we still get proper type checking for invalid values
+        const outcomeValues = ['SUCCESS', 'FAILURE'] as const;
+        const schema = ExportedEnumRequired(outcomeValues, 'Outcome');
+        
+        // Valid mapping should work
+        const validParsed = schema.parse('SUCCESS');
+        const validEntity: { outcome: "SUCCESS" | "FAILURE" } = { outcome: validParsed };
+        expect(validEntity.outcome).toBe('SUCCESS');
+        
+        // Invalid values should still be rejected at runtime
+        expect(() => schema.parse('INVALID')).toThrow();
+        expect(() => schema.parse('success')).toThrow(); // case sensitive
+        expect(() => schema.parse('')).toThrow();
+        expect(() => schema.parse(null)).toThrow();
+        expect(() => schema.parse(undefined)).toThrow();
+      });
+      
+      it('should work with complex entity structures', () => {
+        // Test more complex entity mapping scenarios
+        type ProcessResult = {
+          id: string;
+          outcome: "SUCCESS" | "FAILURE";
+          metadata: {
+            status: "active" | "inactive" | "pending";
+          };
+        };
+        
+        const outcomeValues = ['SUCCESS', 'FAILURE'] as const;
+        const outcomeSchema = ExportedEnumRequired(outcomeValues, 'Process Outcome');
+        const statusSchema = ExportedEnumRequired(statusValues, 'Process Status');
+        
+        const outcome = outcomeSchema.parse('SUCCESS');
+        const status = statusSchema.parse('active');
+        
+        const result: ProcessResult = {
+          id: 'test-123',
+          outcome: outcome,
+          metadata: {
+            status: status
+          }
+        };
+        
+        expect(result.outcome).toBe('SUCCESS');
+        expect(result.metadata.status).toBe('active');
+        expect(typeof result.id).toBe('string');
+      });
+    });
   });
 
   describe('Exported Schema Overloads', () => {
@@ -427,6 +522,7 @@ describe('Enum Schemas', () => {
     const statusValues = ['active', 'inactive', 'pending'] as const;
     const logLevels = ['INFO', 'WARNING', 'ERROR'] as const;
     const priorities = ['low', 'medium', 'high'] as const;
+    const outcomeValues = ['SUCCESS', 'FAILURE'] as const;
 
     describe('EnumOptional type inference', () => {
       it('should maintain literal types for parsed values', () => {
