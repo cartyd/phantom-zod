@@ -28,6 +28,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Fix Node.js 22 compatibility
+      if: matrix.node-version == 22
+      run: npm install --save-dev @types/node@^22.0.0
+      
     - name: Run linter
       run: npm run lint
       
