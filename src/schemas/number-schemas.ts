@@ -192,7 +192,7 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     const { msg, msgType } = extractOptions(options);
 
     // For simple usage without constraints, return native Zod schema for chaining
-    if (!options.min && !options.max) {
+    if (options.min === undefined && options.max === undefined) {
       return z.coerce.number({
         message: createErrorMessage(
           "mustBeNumber",
@@ -232,7 +232,7 @@ export const createNumberSchemas = (messageHandler: ErrorMessageFormatter) => {
     const { msg, msgType } = extractOptions(options);
 
     // For simple usage without constraints, return native Zod schema for chaining
-    if (!options.min && !options.max) {
+    if (options.min === undefined && options.max === undefined) {
       return z.coerce
         .number({
           message: createErrorMessage(

@@ -84,6 +84,69 @@ describe("Number Schemas", () => {
       expect(schema.parse(50)).toEqual(50);
       expect(() => schema.parse(150)).toThrow();
     });
+
+    it("should reject negative numbers when min is set to 0", () => {
+      const schema = NumberOptional({ msg: "Offset", min: 0 });
+      
+      // Should accept zero and positive numbers
+      expect(schema.parse(0)).toEqual(0);
+      expect(schema.parse(5)).toEqual(5);
+      expect(schema.parse("10")).toEqual(10);
+      expect(schema.parse(undefined)).toEqual(undefined);
+      
+      // Should reject negative numbers with proper error messages
+      expect(() => schema.parse(-1)).toThrow("Offset must be at least 0");
+      expect(() => schema.parse(-0.5)).toThrow("Offset must be at least 0");
+      expect(() => schema.parse("-2")).toThrow("Offset must be at least 0");
+    });
+
+    it("should reject positive numbers when max is set to 0", () => {
+      const schema = NumberOptional({ msg: "Balance", max: 0 });
+      
+      // Should accept zero and negative numbers
+      expect(schema.parse(0)).toEqual(0);
+      expect(schema.parse(-5)).toEqual(-5);
+      expect(schema.parse("-10")).toEqual(-10);
+      expect(schema.parse(undefined)).toEqual(undefined);
+      
+      // Should reject positive numbers with proper error messages
+      expect(() => schema.parse(1)).toThrow("Balance must be at most 0");
+      expect(() => schema.parse(0.5)).toThrow("Balance must be at most 0");
+      expect(() => schema.parse("2")).toThrow("Balance must be at most 0");
+    });
+
+    it("should handle string numbers correctly with constraints", () => {
+      const minSchema = NumberOptional({ msg: "MinTest", min: 0 });
+      const maxSchema = NumberOptional({ msg: "MaxTest", max: 0 });
+      const rangeSchema = NumberOptional({ msg: "RangeTest", min: -5, max: 5 });
+      
+      // Test min constraint with string numbers
+      expect(minSchema.parse("0")).toEqual(0);
+      expect(minSchema.parse("5")).toEqual(5);
+      expect(minSchema.parse("10.5")).toEqual(10.5);
+      expect(() => minSchema.parse("-1")).toThrow("MinTest must be at least 0");
+      expect(() => minSchema.parse("-0.1")).toThrow("MinTest must be at least 0");
+      expect(() => minSchema.parse("-999")).toThrow("MinTest must be at least 0");
+      
+      // Test max constraint with string numbers  
+      expect(maxSchema.parse("0")).toEqual(0);
+      expect(maxSchema.parse("-5")).toEqual(-5);
+      expect(maxSchema.parse("-10.5")).toEqual(-10.5);
+      expect(() => maxSchema.parse("1")).toThrow("MaxTest must be at most 0");
+      expect(() => maxSchema.parse("0.1")).toThrow("MaxTest must be at most 0");
+      expect(() => maxSchema.parse("999")).toThrow("MaxTest must be at most 0");
+      
+      // Test range constraint with string numbers
+      expect(rangeSchema.parse("-5")).toEqual(-5);
+      expect(rangeSchema.parse("0")).toEqual(0);
+      expect(rangeSchema.parse("5")).toEqual(5);
+      expect(rangeSchema.parse("-2.5")).toEqual(-2.5);
+      expect(rangeSchema.parse("3.7")).toEqual(3.7);
+      expect(() => rangeSchema.parse("-6")).toThrow("RangeTest must be at least -5");
+      expect(() => rangeSchema.parse("6")).toThrow("RangeTest must be at most 5");
+      expect(() => rangeSchema.parse("-10.1")).toThrow("RangeTest must be at least -5");
+      expect(() => rangeSchema.parse("10.1")).toThrow("RangeTest must be at most 5");
+    });
   });
 
   // Tests for NumberRequired
