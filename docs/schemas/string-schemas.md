@@ -113,7 +113,7 @@ schema.parse("");  // ❌ Error: Please enter your full name
 
 ### StringOptional
 
-Creates an optional string schema that allows undefined values and converts them to empty strings.
+Creates an optional string schema that allows undefined values while trimming whitespace from strings.
 
 ```typescript
 pz.StringOptional(options?: StringSchemaOptions)
@@ -139,7 +139,7 @@ schema.parse("James");           // ✅ "James"
 schema.parse("  Mary  ");        // ✅ "Mary" (trimmed)
 schema.parse("");                // ✅ ""
 schema.parse("   ");             // ✅ "" (trimmed to empty)
-schema.parse(undefined);         // ✅ ""
+schema.parse(undefined);         // ✅ undefined
 schema.parse(null);              // ❌ Error: Middle Name must be a string
 ```
 
@@ -153,7 +153,7 @@ const nicknameSchema = pz.StringOptional({
 // Valid inputs
 nicknameSchema.parse("Bob");               // ✅ "Bob"
 nicknameSchema.parse("");                  // ✅ ""
-nicknameSchema.parse(undefined);           // ✅ ""
+nicknameSchema.parse(undefined);           // ✅ undefined
 
 // Invalid inputs
 nicknameSchema.parse("VeryLongNickname123"); // ❌ Error: Nickname must be at most 15 characters
@@ -170,8 +170,8 @@ interface StringSchemaOptions {
 }
 
 // Inferred types
-type StringRequired = string;      // Always a string
-type StringOptional = string;      // Always a string (undefined converted to "")
+type StringRequired = string;                // Always a string
+type StringOptional = string | undefined;    // String or undefined
 ```
 
 ## Common Patterns

@@ -232,6 +232,40 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
   };
 
   /**
+   * Creates an optional schema that accepts any valid IP address (IPv4 or IPv6) using Zod's built-in validation
+   *
+   * @param options - Configuration options for IP address validation
+   * @returns Zod schema that accepts valid IP addresses or undefined
+   *
+   * @example
+   * ```typescript
+   * const schema = zIPAddressGenericOptional();
+   * schema.parse('192.168.1.1'); // ✓ Valid IPv4
+   * schema.parse('2001:db8::1'); // ✓ Valid IPv6
+   * schema.parse(undefined);     // ✓ Valid
+   * schema.parse('invalid-ip');  // ✗ Throws error
+   * ```
+   */
+  const IPAddressGenericOptional = (options: NetworkSchemaOptions = {}) => {
+    return makeOptional(
+      z.string().refine(
+        (val) => {
+          // Try IPv4 validation using Zod
+          const ipv4Result = z.ipv4().safeParse(val);
+          if (ipv4Result.success) return true;
+
+          // Try IPv6 validation using Zod
+          const ipv6Result = z.ipv6().safeParse(val);
+          if (ipv6Result.success) return true;
+
+          return false;
+        },
+        { message: createErrorMessage("invalid", options) },
+      ),
+    );
+  };
+
+  /**
    * Creates an optional IPv4 CIDR block schema using Zod's built-in CIDR validation
    *
    * @param options - Configuration options for IPv4 CIDR validation
@@ -377,6 +411,7 @@ export const createNetworkSchemas = (messageHandler: ErrorMessageFormatter) => {
     MacAddressRequired,
     NetworkAddressGeneric,
     IPAddressGeneric,
+    IPAddressGenericOptional,
     getNetworkAddressExamples,
   };
 };
@@ -506,6 +541,21 @@ function createIPAddressGenericOverload(
   return networkSchemas.IPAddressGeneric(msgOrOptions);
 }
 
+function createIPAddressGenericOptionalOverload(
+  msg: string,
+): ReturnType<typeof networkSchemas.IPAddressGenericOptional>;
+function createIPAddressGenericOptionalOverload(
+  options?: NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPAddressGenericOptional>;
+function createIPAddressGenericOptionalOverload(
+  msgOrOptions?: string | NetworkSchemaOptions,
+): ReturnType<typeof networkSchemas.IPAddressGenericOptional> {
+  if (typeof msgOrOptions === "string") {
+    return networkSchemas.IPAddressGenericOptional({ msg: msgOrOptions });
+  }
+  return networkSchemas.IPAddressGenericOptional(msgOrOptions);
+}
+
 function createIPv4CIDROptionalOverload(
   msg: string,
 ): ReturnType<typeof networkSchemas.IPv4CIDROptional>;
@@ -589,6 +639,7 @@ export const MacAddressOptional = createMacAddressOptionalOverload;
 export const MacAddressRequired = createMacAddressRequiredOverload;
 export const NetworkAddressGeneric = createNetworkAddressGenericOverload;
 export const IPAddressGeneric = createIPAddressGenericOverload;
+export const IPAddressGenericOptional = createIPAddressGenericOptionalOverload;
 export const IPv4CIDROptional = createIPv4CIDROptionalOverload;
 export const IPv4CIDRRequired = createIPv4CIDRRequiredOverload;
 export const IPv6CIDROptional = createIPv6CIDROptionalOverload;
