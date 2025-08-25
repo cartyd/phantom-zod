@@ -13,6 +13,7 @@ import {
   MacAddressRequired,
   NetworkAddressGeneric,
   IPAddressGeneric,
+  IPAddressGenericOptional,
   getNetworkAddressExamples
 } from "../src/schemas/network-schemas";
 import { INVALID_HEX_CHAR_PATTERN, IPV4_INVALID_OCTETS, LETTER_CASE_PATTERN, IPV4_INVALID_CHAR_PATTERN, IPV6_MULTIPLE_DOUBLE_COLON_PATTERN, MAC_SEPARATOR_PATTERN, VALID_MAC_FORMAT_PATTERN } from "../src/common/regex-patterns";
@@ -265,6 +266,20 @@ describe("Network Schemas", () => {
   // IPv6 Tests (using factory functions for consistent options object testing)
   testRequiredSchema("IPv6Required", factorySchemas.IPv6Required, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
   testOptionalSchema("IPv6Optional", factorySchemas.IPv6Optional, TEST_DATA.validIPv6, TEST_DATA.invalidIPv6);
+
+  // IP Address Generic Tests (using factory functions for consistent options object testing)
+  const validIPAddresses = [...TEST_DATA.validIPv4, ...TEST_DATA.validIPv6];
+  const invalidIPAddresses = [
+    ...TEST_DATA.invalidIPv4,
+    ...TEST_DATA.invalidIPv6,
+    ...TEST_DATA.validMacAddresses, // MAC addresses should be invalid for IP-only schemas
+    'not-an-ip',
+    'invalid.ip.address',
+    '999.999.999.999',
+    'xyz::invalid'
+  ];
+  testRequiredSchema("IPAddressGeneric", factorySchemas.IPAddressGeneric, validIPAddresses, invalidIPAddresses);
+  testOptionalSchema("IPAddressGenericOptional", factorySchemas.IPAddressGenericOptional, validIPAddresses, invalidIPAddresses);
 
   // New Schema Tests
   describe('NetworkAddressGeneric', () => {
@@ -540,6 +555,55 @@ describe("Network Schemas", () => {
         } catch (error: any) {
           expect(error.issues[0].message).toContain('IP Address');
         }
+      });
+    });
+
+    describe('IPAddressGenericOptional overloads', () => {
+      it('should work with string parameter', () => {
+        const schema = IPAddressGenericOptional('Optional IP Address');
+        
+        // Should work with IPv4 and IPv6 but not MAC
+        expect(schema.parse('192.168.1.1')).toBe('192.168.1.1');
+        expect(schema.parse('2001:db8::1')).toBe('2001:db8::1');
+        expect(schema.parse(undefined)).toBeUndefined();
+        expect(schema.parse(null)).toBeUndefined();
+        
+        try {
+          schema.parse('00:1A:2B:3C:4D:5E');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional IP Address');
+        }
+        
+        try {
+          schema.parse('not-an-ip');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional IP Address');
+        }
+        
+        try {
+          schema.parse('');
+          fail('Should have thrown an error');
+        } catch (error: any) {
+          expect(error.issues[0].message).toContain('Optional IP Address');
+        }
+      });
+
+      it('should still work with options object', () => {
+        const schema = IPAddressGenericOptional({ msg: 'Server IP', msgType: MsgType.FieldName });
+        
+        expect(schema.parse('172.16.0.1')).toBe('172.16.0.1');
+        expect(schema.parse('::1')).toBe('::1');
+        expect(schema.parse(undefined)).toBeUndefined();
+      });
+
+      it('should work with no parameters (default usage)', () => {
+        const schema = IPAddressGenericOptional();
+        
+        expect(schema.parse('127.0.0.1')).toBe('127.0.0.1');
+        expect(schema.parse('fe80::1')).toBe('fe80::1');
+        expect(schema.parse(undefined)).toBeUndefined();
       });
     });
 
